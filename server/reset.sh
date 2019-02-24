@@ -5,5 +5,5 @@ echo    # (optional) move to a new line
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
 	rm -f ./*.db
-	rm -f init.token
+	rm -f tokens/init.token
 fi
