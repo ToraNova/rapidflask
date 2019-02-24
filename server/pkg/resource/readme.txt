@@ -11,8 +11,16 @@
 -resource
   -geores
     $geopoint
-    $geopath
     $georoute
+  -zfence
+    $segcam
+    $rpi
+    $gsensor
+    $gsensor_alert
+    $radar_alert
+  -generic
+    $ipcam_model
+    $param3model
   $COPY_template
 
 The COPY_template.py is available to start creating resources

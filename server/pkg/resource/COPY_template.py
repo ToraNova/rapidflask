@@ -29,33 +29,34 @@ class TODO_SAMPLE(r.Base):
     route_id = r.Column(r.Integer, nullable=True)
 
     # TODO: DEFINE THE RLIST
-    #The following is for r-listing (resource listing)
+    # CHANGED ON U6 : RLISTING NOW MERGED WITH RLINKING : see 'RLINKING _ HOW TO USE:'
+    # The following is for r-listing (as of u6, rlinking as well) (resource listing)
     # the values in the rlist must be the same as the column var name
     rlist = {
     "Geopoint ID":"id",
     "Longitude":"long",
     "Latitude":"lati",
-    "Linked Entity":"__link__/route_id", # __link__ is a reserved keyword
+    "Linked Entity":"__link__/route_id/Georoute/id:name", # __link__ is a reserved keyword
     "Timestamp":"time"
     } #header:row data
-    # use the __link__/ and __ route_id to 'link' route_id onto something
-    # the linkage is defined under the rlink dictionary down there
-    # see 'RLINK'
+
+    # RLINKING _ HOW TO USE :
+    # using the __link__ keyword, seperate the arguments with /
+    # The first argument is the local reference, the field in which we use to refer
+    # the second argument is the foreign table
+    # the third argument is the foreign table Primary key
+    # the fourth argument is the field we want to find from the foreign table
+    # NOTICE that the fourth table uses ':' instead of /.
+    # Example
+    # "RPi id":"__link__/rpi_id/RPi/id:rpi_name"
+    # for the display of RPi id, we link to a foreign table that is called RPi
+    # we use the rpi_id foreign key on this table, to locate the id on the foreign table
+    # then we query for the field rpi_name
 
     # TODO: DEFINE THE priKey and display text
     #this primary key is used for rlisting/adding and mod.
     rlist_priKey = "id"
     rlist_dis = "Geopoints" #display for r routes
-
-    #RLINK - indicate a link (foreign key reference lookup)
-    #rlink - ref tablename, fkey, lookup
-    #the key defines how a column is linked, route_id is linked
-    #to the table Georoute, looking up for the ID in Georoute and retrieving
-    #the name.
-    rlink = {
-        "route_id":("Georoute","id","name")
-    }
-
 
     # TODO: CONSTRUCTOR DEFINES, PLEASE ADD IN ACCORDING TO COLUMNS
     # the key in the insert_list must be the same as the column var name

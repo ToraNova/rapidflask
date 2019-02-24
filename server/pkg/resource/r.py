@@ -55,12 +55,13 @@ def radd(tablename):
 			#try to add
 			target_add = res_model(d_point)
 			sq.db_session.add(target_add)
+
 			sq.db_session.commit()
 			return render_template("standard/message.html",
                 display_title="Success",
                 display_message="Added resource to system.")
 		except Exception as e:
-			print(str(e))
+			print("radd exception has occurred :",str(e))
 			sq.db_session.rollback() #immediately rollback changes
 			return render_template("errors/error.html",
             error_title="Failure",
@@ -75,11 +76,14 @@ def radd(tablename):
 # This route deals alot with the dist pkg as it is different from the packages.
 # Could be semi-permanent
 def rlist(tablename):
-	columnHead = getMatch(tablename)[0]
-	match = getMatch(tablename)[1]
+	mobj = getMatch(tablename)
+	columnHead = mobj[0]
+	match = mobj[1]
+	prikey_match = mobj[2]
 	display_tablename = rdef.dist_resources[tablename][rdef.sqlClass].rlist_dis
 	return render_template('res/datalist0.html',
 	colNum=len(columnHead),matches=match,columnHead=columnHead, tablename=tablename,
+	prikeyMatch=prikey_match,
 	data_table_name=display_tablename)
 
 @bp.route('/rmod/<tablename>/<primaryKey>',methods=['GET','POST'])
@@ -157,6 +161,7 @@ def getMatch(tablename):
 	rawlist = entityClass.query.all() # all the records
 	columnHead = []
 	match = []
+	pkey = []
 	for key,val in reslist.items():
 		columnHead.append(key) #adds keys in rlist dictionary to columnHeads
 
@@ -166,9 +171,10 @@ def getMatch(tablename):
 			if(reslist[key].startswith("__link__")):
 				try:
 					rkey = reslist[key].split('/')[1]
-					refTable = entityClass.rlink[rkey][0]
-					refFKey = entityClass.rlink[rkey][1]
-					refLook = entityClass.rlink[rkey][2]
+					refTable = reslist[key].split('/')[2]
+					refFKey = reslist[key].split('/')[3]
+					refFKey = refFKey[:refFKey.find(':')]
+					refLook = reslist[key].split(':')[1]
 					refEntClass = rdef.dist_resources[refTable][rdef.sqlClass]
 					if(entry.__getattribute__(rkey) == None):
 						aptTar = "Unlinked"
@@ -181,15 +187,16 @@ def getMatch(tablename):
 					#revert to simple display of id
 					#error must have occured here
 					# TODO: Logging
-					print(str(e))
+					print("Exception occurred while rlisting :",str(e))
 					aptTar = entry.__getattribute__(rkey)
 				finally:
 					temp.append(aptTar)
 			else:
 				temp.append(entry.__getattribute__(reslist[key]))
-			print(temp[-1])
+			#print(temp[-1]) #DEBUGGING USE ONLY
 		match.append(temp)
-	return [columnHead,match]
+		pkey.append(entry.__getattribute__(entry.__getattribute__('rlist_priKey')))
+	return [columnHead,match,pkey]
 
 def getAttrList(in_obj):
 	'''returns a list of attributes of an object, not including
@@ -219,7 +226,7 @@ def regenerateForm(in_form,target=None):
 			model_field = a[len(rdef.rgen_keyword):] #FOR MODIFY ONLY
 			in_form.__getattribute__(a).default = target.__getattribute__(model_field)
 		elif a.startswith(rdef.rgen_selkey):
-			model_field = a[len(rdef.rgen_selkey):]
+			model_field = a[len(rdef.rgen_selkey):] #GETS THE MODEL FIELD
 			fkeyres = rdef.dist_resources[in_form.fKeylist[model_field][0]][rdef.sqlClass].query.all()
 			in_form.__getattribute__(a).choices = dynamicSelectorHandler(fkeyres,in_form.fKeylist[model_field][1])
 			if(target != None):

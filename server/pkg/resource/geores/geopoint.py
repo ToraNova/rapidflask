@@ -25,18 +25,13 @@ class Geopoint(r.Base):
     "Geopoint ID":"id",
     "Longitude":"long",
     "Latitude":"lati",
-    "Linked Route":"__link__/route_id", # __link__/ is a reserved keyword
+    "Linked Route":"__link__/route_id/Georoute/id:name", # __link__/ is a reserved keyword
     "Timestamp":"time"
     } #header:row data
     #
     #this primary key is used for rlisting/adding and mod.
     rlist_priKey = "id"
     rlist_dis = "Geopoints" #display for r routes
-
-    #rlink - ref tablename, fkey, lookup
-    rlink = {
-        "route_id":("Georoute","id","name")
-    }
 
     def __init__(self,insert_list):
         self.long = insert_list["long"]

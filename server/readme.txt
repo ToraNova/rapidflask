@@ -83,3 +83,7 @@ update5   31/01/19---01:00am
 [   now the template consist of bootstrap gentelella and bootstrap leaflet
 [   both serve different purposes, leaflet being the mapping while gentelella std
 [   dashboard. fixed some UI and html errors, as well as better formatting for some.
+
+update6   25/02/19---03:53am
+[+  fixed some rlisting problem, rlist and rlink now together
+[   adding MQTT functionalities

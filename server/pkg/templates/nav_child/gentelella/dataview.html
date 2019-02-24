@@ -5,17 +5,27 @@ routes or links to routes here instead of the _sidebar.html file-->
 <ul class="nav child_menu">
   <!--Insert database urls here-->
 
-  <li><a><i class="fa fa-compass"></i>Geopoints<span class="fa fa-chevron-down"></span></a>
-  <ul class="nav child_menu">
-    <!--Insert database urls here-->
 
+  <!-- GEOPOINTING - GEORES -->
+  <!-- <li><a><i class="fa fa-compass"></i>Geopoints<span class="fa fa-chevron-down"></span></a>
+  <ul class="nav child_menu">
     <li><a href="{{ url_for('resource.rlist', tablename = 'Georoute') }}">List Georoutes</a></li>
     <li><a href="{{ url_for('resource.rlist', tablename = 'Geopoint') }}">List Geopoints</a></li>
+  </ul>
+  </li> -->
 
+  <!-- <li><a href="{{ url_for('resource.rlist', tablename = 'Param3') }}">List Param3</a></li> -->
+
+  <!-- ZFENCING -->
+  <li><a><i class="fa fa-bell"></i>System Alerts<span class="fa fa-chevron-down"></span></a>
+  <ul class="nav child_menu">
+    <!--Insert database urls here-->
+    <li><a href="{{ url_for('resource.rlist', tablename = 'GSensor_Alert') }}">GSensor Alerts</a></li>
+    <li><a href="{{ url_for('resource.rlist', tablename = 'Radar_Alert') }}">Radar Alerts</a></li>
+    <li><a href="{{ url_for('resource.rlist', tablename = 'GSensor') }}">List All Sensors</a></li>
   </ul>
   </li>
 
-  <li><a href="{{ url_for('resource.rlist', tablename = 'Param3') }}">List Param3</a></li>
 
 </ul>
 </li>

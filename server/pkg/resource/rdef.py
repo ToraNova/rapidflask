@@ -22,10 +22,15 @@ rlin_nullk = "-1"
 ##########################################################
 
 #IMPORT RESOURCE CLASS HERE (MODEL AND FORMS)
-from pkg.resource.geores import geopoint
-from pkg.resource.geores import georoute
+# GEORES RESOURCES
+from pkg.resource.geores import geopoint,georoute
 
-from pkg.resource.generic import param3model
+# ZFENCING PROJECT
+from pkg.resource.zfence import rpi, segcam, gsensor
+from pkg.resource.zfence import radar_alert, gsensor_alert
+
+# Generic models
+from pkg.resource.generic import param3model, ipcam_model
 
 ##########################################################
 # PLEASE EDIT THE FOLLOWING FOR EACH DEPLOYMENT!
@@ -33,20 +38,43 @@ from pkg.resource.generic import param3model
 ##########################################################
 
 dist_resources = {
+    "IPCamera_Model":[
+    ipcam_model.IPCameraModel,
+    ipcam_model.AddForm,
+    ipcam_model.EditForm
+    ],
     "Georoute":[
     georoute.Georoute,
     georoute.AddForm,
     georoute.EditForm
-    ]
-    ,
+    ],
     "Geopoint":[
     geopoint.Geopoint,
     geopoint.AddForm,
     geopoint.EditForm
-    ]
-    ,
-    "Param3":[
-    param3model.Param3,
+    ],
+    "GSensor":[
+    gsensor.GSensor,
+    None,
+    None
+    ],
+    "RPi":[
+    rpi.RPi,
+    rpi.AddForm,
+    rpi.EditForm
+    ],
+    "Segment_Camera":[
+    segcam.SegmentCamera,
+    segcam.AddForm,
+    segcam.EditForm
+    ],
+    "GSensor_Alert":[
+    gsensor_alert.GSensorAlert,
+    None,
+    None
+    ],
+    "Radar_Alert":[
+    radar_alert.PRadarAlert,
     None,
     None
     ]
