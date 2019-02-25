@@ -9,9 +9,9 @@
 
 from pkg.resource import res_import as r
 
-class RPi(r.Base):
+class SegmentHost(r.Base):
     # PERMA : DO NOT CHANGE ANYTHING HERE UNLESS NECESSARY
-    __tablename__ = "RPi"
+    __tablename__ = "Segment_Host"
     id = r.Column(r.Integer, primary_key=True)
     def __repr__(self):
     	return '<%r %r>' % (self.__tablename__,self.id)
@@ -29,6 +29,12 @@ class RPi(r.Base):
     g_nsen1 = r.Column(r.Integer, nullable = False, unique = False)
     g_nsen2 = r.Column(r.Integer, nullable = False, unique = False)
 
+    g_fdrawseg1 = r.Column(r.Integer, nullable=True, unique=True)
+    g_fdrawseg2 = r.Column(r.Integer, nullable=True, unique=True)
+
+    trig_branch = r.Column(r.Integer, nullable=True) #the branch to trigger the ipcamera
+    trig_scam = r.Column(r.Integer, nullable=True)
+
     param0 = r.Column(r.String(r.lim.MAX_UUPARAM_SIZE), nullable=True, unique=False)
     param1 = r.Column(r.String(r.lim.MAX_UUPARAM_SIZE), nullable=True, unique=False)
     param2 = r.Column(r.String(r.lim.MAX_UUPARAM_SIZE), nullable=True, unique=False)
@@ -44,7 +50,9 @@ class RPi(r.Base):
     "Radar Step Lower":"r_steptarlo",
     "Radar Step High":"r_steptarhi",
     "No. of sensors on branch 1":"g_nsen1",
-    "No. of sensors on branch 2":"g_nsen2"
+    "No. of sensors on branch 2":"g_nsen2",
+    "Triggering Segment Camera IP":"__link__/trig_scam/Segment_Camera/id:ip_address",
+    "Branch to trigger":"trig_branch"
     # "Param0":"param0",
     # "Param1":"param1", # __link__ is a reserved keyword
     # "Param2":"param2"
@@ -73,7 +81,13 @@ class RPi(r.Base):
         self.r_steptarhi = insert_list["r_steptarhi"]
         self.g_nsen1 = insert_list["g_nsen1"]
         self.g_nsen2 = insert_list["g_nsen2"]
+
+        self.trig_branch = r.checkNull(insert_list,"trig_branch")
+        self.trig_scam = r.checkNull(insert_list,"trig_scam")
+
         self.description = r.checkNull(insert_list,"description")
+        self.g_fdrawseg1 = r.checkNull(insert_list,"g_fdrawseg1")
+        self.g_fdrawseg2 = r.checkNull(insert_list,"g_fdrawseg2")
         self.param0 = r.checkNull(insert_list,"param0")
         self.param1 = r.checkNull(insert_list,"param1")
         self.param2 = r.checkNull(insert_list,"param2")
@@ -95,6 +109,10 @@ class AddForm(r.FlaskForm):
     rgen_g_nsen1 = r.IntegerField('No. of Gsensors on Branch 1',validators=[r.InputRequired()])
     rgen_g_nsen2 = r.IntegerField('No. of Gsensors on Branch 2',validators=[r.InputRequired()])
 
+    rgensel_trig_scam = r.SelectField('Triggering RPi',choices=['0','No Camera'])
+    rgen_trig_branch = r.SelectField('Triggering Branch',choices=[('1','Branch 1'),('2','Branch 2')])
+    fKeylist = {"trig_scam":("Segment_Camera","ip_address")}
+
 class EditForm(r.FlaskForm):
     #TODO: List the fields here, FIELDS MUST BE PREFIXED WITH rgen_
     # The names here after the rgen_ prefix must correspond to a var name in the respective model
@@ -106,3 +124,7 @@ class EditForm(r.FlaskForm):
 
     rgen_g_nsen1 = r.IntegerField('No. of Gsensors on Branch 1',validators=[r.InputRequired()])
     rgen_g_nsen2 = r.IntegerField('No. of Gsensors on Branch 2',validators=[r.InputRequired()])
+
+    rgensel_trig_scam = r.SelectField('Triggering RPi',choices=['0','No Camera'])
+    rgen_trig_branch = r.SelectField('Triggering Branch',choices=[('1','Branch 1'),('2','Branch 2')])
+    fKeylist = {"trig_scam":("Segment_Camera","ip_address")}

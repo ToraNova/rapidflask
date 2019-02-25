@@ -3,9 +3,13 @@ included in includes/_sidebar.html under the admin section, add
 routes or links to routes here instead of the _sidebar.html file-->
 <li><a><i class="fa fa-th-list"></i>Overview<span class="fa fa-chevron-down"></span></a>
 <ul class="nav child_menu">
-  <!--Insert resource urls here-->
 
-  <li><a href="{{ url_for('maptrack.point') }}">Track Geopoint</a></li>
+  <!-- For geores display-->
+  <!--<li><a href="{{ url_for('maptrack.point') }}">Track Geopoint</a></li>-->
+
+  <li><a href="{{ url_for('maptrack.zfence') }}">Alert Dashboard</a></li>
+  <li><a href="{{ url_for('maptrack.zfence_edit') }}">Edit Alert UI</a></li>
+
 
 </ul>
 </li>

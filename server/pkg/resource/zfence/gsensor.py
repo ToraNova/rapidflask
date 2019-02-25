@@ -25,6 +25,7 @@ class GSensor(r.Base):
     branch_n = r.Column(r.Integer,nullable=False)
     rpi_id= r.Column(r.Integer, nullable=True)
     threshold = r.Column(r.Integer, nullable=False)
+
     alert_state = r.Column(r.Boolean(),unique=False,nullable=False)
 
     param0 = r.Column(r.String(r.lim.MAX_UUPARAM_SIZE), nullable=True, unique=False)
@@ -37,7 +38,7 @@ class GSensor(r.Base):
     # the values in the rlist must be the same as the column var name
     rlist = {
     "Sensor Id":"id",
-    "RPi id":"__link__/rpi_id/RPi/id:id",
+    "Segment Host(RPi) id":"__link__/rpi_id/Segment_Host/id:id",
     "Branch":"branch_n",
     "Segment Number":"segment_n",
     "G-Threshold":"threshold",

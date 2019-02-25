@@ -26,11 +26,12 @@ rlin_nullk = "-1"
 from pkg.resource.geores import geopoint,georoute
 
 # ZFENCING PROJECT
-from pkg.resource.zfence import rpi, segcam, gsensor
+from pkg.resource.zfence import seghost, segcam, gsensor
 from pkg.resource.zfence import radar_alert, gsensor_alert
 
 # Generic models
 from pkg.resource.generic import param3model, ipcam_model
+from pkg.resource.generic import canvas_circle, canvas_line
 
 ##########################################################
 # PLEASE EDIT THE FOLLOWING FOR EACH DEPLOYMENT!
@@ -38,6 +39,17 @@ from pkg.resource.generic import param3model, ipcam_model
 ##########################################################
 
 dist_resources = {
+    "Canvas_Line":[
+    canvas_line.CanvasLine,
+    None,
+    None
+    ],
+    "Canvas_Circle":[
+    canvas_circle.CanvasCircle,
+    None,
+    None
+    ]
+    ,
     "IPCamera_Model":[
     ipcam_model.IPCameraModel,
     ipcam_model.AddForm,
@@ -59,9 +71,9 @@ dist_resources = {
     None
     ],
     "RPi":[
-    rpi.RPi,
-    rpi.AddForm,
-    rpi.EditForm
+    seghost.SegmentHost,
+    seghost.AddForm,
+    seghost.EditForm
     ],
     "Segment_Camera":[
     segcam.SegmentCamera,

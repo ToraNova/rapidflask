@@ -26,7 +26,7 @@ class PRadarAlert(r.Base):
     r_brhnum = r.Column(r.Integer, nullable=False)
     time = r.Column(r.DateTime, nullable=False)
     reason = r.Column(r.String(r.lim.MAX_USERNAME_SIZE), nullable=False, unique=False)
-    
+
     param0 = r.Column(r.String(r.lim.MAX_UUPARAM_SIZE), nullable=True, unique=False)
     param1 = r.Column(r.String(r.lim.MAX_UUPARAM_SIZE), nullable=True, unique=False)
     # rlinking - do not have to change the variable name
@@ -35,7 +35,7 @@ class PRadarAlert(r.Base):
     #The following is for r-listing (resource listing)
     # the values in the rlist must be the same as the column var name
     rlist = {
-    "RPi ID":"__link__/rpi_id",
+    "Segment Host (RPi) ID":"__link__/rpi_id/Segment_Host/id:id",
     "Branch Number":"r_brhnum",
     "Radar Segment Number":"r_segnum",
     "Alert Timestamp":"time",

@@ -1,8 +1,8 @@
 #--------------------------------------------------
-# COPY_template.py
-# COPY_template is a resource template. Please
-# use this as a base file when introducing new tables
-# use ctrl-f on TODO to findout which parts to change
+# ipcam_model.py
+# IPCamera Model is a model that allows
+# one to classify a ip cam, this allows streaming/ image
+# capture functionalities
 # introduced in u3
 # ToraNova
 #--------------------------------------------------

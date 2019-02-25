@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="keyword" content="Dashboard, Bootstrap, Admin, Template, Theme, Responsive, Fluid, Retina">
+
+    <title>ZFENCE Alert Dashboard (Viewing Mode)</title>
+
+    <!-- Bootstrap core CSS/ FontAwesome and dashgum css styles -->
+    <link href="{{url_for('static',filename='vendors/bootstrap/dist/css/bootstrap.min.css')}}" rel="stylesheet">
+    <link href="{{url_for('static',filename='vendors/font-awesome/css/font-awesome.min.css')}}" rel="stylesheet">
+    <link href="{{url_for('static',filename='dashgum/style.css')}}" rel="stylesheet">
+    <link href="{{url_for('static',filename='dashgum/style-responsive.css')}}" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+  <section id="container" >
+      <!-- **********************************************************************************************************************************************************
+      TOP BAR CONTENT & NOTIFICATIONS
+      *********************************************************************************************************************************************************** -->
+      <!--header start-->
+      <header class="header black-bg">
+              <div class="sidebar-toggle-box">
+                  <div class="fa fa-bars tooltips" data-placement="right" data-original-title="Toggle Navigation"></div>
+              </div>
+            <!--logo start-->
+            <a href="#" class="logo"><b>Edit ZFENCE Alerts</b></a>
+            <!--logo end-->
+            <div class="nav notify-row" id="top_menu">
+                <!--  notification start -->
+                <ul class="nav top-menu">
+                    <!-- alert info start-->
+                      <li><a  href="{{url_for('home.home',username=current_user.username)}}">Admin Dashboard
+                        <i class="fa fa-home"></i></a></li>
+                    <!-- inbox dropdown end -->
+                </ul>
+                <!--  notification end -->
+            </div>
+            <div class="top-menu">
+            	<!-- <ul class="nav pull-right top-menu">
+                    <li><a class="logout" href="login.html">Logout</a></li>
+            	</ul> -->
+            </div>
+        </header>
+      <!--header end-->
+
+      <!-- **********************************************************************************************************************************************************
+      MAIN SIDEBAR MENU
+      *********************************************************************************************************************************************************** -->
+      <!--sidebar start-->
+      <aside>
+          <div id="sidebar"  class="nav-collapse ">
+              <!-- sidebar menu start-->
+              <ul class="sidebar-menu" id="nav-accordion">
+
+                  <!-- <li class="mt">
+                      <a class="active" href="#">
+                          <i class="fa fa-dashboard"></i>
+                          <span>Dashboard</span>
+                      </a>
+                  </li>
+
+                  <li class="sub-menu">
+                      <a href="javascript:;" >
+                          <i class="fa fa-cogs"></i>
+                          <span>Components</span>
+                      </a>
+                      <ul class="sub">
+                          <li><a  href="calendar.html">Calendar</a></li>
+                          <li><a  href="gallery.html">Gallery</a></li>
+                          <li><a  href="todo_list.html">Todo List</a></li>
+                      </ul>
+                  </li> -->
+
+              </ul>
+              <!-- sidebar menu end-->
+          </div>
+      </aside>
+      <!--sidebar end-->
+
+      <!-- **********************************************************************************************************************************************************
+      MAIN CONTENT
+      *********************************************************************************************************************************************************** -->
+      <!--main content start-->
+      <section id="main-content">
+          <section class="wrapper">
+              <div class="row">
+                  <div class="col-lg-9 main-chart" >
+
+                    <div class="row mt" id="mainpanel">
+                      <div class="white-panel" >
+                        <div class="white-header">
+                          <h3>Phase 1 Zfence Alert System</h3>
+                        </div>
+                                <canvas width="1000" height="1400" id="alertcanvas">
+                                Your browser doesn't support canvas
+                                </canvas>
+                                <img id="alertmap"
+                                  class = "hidden"
+                                  src="{{url_for('static',filename='custom/zfence/sa2.png')}}"
+                                >
+                          </div>
+          					</div><!-- /row -->
+
+                  </div><!-- /col-lg-9 END SECTION MIDDLE -->
+
+
+      <!-- **********************************************************************************************************************************************************
+      RIGHT SIDEBAR CONTENT
+      *********************************************************************************************************************************************************** -->
+                  <!-- <div class="col-lg-3 ds"> -->
+                  <div class="col-lg-3 main-chart" >
+                    <!--COMPLETED ACTIONS DONUTS CHART-->
+						        <h3 id="sidepanel">Segment Host (RPi unit) list</h3>
+
+                    <div id="shostlist" class="desc">
+                      {% for host in hostlist %}
+                        <h7>{{host.id}} : {{host.ip_address}}</h7></br>
+                        {% if host.g_fdrawseg1 != None and host.g_fdrawseg2 != None %}
+                          <a href="#" onclick="hlightSegment({{host.id}},3)">HighLight Segments</a>
+                          <a href="#" onclick="delSegment({{host.id}})">Clear Both Segments</a>
+                          </br>
+                        {% endif %}
+                        <div style="background-color:#3366ff;color:#000000;padding: 3px;">Segment 1</div>
+                        {% if host.g_fdrawseg1 == None %}
+                          <a href="#" onclick="drawSegment({{host.id}},1)">Segment 1 Not initialized</a>
+                        </br>
+                        {% else %}
+                        <a href="#" onclick="hlightSegment({{host.id}},1)">Highlight S1</a>
+                      </br>
+                        {% endif %}
+                        <div style="background-color:#66ff66;color:#000000;padding: 3px;">Segment 2</div>
+                        {% if host.g_fdrawseg2 == None %}
+                          <a href="#" onclick="drawSegment({{host.id}},2)">Segment 2 Not initialized</a>
+                          </br>
+                          {% else %}
+                          <a href="#" onclick="hlightSegment({{host.id}},2)">Highlight S2</a>
+                        </br>
+                        {% endif %}
+                      {% endfor %}
+                    </div>
+
+                    <!-- <h3 id="sidepane">Segment IPCamera list</h3>
+
+                    <div id="scamlist" class="desc">
+
+                    </div> -->
+
+                  </div><!-- /col-lg-3 -->
+              </div><!--/row -->
+          </section>
+      </section>
+
+      <!--main content end-->
+      <!--footer start-->
+      <footer class="site-footer">
+          <div class="text-center">
+              2019 - Advance Communications
+              <a href="#" class="go-top">
+                  <i class="fa fa-angle-up"></i>
+              </a>
+          </div>
+      </footer>
+      <!--footer end-->
+  </section>
+
+    <!-- js placed at the end of the document so the pages load faster -->
+    <script src="{{url_for('static',filename='vendors/jquery/dist/jquery.min.js')}}"></script>
+    <script src="{{url_for('static',filename='vendors/bootstrap/dist/js/bootstrap.min.js')}}"></script>
+    <script src="{{url_for('static',filename='dashgum/jquery.scrollTo.min.js')}}"></script>
+    <script src="{{url_for('static',filename='dashgum/jquery.nicescroll.js')}}"></script>
+    <script src="{{url_for('static',filename='dashgum/jquery.sparkline.js')}}"></script>
+    <script src="{{url_for('static',filename='dashgum/jquery.dcjqaccordion.2.7.js')}}"></script>
+
+    <!--common script for all pages-->
+    <script src="{{url_for('static',filename='dashgum/common-scripts.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('static',filename='caman/dist/caman.full.min.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='flask_io/socket.io.min.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='initial/toastMessage.js')}}"></script>
+
+    <script type="text/javascript">
+    //AUXILIARY SEGMENT
+    document.getElementById("mainpanel").style.padding = "10px";
+    document.getElementById("sidepanel").style.padding = "10px 3px";
+    let const_strokewidth = 7;
+    function redrawImg(context,sock){
+      context.clearRect (0, 0, context.width, context.height); //clear all
+      context.drawImage(img, 100,5);
+    }
+
+    function drawLine(context,x, y, stopX, stopY,lwidth,stroke_color){
+      //ctx.clearRect (0, 0, c.width, c.height); //do not clear the canvas
+      context.lineWidth = lwidth;
+      context.strokeStyle = stroke_color;
+      context.beginPath();
+      context.moveTo(x, y);
+      context.lineTo(stopX, stopY);
+      context.closePath();
+      context.stroke();
+    }
+
+    function  getMousePos(canvas, evt) {
+      var rect = canvas.getBoundingClientRect(), // abs. size of element
+          scaleX = canvas.width / rect.width,    // relationship bitmap vs. element for X
+          scaleY = canvas.height / rect.height;  // relationship bitmap vs. element for Y
+      return {
+        x: (evt.clientX - rect.left) * scaleX,   // scale mouse coordinates after they have
+        y: (evt.clientY - rect.top) * scaleY     // been adjusted to be relative to element
+        }
+    }
+    </script>
+
+    <script type="text/javascript">
+    //MAIN SEGMENT
+
+      var c = document.getElementById("alertcanvas");
+      var ctx = c.getContext("2d");
+      var img = document.getElementById("alertmap");
+      redrawImg(ctx);
+
+      var namespace = '/zfence/edit'
+      var socket = io.connect('http://' + document.domain + ':' + location.port + namespace); //persistent
+      socket.on('connect', function() {
+          console.log("zfence editor connected...")
+          socket.emit('segmentrequest',{});
+      });
+
+      socket.on('segmentline_data', function(msg){
+        redrawImg(ctx);
+        msg.segmentlines.forEach(function proc(element, index){
+          drawLine(ctx,element.sx,element.sy,element.ex,element.ey,element.width,element.stroke)
+        });
+      })
+
+      //globals
+      var startX, startY;
+      var endX,endY;
+      var hostid, branch;
+
+      document.onkeypress = function (e) {
+          e = e || window.event;
+          // use e.keyCode
+          if(startX == undefined || startY == undefined || endX == undefined || endY == undefined){
+            toastNow({
+            message: 'Please draw a segment first!',
+            time: 800
+            })
+          }else{
+            if(e.keyCode == 13){ //13 is the ENTER keycode
+              //true
+              console.log("Registering new segment")
+              var json_send = {
+                "sx":startX,
+                "sy":startY,
+                "ex":endX,
+                "ey":endY,
+                "width":const_strokewidth,
+                "hostid":hostid,
+                "branch":branch
+              }
+              socket.emit('segmentdraw',json_send)
+            }else{
+              console.log("Erasing segment")
+              socket.emit('segmentrequest',{});
+            }
+            startX = undefined;
+            startY = undefined;
+            endX = undefined;
+            endY = undefined;
+          }
+      };
+
+        function drawSegment(a_hostid,segment){
+          hostid = a_hostid;
+          branch = segment;
+          toastNow({
+      	  message: 'Enabled Canvas for Segment Drawing',
+      	  time: 800
+      	  })
+          $("#alertcanvas").mousedown(function(event){
+              console.log("Mousedown bound trigger")
+              var realmpos = getMousePos(c,event);
+              startX = realmpos.x;
+              startY= realmpos.y;
+            }).mouseup(function(e){
+              var realmpos = getMousePos(c,e);
+              endX = realmpos.x;
+              endY = realmpos.y;
+              drawLine(ctx,startX, startY, endX, endY,const_strokewidth,"#000000");
+              $('#alertcanvas').unbind('mousedown');
+              $('#alertcanvas').unbind('mouseup');
+              toastNow({
+              message: 'Press Enter to register the segment, Anykey to erase',
+              time: 2000
+              })
+            });
+        }
+
+        function delSegment(a_hostid){
+          console.log("Deleting segments...")
+          socket.emit("delsegment",{"hostid":a_hostid})
+        }
+
+        function hlightSegment(a_hostid,branch){
+          socket.emit('segmentrequest',{"hostid":a_hostid,"branch":branch})
+        }
+    </script>
+
+  </body>
+</html>

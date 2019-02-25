@@ -34,7 +34,7 @@ class GSensorAlert(r.Base):
     #The following is for r-listing (resource listing)
     # the values in the rlist must be the same as the column var name
     rlist = {
-    "RPi ID":"__link__/rpi_id",
+    "Segment Host (RPi) ID":"__link__/rpi_id/Segment_Host/id:id",
     "Sensor Branch Number":"__link__/sensor_id/GSensor/id:branch_n",
     "Sensor Segment Number":"__link__/sensor_id/Gsensor/id:segment_n",
     "Wirecut ?":"wcut",
