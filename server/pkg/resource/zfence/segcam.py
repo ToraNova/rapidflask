@@ -25,6 +25,11 @@ class SegmentCamera(r.Base):
     description = r.Column(r.String(r.lim.MAX_DESCRIPTION_SIZE), nullable=True, unique=False)
     model_id = r.Column(r.String(r.lim.MAX_USERNAME_SIZE), nullable=False, unique=False)
 
+    trig_seghst = r.Column(r.Integer, nullable=True) #the seghost to trigger this camera
+    trig_branch = r.Column(r.Integer, nullable=True) #the branch to trigger the ipcamera
+
+    los_segment = r.Column(r.Integer, nullable=True, unique=True) #Line of sight
+
     param0 = r.Column(r.String(r.lim.MAX_UUPARAM_SIZE), nullable=True, unique=False)
     param1 = r.Column(r.String(r.lim.MAX_UUPARAM_SIZE), nullable=True, unique=False)
     # rlinking - do not have to change the variable name
@@ -36,7 +41,9 @@ class SegmentCamera(r.Base):
     "CameraID":"id",
     "IP address":"ip_address",
     "Description":"description",
-    "Model":"__link__/model_id/IPCamera_Model/id:model_name"
+    "Model":"__link__/model_id/IPCamera_Model/id:model_name",
+    "Triggered by seghost":"trig_seghst",
+    "On branch/segment":"trig_branch"
     #"Param0":"param0", # __link__ is a reserved keyword
     #"Param1":"param1"
     } #header:row data
@@ -55,9 +62,22 @@ class SegmentCamera(r.Base):
         self.ip_address = insert_list["ip_address"]
         self.description = insert_list["description"]
         self.model_id = insert_list["model_id"]
+        self.trig_seghst = r.checkNull(insert_list,"trig_seghst")
+        self.trig_branch = r.checkNull(insert_list,"trig_branch")
+        self.los_segment = r.checkNull(insert_list,"los_segment")
 
         self.param0 = r.checkNull(insert_list,"param0")
         self.param1 = r.checkNull(insert_list,"param1")
+
+    def default_add_action(self):
+        #This will be run when the table is added via r-add
+        try:
+            # may do some imports here
+            #from pkg.database.fsqlite import db_session
+            pass
+        except Exception as e:
+            #db_session.rollback()
+            raise ValueError(self.__tablename__,"default_add_action",str(e))
     ######################################################################################################
 
 #TODO : DEFINE ADD RES FORM
@@ -67,11 +87,14 @@ class AddForm(r.FlaskForm):
     # The names here after the rgen_ prefix must correspond to a var name in the respective model
     rgen_ip_address = r.StringField('IP Address',validators=[r.InputRequired(),r.Length(min=1,max=r.lim.MAX_IPADDR_SIZE)])
     rgen_description = r.TextAreaField('Description',validators=[r.Length(min=1,max=r.lim.MAX_DESCRIPTION_SIZE)])
+    rgensel_model_id = r.SelectField('Camera Model',choices=['0','NA'])
 
     #TODO: List select fields here, FIELDS MUST BE PREFIXED WITH rgensel_
     # The names here after the rgen_ prefix must correspond to a var name in the respective model
-    rgensel_model_id = r.SelectField('Camera Model',choices=['0','No Model'])
-    fKeylist = {"model_id":("IPCamera_Model","model_name")}
+    rgensel_trig_seghst = r.SelectField('Triggering RPi',choices=['0','NA'])
+    rgen_trig_branch = r.SelectField('Triggering Branch',choices=[('1','Segment (Branch) 1'),('2','Segment (Branch) 2')])
+
+    fKeylist = {"model_id":("IPCamera_Model","model_name"),"trig_seghst":("Segment_Host","id")}
 
 #TODO : DEFINE ADD RES FORM
 #EDIT FORM TEMPLATE
@@ -80,9 +103,11 @@ class EditForm(r.FlaskForm):
     # The names here after the rgen_ prefix must correspond to a var name in the respective model
     rgen_ip_address = r.StringField('IP Address',validators=[r.InputRequired(),r.Length(min=1,max=r.lim.MAX_IPADDR_SIZE)])
     rgen_description = r.TextAreaField('Description',validators=[r.Length(min=1,max=r.lim.MAX_DESCRIPTION_SIZE)])
+    rgensel_model_id = r.SelectField('Camera Model',choices=['0','NA'])
 
     #TODO: List select fields here, FIELDS MUST BE PREFIXED WITH rgensel_
     # The names here after the rgen_ prefix must correspond to a var name in the respective model
+    rgensel_trig_seghst = r.SelectField('Triggering RPi',choices=['0','NA'])
+    rgen_trig_branch = r.SelectField('Triggering Branch',choices=[('1','Segment (Branch) 1'),('2','Segment (Branch) 2')])
 
-    rgensel_model_id = r.SelectField('Camera Model',choices=['0','No Model'])
-    fKeylist = {"model_id":("IPCamera_Model","model_name")}
+    fKeylist = {"model_id":("IPCamera_Model","model_name"),"trig_seghst":("Segment_Host","id")}

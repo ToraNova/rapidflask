@@ -25,7 +25,6 @@ class IPCameraModel(r.Base):
     ffmpeg_url = r.Column(r.String(r.lim.MAX_DESCRIPTION_SIZE), nullable=False, unique=False)
     jpgcap_url = r.Column(r.String(r.lim.MAX_DESCRIPTION_SIZE), nullable=False, unique=False)
     description = r.Column(r.String(r.lim.MAX_DESCRIPTION_SIZE), nullable=True, unique=False)
-    fps = r.Column(r.Integer, nullable=False, unique=False)
 
     # rlinking - do not have to change the variable name
 
@@ -36,8 +35,7 @@ class IPCameraModel(r.Base):
     "Model Name":"model_name",
     "FFMPEG":"ffmpeg_url",
     "JPEG":"jpgcap_url",
-    "Description":"description",
-    "FPS":"fps"# __link__ is a reserved keyword
+    "Description":"description"# __link__ is a reserved keyword
     } #header:row data
     # use the __link__/ and __ route_id to 'link' route_id onto something
     # the linkage is defined under the rlink dictionary down there
@@ -60,9 +58,18 @@ class IPCameraModel(r.Base):
         self.model_name = insert_list["model_name"]
         self.ffmpeg_url = insert_list["ffmpeg_url"]
         self.jpgcap_url = insert_list["jpgcap_url"]
-        self.fps = insert_list["fps"]
 
         self.description = r.checkNull(insert_list,"description")
+
+    def default_add_action(self):
+        #This will be run when the table is added via r-add
+        try:
+            # may do some imports here
+            #from pkg.database.fsqlite import db_session
+            pass
+        except Exception as e:
+            #db_session.rollback()
+            raise ValueError(self.__tablename__,"default_add_action",str(e))
     ######################################################################################################
 
 #TODO : DEFINE ADD RES FORM
@@ -76,7 +83,7 @@ class AddForm(r.FlaskForm):
     validators=[r.InputRequired(),r.Length(min=1,max=r.lim.MAX_DESCRIPTION_SIZE)])
     rgen_jpgcap_url = r.StringField('JPEG CAPTURE URL',
     validators=[r.InputRequired(),r.Length(min=1,max=r.lim.MAX_DESCRIPTION_SIZE)])
-    rgen_fps = r.IntegerField('FPS',validators=[r.InputRequired()])
+
     rgen_description = r.TextAreaField('Description',
     validators=[r.Length(min=1,max=r.lim.MAX_DESCRIPTION_SIZE)])
 
@@ -89,7 +96,6 @@ class EditForm(r.FlaskForm):
     validators=[r.InputRequired(),r.Length(min=1,max=r.lim.MAX_DESCRIPTION_SIZE)])
     rgen_jpgcap_url = r.StringField('JPEG CAPTURE URL',
     validators=[r.InputRequired(),r.Length(min=1,max=r.lim.MAX_DESCRIPTION_SIZE)])
-    rgen_fps = r.IntegerField('FPS',
-    validators=[r.InputRequired()])
+
     rgen_description = r.TextAreaField('Description',
     validators=[r.Length(min=1,max=r.lim.MAX_DESCRIPTION_SIZE)])

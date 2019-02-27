@@ -21,12 +21,15 @@ class PRadarAlert(r.Base):
     # EDITABLE ZONE
     ######################################################################################################
     # TODO: DEFINE LIST OF COLUMNS
-    rpi_id = r.Column(r.Integer, nullable=True)
-    r_segnum = r.Column(r.Integer, nullable=False)
-    r_brhnum = r.Column(r.Integer, nullable=False)
+    branch_n = r.Column(r.Integer, nullable=False)
+    segment_n = r.Column(r.Integer, nullable=False)
+    radar_id = r.Column(r.Integer, nullable=False)
     time = r.Column(r.DateTime, nullable=False)
-    reason = r.Column(r.String(r.lim.MAX_USERNAME_SIZE), nullable=False, unique=False)
 
+    stepval = r.Column(r.Integer, nullable=False)
+    magnitude = r.Column(r.Integer,nullable=False)
+
+    reason = r.Column(r.String(r.lim.MAX_USERNAME_SIZE), nullable=True, unique=False)
     param0 = r.Column(r.String(r.lim.MAX_UUPARAM_SIZE), nullable=True, unique=False)
     param1 = r.Column(r.String(r.lim.MAX_UUPARAM_SIZE), nullable=True, unique=False)
     # rlinking - do not have to change the variable name
@@ -35,9 +38,9 @@ class PRadarAlert(r.Base):
     #The following is for r-listing (resource listing)
     # the values in the rlist must be the same as the column var name
     rlist = {
-    "Segment Host (RPi) ID":"__link__/rpi_id/Segment_Host/id:id",
-    "Branch Number":"r_brhnum",
-    "Radar Segment Number":"r_segnum",
+    "Segment Host (RPi) ID":"rpi_id",
+    "Radar Branch Number":"branch_n",
+    "Radar Segment Number":"segment_n",
     "Alert Timestamp":"time",
     "Alert Reason":"reason"
     # "Param0":"param0",
@@ -62,11 +65,14 @@ class PRadarAlert(r.Base):
     # TODO: CONSTRUCTOR DEFINES, PLEASE ADD IN ACCORDING TO COLUMNS
     # the key in the insert_list must be the same as the column var name
     def __init__(self,insert_list):
-        self.r_segnum = insert_list["r_segnum"]
-        self.r_brhnum = insert_list["r_brhnum"]
+        self.rpi_id = insert_list["rpi_id"]
+        self.segment_n = insert_list["segment_n"]
+        self.branch_n = insert_list["branch_n"]
         self.time = insert_list["time"]
-        self.reason = insert_list["reason"]
-        self.rpi_id = r.checkNull(insert_list,"rpi_id")
+        self.stepval = insert_list["stepval"]
+        self.magnitude = insert_list["magnitude"]
+
+        self.reason = r.checkNull(insert_list,"reason")
         self.param0 = r.checkNull(insert_list,"param0")
         self.param1 = r.checkNull(insert_list,"param1")
         #FOR nullable=True, use a the checkNull method

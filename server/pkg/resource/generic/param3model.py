@@ -52,4 +52,14 @@ class Param3(r.Base):
         self.param0 = insert_list["param0"]
         self.param1 = insert_list["param1"]
         self.param2 = insert_list["param2"]
+
+    def default_add_action(self):
+        #This will be run when the table is added via r-add
+        try:
+            # may do some imports here
+            #from pkg.database.fsqlite import db_session
+            pass
+        except Exception as e:
+            #db_session.rollback()
+            raise ValueError(self.__tablename__,"default_add_action",str(e))
     ######################################################################################################

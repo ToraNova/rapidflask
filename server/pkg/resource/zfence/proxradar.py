@@ -9,9 +9,9 @@
 
 from pkg.resource import res_import as r
 
-class GSensor(r.Base):
+class ProxRadar(r.Base):
     # PERMA : DO NOT CHANGE ANYTHING HERE UNLESS NECESSARY
-    __tablename__ = "GSensor"
+    __tablename__ = "ProxRadar"
     id = r.Column(r.Integer, primary_key=True)
     def __repr__(self):
     	return '<%r %r>' % (self.__tablename__,self.id)
@@ -21,10 +21,14 @@ class GSensor(r.Base):
     # EDITABLE ZONE
     ######################################################################################################
     # TODO: DEFINE LIST OF COLUMNS
+
     segment_n = r.Column(r.Integer, nullable=False)
     branch_n = r.Column(r.Integer,nullable=False)
     rpi_id= r.Column(r.Integer, nullable=False)
-    threshold = r.Column(r.Integer, nullable=False)
+
+    r_threshold = r.Column(r.Integer, nullable=False, unique=False) #for radar MAG (FFT control)
+    r_steptarhi = r.Column(r.Integer, nullable=False, unique=False)
+    r_steptarlo = r.Column(r.Integer, nullable=False, unique=False) #for radar step (FFT control)
 
     config_verify = r.Column(r.Boolean(),unique=False,nullable=False)
 
@@ -41,7 +45,9 @@ class GSensor(r.Base):
     "Segment Host(RPi) id":"rpi_id",
     "Branch":"branch_n",
     "Segment Number":"segment_n",
-    "G-Threshold":"threshold",
+    "Radar Threshold":"r_threshold",
+    "Radar Step Lower":"r_steptarlo",
+    "Radar Step High":"r_steptarhi",
     "Config Verified":"config_verify"
     # "Param0":"param0",
     # "Param1":"param1"
@@ -70,10 +76,12 @@ class GSensor(r.Base):
     def __init__(self,insert_list):
         self.segment_n = insert_list["segment_n"]
         self.branch_n = insert_list["branch_n"]
-        self.threshold = insert_list["threshold"]
+        self.r_threshold = insert_list["r_threshold"]
+        self.r_steptarlo = insert_list["r_steptarlo"]
+        self.r_steptarhi = insert_list["r_steptarhi"]
         self.config_verify = insert_list["config_verify"]
-        self.rpi_id = insert_list["rpi_id"]
         #FOR nullable=True, use a the checkNull method
         #self.route_id = r.checkNull(insert_list,"route_id")
+        self.rpi_id = r.checkNull(insert_list,"rpi_id")
         self.param0 = r.checkNull(insert_list,"param0")
         self.param1 = r.checkNull(insert_list,"param1")

@@ -55,8 +55,11 @@ def radd(tablename):
 			#try to add
 			target_add = res_model(d_point)
 			sq.db_session.add(target_add)
-
 			sq.db_session.commit()
+			if(target_add.default_add_action != None):
+				#perform the default_add_action
+				target_add.default_add_action()
+
 			return render_template("standard/message.html",
                 display_title="Success",
                 display_message="Added resource to system.")

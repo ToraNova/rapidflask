@@ -6,7 +6,7 @@
     <meta name="description" content="">
     <meta name="keyword" content="Dashboard, Bootstrap, Admin, Template, Theme, Responsive, Fluid, Retina">
 
-    <title>ZFENCE Alert Dashboard (Viewing Mode)</title>
+    <title>ZFENCE Alert Dashboard (Edit mode)</title>
 
     <!-- Bootstrap core CSS/ FontAwesome and dashgum css styles -->
     <link href="{{url_for('static',filename='vendors/bootstrap/dist/css/bootstrap.min.css')}}" rel="stylesheet">
@@ -42,13 +42,20 @@
                       <li><a  href="{{url_for('home.home',username=current_user.username)}}">Admin Dashboard
                         <i class="fa fa-home"></i></a></li>
                     <!-- inbox dropdown end -->
+                    <li><a  href="{{url_for('maptrack.zfence')}}">Alert Dashboard
+                      <i class="fa fa-bell"></i></a></li>
                 </ul>
                 <!--  notification end -->
             </div>
+
             <div class="top-menu">
             	<!-- <ul class="nav pull-right top-menu">
                     <li><a class="logout" href="login.html">Logout</a></li>
             	</ul> -->
+              <ul class="nav top-menu">
+                  <!-- alert info start-->
+                  <!-- inbox dropdown end -->
+              </ul>
             </div>
         </header>
       <!--header end-->
@@ -62,27 +69,57 @@
               <!-- sidebar menu start-->
               <ul class="sidebar-menu" id="nav-accordion">
 
-                  <!-- <li class="mt">
-                      <a class="active" href="#">
-                          <i class="fa fa-dashboard"></i>
-                          <span>Dashboard</span>
+                  <li class="sub-menu">
+                      <a href="#" onclick="regen_rpane(1,-1)">
+                          <i class="fa fa-circle-o"></i>
+                          <span style="color:black">Segment Host Editing</span>
                       </a>
                   </li>
 
                   <li class="sub-menu">
-                      <a href="javascript:;" >
+                      <a href="#" onclick="regen_rpane(2,-1)">
+                          <i class="fa fa-circle-o"></i>
+                          <span style="color:black">Segment Camera Editing</span>
+                      </a>
+                  </li>
+
+                  <!-- <li class="mt">
+                      <a class="active" href="#" onclick="regen_rpane(3)">
+                          <i class="fa fa-circle-o"></i>
+                          <span style="color:black">GSensor Thresholds</span>
+                      </a>
+                  </li> -->
+
+                  <!-- <li class="sub-menu">
+                      <a href="#" >
                           <i class="fa fa-cogs"></i>
                           <span>Components</span>
                       </a>
                       <ul class="sub">
-                          <li><a  href="calendar.html">Calendar</a></li>
-                          <li><a  href="gallery.html">Gallery</a></li>
-                          <li><a  href="todo_list.html">Todo List</a></li>
+                          <li><a  href="#">Calendar</a></li>
+                          <li><a  href="#">Gallery</a></li>
+                          <li><a  href="#">Todo List</a></li>
                       </ul>
                   </li> -->
 
+                  <li class="sub-menu">
+                      <a href="#" >
+                          <i class="fa fa-cogs"></i>
+                          <span style="color:black">GSensor Thresholds</span>
+                      </a>
+                      <ul class="sub">
+                      </br>
+                        <li>
+                        <select>
+                          {% for h in list %}
+                          <option value="{{h.id}}" onclick="regen_rpane(3,{{h.id}})">{{h.id}} : {{h.ip_address}}</option>
+                          {% endfor %}
+                        </select>
+                      </ul>
+                  </li>
+
               </ul>
-              <!-- sidebar menu end-->
+
           </div>
       </aside>
       <!--sidebar end-->
@@ -118,15 +155,16 @@
       RIGHT SIDEBAR CONTENT
       *********************************************************************************************************************************************************** -->
                   <!-- <div class="col-lg-3 ds"> -->
-                  <div class="col-lg-3 main-chart" >
+                  <div class="col-lg-3 main-chart" id="sidepanel" >
                     <!--COMPLETED ACTIONS DONUTS CHART-->
-						        <h3 id="sidepanel">Segment Host (RPi unit) list</h3>
-
-                    <div id="shostlist" class="desc">
+						        <!-- <h3>Segment Host (RPi unit) list</h3>
+                    <div class="desc">
+                      <div class="white-panel">
                       {% for host in hostlist %}
-                        <h7>{{host.id}} : {{host.ip_address}}</h7></br>
+                        <h7 style="color:#000000">{{host.id}} : {{host.ip_address}}</h7></br>
                         {% if host.g_fdrawseg1 != None and host.g_fdrawseg2 != None %}
                           <a href="#" onclick="hlightSegment({{host.id}},3)">HighLight Segments</a>
+                          <h7> | </h7>
                           <a href="#" onclick="delSegment({{host.id}})">Clear Both Segments</a>
                           </br>
                         {% endif %}
@@ -147,12 +185,6 @@
                         </br>
                         {% endif %}
                       {% endfor %}
-                    </div>
-
-                    <!-- <h3 id="sidepane">Segment IPCamera list</h3>
-
-                    <div id="scamlist" class="desc">
-
                     </div> -->
 
                   </div><!-- /col-lg-3 -->
@@ -192,6 +224,14 @@
     document.getElementById("mainpanel").style.padding = "10px";
     document.getElementById("sidepanel").style.padding = "10px 3px";
     let const_strokewidth = 7;
+
+    function removeAllChild(id){
+      var targetElem = document.getElementById(id);
+      while (targetElem.firstChild) {
+          targetElem.removeChild(targetElem.firstChild);
+      }
+    }
+
     function redrawImg(context,sock){
       context.clearRect (0, 0, context.width, context.height); //clear all
       context.drawImage(img, 100,5);
@@ -217,10 +257,45 @@
         y: (evt.clientY - rect.top) * scaleY     // been adjusted to be relative to element
         }
     }
+
+    function drawSegment(a_id,segment){
+      id = a_id;
+      branch = segment;
+      if(type==2){
+        branch = undefined;
+      }
+      toastNow({
+      message: 'Enabled Canvas for Segment Drawing',
+      time: 800
+      })
+      $("#alertcanvas").mousedown(function(event){
+          console.log("Mousedown bound trigger")
+          var realmpos = getMousePos(c,event);
+          startX = realmpos.x;
+          startY= realmpos.y;
+        }).mouseup(function(e){
+          var realmpos = getMousePos(c,e);
+          endX = realmpos.x;
+          endY = realmpos.y;
+          drawLine(ctx,startX, startY, endX, endY,const_strokewidth,"#000000");
+          $('#alertcanvas').unbind('mousedown');
+          $('#alertcanvas').unbind('mouseup');
+          toastNow({
+          message: 'Press Enter to register the segment, Anykey to erase',
+          time: 2000
+          })
+        });
+    }
     </script>
 
     <script type="text/javascript">
-    //MAIN SEGMENT
+    //MAIN SEGMENT #USING INT ENUM TO TRACK IF SHOST(1) or SCAM(2)
+
+      //globals
+      var startX, startY;
+      var endX,endY;
+      var id, branch;
+      var type;
 
       var c = document.getElementById("alertcanvas");
       var ctx = c.getContext("2d");
@@ -241,78 +316,129 @@
         });
       })
 
-      //globals
-      var startX, startY;
-      var endX,endY;
-      var hostid, branch;
+      function regen_rpane(tar,id){
+        type = tar;
+        socket.emit("panelupdate",{"type":type,"id":id});
+      }
 
-      document.onkeypress = function (e) {
-          e = e || window.event;
-          // use e.keyCode
-          if(startX == undefined || startY == undefined || endX == undefined || endY == undefined){
-            toastNow({
-            message: 'Please draw a segment first!',
-            time: 800
-            })
-          }else{
-            if(e.keyCode == 13){ //13 is the ENTER keycode
-              //true
-              console.log("Registering new segment")
-              var json_send = {
-                "sx":startX,
-                "sy":startY,
-                "ex":endX,
-                "ey":endY,
-                "width":const_strokewidth,
-                "hostid":hostid,
-                "branch":branch
-              }
-              socket.emit('segmentdraw',json_send)
+      socket.on('remit',function(msg){
+        setTimeout(function() {
+            socket.emit(msg.target,msg);
+        }, msg.time * 1000);
+      });
+
+      socket.on('regen_panel', function(msg){
+        removeAllChild("sidepanel"); //remove all element
+        if(msg.type == 1){
+          $("#sidepanel").append("<h3>Segment Host (RPi unit) list</h3><div class='desc'>");
+          msg.panelist.forEach(function proc(element, index){
+            $("#sidepanel").append("<h7 style='color:#000000'>"+element.id+ " : " + element.ip + "</h7></br>");
+            if(element.seg1 != undefined && element.seg2 != undefined){
+              $("#sidepanel").append("<a href='#' onclick='hlightSegment("+element.id+
+              ",3)'>HighLight Segments</a><h7> | </h7><a href='#' onclick='delSegment("+element.id+")'>Clear Both Segments</a></br>");
             }else{
-              console.log("Erasing segment")
-              socket.emit('segmentrequest',{});
+              $("#sidepanel").append("<div>Segment host not fully initialized</div>");
             }
-            startX = undefined;
-            startY = undefined;
-            endX = undefined;
-            endY = undefined;
+            $("#sidepanel").append("<div style='background-color:#66ff66;color:#000000;padding:3px;'>Segment 1</div>");
+            if(element.seg1 == undefined){
+              $("#sidepanel").append("<a href='#' onclick='drawSegment("+element.id+",1)'>Segment 1 Not initialized</a></br>");
+            }else{
+              $("#sidepanel").append("<a href='#' onclick='hlightSegment("+element.id+",1)'>Highlight S1</a></br>");
+            }
+            $("#sidepanel").append("<div style='background-color:#3366ff;color:#000000;padding:3px;'>Segment 2</div>");
+            if(element.seg2 == undefined){
+              $("#sidepanel").append("<a href='#' onclick='drawSegment("+element.id+",2)'>Segment 2 Not initialized</a></br>");
+            }else{
+              $("#sidepanel").append("<a href='#' onclick='hlightSegment("+element.id+",2)'>Highlight S2</a></br>");
+            }
+          });
+        }else if(msg.type == 2){
+          $("#sidepanel").append("<h3>Segment IP Camera list</h3><div class='desc'>");
+          msg.panelist.forEach(function proc(element, index){
+            $("#sidepanel").append("<h7 style='background-color:#ff0066;color:#000000;padding:3px'>"+element.id+ " : " + element.ip + "</h7></br>");
+            if(element.seg1 != undefined){
+              $("#sidepanel").append("<a href='#' onclick='hlightSegment("+element.id+
+              ",3)'>HighLight Line of Sight (LoS)</a><h7> | </h7><a href='#' onclick='delSegment("+element.id+")'>Clear LoS Indication</a></br>");
+            }else{
+              $("#sidepanel").append("<a href='#' onclick='drawSegment("+element.id+",1)'>LoS indicator not initialized</a></br>");
+            }
+          });
+
+        }else if(msg.type == 3){
+          $("#sidepanel").append("<h3>GSensor Lists for SHOST"+msg.id+"</h3><div class='desc'>");
+          msg.panelist.forEach(function proc(element, index){
+            $("#sidepanel").append("<h7 style='background-color:#999966;color:#000000;padding:3px'>Branch "+element.bnum+ " :  " + element.snum +"</h7>");
+            if(element.cverify == true){
+              $("#sidepanel").append("<h7> </h7><h7 style='background-color:#00ff00;color:#000000;padding:3px'>verified OK.</h7>");
+            }else{
+              $("#sidepanel").append("<h7> </h7><h7 style='background-color:#ff0000;color:#000000;padding:3px'>not verified</h7>");
+            }
+            $("#sidepanel").append("<h7> </h7><a href='#' onclick='editThreshold("+msg.id+','+element.bnum+','+element.snum+','+element.threshold+")'>Threshold  @  "+element.threshold+"</a></br></br>");
+          });
+          $("#sidepanel").append("</br></br><a href='#' onclick='editThreshold("+msg.id+",1,0,1)'>Uniform Threshold for B1</a></br>");
+          $("#sidepanel").append("<a href='#' onclick='editThreshold("+msg.id+",2,0,1)'>Uniform Threshold for B2</a>");
+        }
+        $("#sidepanel").append("</div>")
+      });
+
+        function editThreshold(hid,bid,sid,def){
+          var threshold = window.prompt("Please enter a threshold (min ..1 --- 61... max)",def);
+          var ith = parseInt(threshold)
+          if(ith < 1){
+            ith = 1;
+          }else if(ith > 61){
+            ith = 61;
           }
-      };
-
-        function drawSegment(a_hostid,segment){
-          hostid = a_hostid;
-          branch = segment;
-          toastNow({
-      	  message: 'Enabled Canvas for Segment Drawing',
-      	  time: 800
-      	  })
-          $("#alertcanvas").mousedown(function(event){
-              console.log("Mousedown bound trigger")
-              var realmpos = getMousePos(c,event);
-              startX = realmpos.x;
-              startY= realmpos.y;
-            }).mouseup(function(e){
-              var realmpos = getMousePos(c,e);
-              endX = realmpos.x;
-              endY = realmpos.y;
-              drawLine(ctx,startX, startY, endX, endY,const_strokewidth,"#000000");
-              $('#alertcanvas').unbind('mousedown');
-              $('#alertcanvas').unbind('mouseup');
-              toastNow({
-              message: 'Press Enter to register the segment, Anykey to erase',
-              time: 2000
-              })
-            });
+          socket.emit('thresholdupdate0',{"hid":hid,"sid":sid,"bid":bid,"ith":ith})
         }
 
-        function delSegment(a_hostid){
+        function delSegment(id){
           console.log("Deleting segments...")
-          socket.emit("delsegment",{"hostid":a_hostid})
+          socket.emit("delsegment",{"type":type,"id":id})
+          socket.emit("panelupdate",{"type":type});
+          socket.emit("segmentrequest",{})
         }
 
-        function hlightSegment(a_hostid,branch){
-          socket.emit('segmentrequest',{"hostid":a_hostid,"branch":branch})
+        function hlightSegment(id,branch){
+          socket.emit('segmentrequest',{"type":type,"id":id,"branch":branch})
         }
+
+        document.onkeypress = function (e) {
+            e = e || window.event;
+            // use e.keyCode
+            if(startX == undefined || startY == undefined || endX == undefined || endY == undefined){
+              toastNow({
+              message: 'Please draw a segment first!',
+              time: 800
+              })
+            }else{
+              if(e.keyCode == 13){ //13 is the ENTER keycode
+                //true
+                console.log("Registering new segment")
+                var json_send = {
+                  "type":type,
+                  "sx":startX,
+                  "sy":startY,
+                  "ex":endX,
+                  "ey":endY,
+                  "width":const_strokewidth,
+                  "id":id,
+                  "branch":branch
+                }
+                socket.emit('segmentdraw',json_send)
+                socket.emit("panelupdate",{"type":type});
+              }else{
+                console.log("Erasing segment")
+                socket.emit('segmentrequest',{});
+              }
+              startX = undefined;
+              startY = undefined;
+              endX = undefined;
+              endY = undefined;
+              id = undefined;
+              branch = undefined;
+            }
+        };
     </script>
 
   </body>

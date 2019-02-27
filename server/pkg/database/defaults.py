@@ -25,7 +25,7 @@ def default_add():
     default_password = "sha256$mDDYIdTb$9cebe876c8e8fea365c8116a49cc0376ddbb14e03d5043950eb8d8978523fea5"
     default_user = System_User(default_username,default_password,1)
     db_session.add(default_user)
-
+    
     #adding default userType - admin, seer
     default_utypelist = [["admin",0],["seer",1]]
     for utype in default_utypelist:

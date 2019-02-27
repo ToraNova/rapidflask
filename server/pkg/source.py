@@ -32,6 +32,7 @@ def server(config=None):
 
 	from pkg.interface import socketio #socket io import
 	from pkg.interface.mapping import mapio
+	from pkg.interface.API.zfence.mqtsockio import Zfence
 
 	from pkg.interface import home
 	from pkg.interface.mapping import debugging,trackdir
@@ -76,6 +77,9 @@ def server(config=None):
 	out = SocketIO(out_nonsock)
 	out.on_namespace(socketio.SystemUtilNamespace('/sysutil'))
 	#out.on_namespace(mapio.MapPointSocket('/geopoint'))
-	out.on_namespace(mapio.Zfence('/zfence/edit'))
+	uspace = Zfence('/zfence')
+	uspace.startMQclient(True)
+	out.on_namespace(Zfence('/zfence/edit'))
+	out.on_namespace(uspace)
 
 	return out,out_nonsock

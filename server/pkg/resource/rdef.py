@@ -4,6 +4,8 @@
 # the current deployment. It is meant to be dynamic
 # refer to readme.txt before editing this file.
 # introduced in u3
+# as of u5, this file is imported and the database
+# will be created from the imports here.
 # ToraNova
 #--------------------------------------------------
 
@@ -26,7 +28,8 @@ rlin_nullk = "-1"
 from pkg.resource.geores import geopoint,georoute
 
 # ZFENCING PROJECT
-from pkg.resource.zfence import seghost, segcam, gsensor
+from pkg.resource.zfence import seghost, segcam
+from pkg.resource.zfence import gsensor, proxradar
 from pkg.resource.zfence import radar_alert, gsensor_alert
 
 # Generic models
@@ -39,17 +42,6 @@ from pkg.resource.generic import canvas_circle, canvas_line
 ##########################################################
 
 dist_resources = {
-    "Canvas_Line":[
-    canvas_line.CanvasLine,
-    None,
-    None
-    ],
-    "Canvas_Circle":[
-    canvas_circle.CanvasCircle,
-    None,
-    None
-    ]
-    ,
     "IPCamera_Model":[
     ipcam_model.IPCameraModel,
     ipcam_model.AddForm,
@@ -65,12 +57,7 @@ dist_resources = {
     geopoint.AddForm,
     geopoint.EditForm
     ],
-    "GSensor":[
-    gsensor.GSensor,
-    None,
-    None
-    ],
-    "RPi":[
+    "Segment_Host":[
     seghost.SegmentHost,
     seghost.AddForm,
     seghost.EditForm
@@ -79,6 +66,11 @@ dist_resources = {
     segcam.SegmentCamera,
     segcam.AddForm,
     segcam.EditForm
+    ],
+    "GSensor":[
+    gsensor.GSensor,
+    None,
+    None
     ],
     "GSensor_Alert":[
     gsensor_alert.GSensorAlert,

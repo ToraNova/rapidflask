@@ -41,14 +41,18 @@
                     <!-- alert info start-->
                     <li><a  href="{{url_for('home.home',username=current_user.username)}}">Admin Dashboard
                       <i class="fa fa-home"></i></a></li>
-                    <li id="header_inbox_bar" class="dropdown">
+
+                      <li><a  href="{{url_for('maptrack.zfence_edit')}}">Edit Alert System
+                        <i class="fa fa-bell"></i></a></li>
+                    <!-- <li id="header_inbox_bar" class="dropdown">
                         <a data-toggle="dropdown" class="dropdown-toggle" href="index.html#">
                             <i class="fa fa-bell"></i>
                             <span class="badge bg-theme">5</span>
                         </a>
+
                         <ul class="dropdown-menu extended inbox">
                             <div class="notify-arrow notify-arrow-green"></div>
-                            <!-- <li>
+                             <li>
                                 <p class="green">You have 5 new messages</p>
                             </li> -->
                             <!-- <li>
@@ -62,12 +66,12 @@
                                         Hi mate, how is everything?
                                     </span>
                                 </a>
-                            </li> -->
+                            </li>
                             <li>
                                 <a href="#">See all alerts</a>
                             </li>
                         </ul>
-                    </li>
+                    </li> -->
                     <!-- inbox dropdown end -->
                 </ul>
                 <!--  notification end -->
@@ -94,9 +98,9 @@
                           <i class="fa fa-dashboard"></i>
                           <span>Dashboard</span>
                       </a>
-                  </li>
+                  </li> -->
 
-                  <li class="sub-menu">
+                  <!-- <li class="sub-menu">
                       <a href="javascript:;" >
                           <i class="fa fa-cogs"></i>
                           <span>Components</span>
@@ -145,18 +149,22 @@
       RIGHT SIDEBAR CONTENT
       *********************************************************************************************************************************************************** -->
                   <!-- <div class="col-lg-3 ds"> -->
-                  <div class="col-lg-3 main-chart" >
+                  <div id="sidepanel" class="col-lg-3 main-chart" >
                     <!--COMPLETED ACTIONS DONUTS CHART-->
-						        <h3 id="sidepanel">Segment Camera Feed</h3>
+						        <h3>Segment Camera Feed</h3>
 
                     <div class="desc">
+                        <h7>No alert selected...</h7>
+                    </div>
+
+                    <!-- <div class="desc">
                       <h5>Camera Stream</h5>
                       <IFRAME src="http://admin:mMurobo3@10.100.19.106/video.cgi?resolution=32&rate=30" align="center"
                       width="320" height="240" scrolling="no" frameborder=no marginheight="2px" marginwidth="2px"></IFRAME>
                       <p></p>
                       <IFRAME src="http://admin:mMurobo3@10.100.19.115/video.cgi?resolution=32&rate=30" align="center"
                       width="320" height="240" scrolling="no" frameborder=no marginheight="2px" marginwidth="2px"></IFRAME>
-                    </div>
+                    </div> -->
 
                   </div><!-- /col-lg-3 -->
               </div><!--/row -->
@@ -190,52 +198,339 @@
     <script type="text/javascript" src="{{url_for('static', filename='flask_io/socket.io.min.js')}}"></script>
 
     <script type="text/javascript">
-       document.getElementById("mainpanel").style.padding = "10px";
-       document.getElementById("sidepanel").style.padding = "10px 3px";
+    //AUXILIARY SEGMENT
+    document.getElementById("mainpanel").style.padding = "10px";
+    document.getElementById("sidepanel").style.padding = "10px 3px";
+    let const_strokewidth = 7;
 
-      var c = document.getElementById("alertcanvas");
-      var ctx = c.getContext("2d");
-      var img = document.getElementById("alertmap");
-      ctx.drawImage(img, 100,5);
-      console.log("AlertMap Image Draw");
-
-      var startX, startY;
-      function drawLine(x, y, stopX, stopY){
-          //ctx.clearRect (0, 0, c.width, c.height); //do not clear the canvas
-          ctx.lineWidth = 10;
-          ctx.beginPath();
-          ctx.moveTo(x, y);
-          ctx.lineTo(stopX, stopY);
-          ctx.closePath();
-          ctx.stroke();
-          // calculate length
+    function removeAllChild(id){
+      var targetElem = document.getElementById(id);
+      while (targetElem.firstChild) {
+          targetElem.removeChild(targetElem.firstChild);
       }
+    }
 
-      function  getMousePos(canvas, evt) {
-        var rect = canvas.getBoundingClientRect(), // abs. size of element
-            scaleX = canvas.width / rect.width,    // relationship bitmap vs. element for X
-            scaleY = canvas.height / rect.height;  // relationship bitmap vs. element for Y
+    function redrawImg(context,sock){
+      context.clearRect (0, 0, context.width, context.height); //clear all
+      context.drawImage(img, 100,5);
+    }
 
-        return {
-          x: (evt.clientX - rect.left) * scaleX,   // scale mouse coordinates after they have
-          y: (evt.clientY - rect.top) * scaleY     // been adjusted to be relative to element
-          }
+    function drawLine(context,x, y, stopX, stopY,lwidth,stroke_color){
+      //ctx.clearRect (0, 0, c.width, c.height); //do not clear the canvas
+      context.lineWidth = lwidth;
+      context.strokeStyle = stroke_color;
+      context.beginPath();
+      context.moveTo(x, y);
+      context.lineTo(stopX, stopY);
+      context.closePath();
+      context.stroke();
+    }
+
+    function  getMousePos(canvas, evt) {
+      var rect = canvas.getBoundingClientRect(), // abs. size of element
+          scaleX = canvas.width / rect.width,    // relationship bitmap vs. element for X
+          scaleY = canvas.height / rect.height;  // relationship bitmap vs. element for Y
+      return {
+        x: (evt.clientX - rect.left) * scaleX,   // scale mouse coordinates after they have
+        y: (evt.clientY - rect.top) * scaleY     // been adjusted to be relative to element
+        }
+    }
+
+    function drawSegment(a_id,segment){
+      id = a_id;
+      branch = segment;
+      if(type==2){
+        branch = undefined;
       }
-
+      toastNow({
+      message: 'Enabled Canvas for Segment Drawing',
+      time: 800
+      })
       $("#alertcanvas").mousedown(function(event){
+          console.log("Mousedown bound trigger")
           var realmpos = getMousePos(c,event);
           startX = realmpos.x;
           startY= realmpos.y;
         }).mouseup(function(e){
           var realmpos = getMousePos(c,e);
-          drawLine(startX, startY, realmpos.x, realmpos.y);
+          endX = realmpos.x;
+          endY = realmpos.y;
+          drawLine(ctx,startX, startY, endX, endY,const_strokewidth,"#000000");
+          $('#alertcanvas').unbind('mousedown');
+          $('#alertcanvas').unbind('mouseup');
+          toastNow({
+          message: 'Press Enter to register the segment, Anykey to erase',
+          time: 2000
+          })
         });
+    }
 
+    function findItem(itemid,array){
+      //checks if the id is in the array by comparing
+      //with the IDs of the elements in the array
+      var out = -1;
+      array.forEach(function proc(element, index){
+        if(element.id == itemid){
+          out = index;
+          return;
+        }
+      });
+      return out;
+    }
     </script>
 
     <script type="text/javascript">
+    //MAIN SEGMENT #USING INT ENUM TO TRACK IF SHOST(1) or SCAM(2)
+
+      var target_alert;
+      var hlblink = false; //flag for blinking on highlight (stroke)
+      var noblink = false; //set to true to stop blinking
+
+      var reasonlist = [
+        "Intruder Alert",
+        "False Alarm - Critters",
+        "False Alarm - Wind",
+        "Accident",
+        "Testing use"
+      ]
+
+      var c = document.getElementById("alertcanvas");
+      var ctx = c.getContext("2d");
+      var img = document.getElementById("alertmap");
+      redrawImg(ctx);
+      var alertPane = new Array();
+      var hostPane = new Array();
+
+      setInterval(timercallback, 1000);
+      setInterval(blinkcallback, 500); //blinking callback
+      setInterval(soundcallback, 2500);
+
+      var namespace = '/zfence'
+      var socket = io.connect('http://' + document.domain + ':' + location.port + namespace); //persistent
+      socket.on('connect', function() {
+          console.log("zfence connected...")
+          socket.emit('segmentrequest',{});
+      });
+
+      function timercallback(){
+        //ask the socketserver for any alerts
+        socket.emit("alertquery");
+      }
+
+      function soundcallback(){
+        if(noblink){
+
+        }else{
+          if(alertPane.length > 0){
+            var audio = new Audio('{{url_for('static',filename='mp3/short01.mp3')}}');
+            //var audio = new Audio('/home/cjason/Desktop/minimal_flask/server/pkg/static/short01.mp3')
+            audio.play();
+          }
+        }
+
+      }
+
+      function blinkcallback(){
+        if(noblink){
+
+        }else{
+          if(hlblink){
+            var alerthosts = new Array();
+            alertPane.forEach(function proc(element,index){
+              //send the hostIDs of the alerts
+              if(checkuid(element,alerthosts)){
+                //need to add onto alerthosts
+                alerthosts.push({"uid":createuid(element),"hostid":element.hostid,"branch":element.branch});
+              }
+            });
+            socket.emit('segmentrequest',{"type":4,"uid":alerthosts});
+          }else{
+            socket.emit('segmentrequest',{});
+          }
+        }
+        hlblink = !hlblink;
+      }
+
+      function createuid(alert){
+        //create uid for a particular alert type (hostid-branch)
+        return alert.hostid+'-'+alert.branch;
+      }
+
+      function checkuid(alert,array){
+        //check if uid is in the alertpane
+        var out = true;
+        array.forEach(function proc(element,index){
+          if(element.uid == createuid(alert)){
+            out = false;
+          }
+        });
+        return out; //cannot find
+      }
+
+      socket.on('segmentline_data', function(msg){
+        redrawImg(ctx);
+        msg.segmentlines.forEach(function proc(element, index){
+          drawLine(ctx,element.sx,element.sy,element.ex,element.ey,element.width,element.stroke)
+        });
+      })
+
+      function handle(hostid,alertid,branch){
+        //get camera feed
+        target_alert = alertid;
+        noblink = true;
+        socket.emit('segmentrequest',{"type":5,"id":hostid,"branch":branch});
+        socket.emit('alerthandle',{"hostid":hostid,"alertid":alertid});
+      }
+
+      socket.on('alertpanel', function(msg){
+        removeAllChild("sidepanel"); //remove all element
+        $("#sidepanel").append("<h3>Segment Alert Information</h3><div class='desc'>");
+        $("#sidepanel").append("<h5 style='background-color:#3366cc;color:#000000'>Camera Stream Branch 1</h5>");
+        if(msg.furl1 != undefined && msg.ip1 != undefined){
+
+          $("#sidepanel").append("<IFRAME src='http://admin:mMurobo3@"+msg.ip1+'/'+msg.furl1+"' align='center'"+
+          "width='320' height='240' scrolling='no' frameborder='no' marginheight='2px' marginwidth='2px'></IFRAME></br>");
+        }else{
+          $("#sidepanel").append("<h6>No triggering camera for branch 1</h6>");
+        }
+        $("#sidepanel").append("<h5 style='background-color:#00cc99;color:#000000'>Camera Stream Branch 2</h5>");
+        if(msg.furl2 != undefined && msg.ip2 != undefined){
+          $("#sidepanel").append("<IFRAME src='http://admin:mMurobo3@"+msg.ip2+'/'+msg.furl2+"' align='center'"+
+          "width='320' height='240' scrolling='no' frameborder='no' marginheight='2px' marginwidth='2px'></IFRAME></br>");
+        }else{
+          $("#sidepanel").append("<h6>No triggering camera for branch 2</h6>");
+        }
+        var find = findItem(target_alert,alertPane);
+        if(find < 0){
+          $("#sidepanel").append("<h5>Error has occurred.</h5>");
+        }else{
+          $("#sidepanel").append("<h5>Alert ID #"+target_alert+" type:"+"</h5>");
+          $("#sidepanel").append("<p>Type : "+alertPane[find].atype+"</p>");
+          $("#sidepanel").append("<p>Alert Time :"+alertPane[find].atime+"</p>");
+          $("#sidepanel").append("<p>Origin Host : "+alertPane[find].hostid+"</p>");
+          $("#sidepanel").append("<p>Branch : "+alertPane[find].branch+"</p>");
+          $("#sidepanel").append("<p>Seg. Number : "+alertPane[find].segment+"</p>");
+          $("#sidepanel").append("<p>Magnitude sm: "+alertPane[find].magnitude+"</p>");
+          $("#sidepanel").append("<select id='reason_sel'></select>");
+          reasonlist.forEach(function proc(element,index){
+            $("#reason_sel").append("<option val='"+element+"'>"+element+"</option>");
+          });
+          $("#sidepanel").append("</br>");
+          $("#sidepanel").append("<button onclick='reason_alert("+find+",false)'>Submit to Alert database</button>");
+          $("#sidepanel").append("<button onclick='close_details()'>Close alert details</button>");
+        }
+        $("#sidepanel").append("</div>");
+      });
+
+      function close_details(){
+        noblink = false; //re-enable blinking
+        target_alert = undefined;
+        removeAllChild("sidepanel");
+      }
+
+      function reason_alert(aid,bulk){
+        var ser;
+        var tmphostid = alertPane[aid].hostid;
+        if(bulk){
+          ser = "Bulk clearing";
+        }else{
+          ser = document.getElementById("reason_sel").value;
+        }
+        socket.emit("reasonregister",{"reason":ser,
+        "alertid":target_alert});
+
+        document.getElementById("abox"+target_alert).outerHTML = ""; //delete the box
+        alertPane.splice(aid,1);
+        hostind = findItem(tmphostid,hostPane);
+        hostPane[hostind].count -= 1;
+        if(hostPane[hostind].count < 1){
+          hostPane.splice(hostind,1);
+          document.getElementById("mainpane"+tmphostid).outerHTML = "";
+        }
+        target_alert = undefined;
+        removeAllChild("sidepanel");
+      }
+
+      function bulk(hostid){
+        var index = alertPane.length - 1
+        while (index >= 0) {
+          if(alertPane[index].hostid == hostid){
+            //remove the alert
+            target_alert=alertPane[index].id;
+            reason_alert(index,true);
+          }
+          index -= 1;
+        }
+      }
+
+      function addAlertToHostPane(alert){
+        // $("#hostpane"+alert.hostid).append("<li><a href='#'>"+ alert.atype + ' ['+
+        // alert.atime+ '] branch:'+alert.branch+' #'+alert.segment + ' mag@' + alert.magnitude + '</a></li>');
+        $("#hostpane"+alert.hostid).append("<li id='abox"+alert.id+"'><a href='#'  onclick='handle("+alert.hostid+','+
+        alert.id+','+alert.branch+")' style='color:#000000;padding:4px;font-size:14px'>b:"
+        +alert.branch+'#'+alert.segment + '[' + alert.magnitude + ']</a></li>');
+        alertPane.push({"id":alert.id,"atime":alert.atime,"branch":alert.branch,
+        "segment":alert.segment,"magnitude":alert.magnitude,"atype":alert.atype,"hostid":alert.hostid});
+      }
+
+      socket.on('alertupdate',function(msg){
+        msg.alerts.forEach(function proc(element, index){
+          var test = findItem(element.id,alertPane); //find the element in the array
+          if( test != -1 ){
+            //element already in
+            //console.log("Point edited on map",element) //DEBUGGING USE ONLY
+            //do not do anything
+          }else{
+            var test2 = findItem(element.hostid,hostPane);
+            if(test2 == -1){
+              //host does not exist
+              //need to add the new host
+              //console.log("New alert on new host",element) //DEBUGGING USE ONLY
+              $("#nav-accordion")
+              .append("<li id='mainpane"+element.hostid+"' class='sub-menu dcjq-parent-li'><a id='listeneradd"+element.hostid
+              +"'href='javascript:;' class='dcjq-parent'><i class='fa fa-warning'></i><span style='color:#000000'>Alerts @ Segment Host #"+
+              element.hostid+"</span></a><ul class='sub' id='hostpane"+element.hostid+"'></ul></li>");
+              hostPane.push({"id":element.hostid,"count":1});
+              document.getElementById("listeneradd"+element.hostid).addEventListener("click",function(e) {
+                $activeLi = $(this).parent('li');
+                $parentsLi = $activeLi.parents('li');
+                $parentsUl = $activeLi.parents('ul');
+                // Prevent browsing to link if has child links
+                if ($(this).siblings('ul').length > 0) {
+                  e.preventDefault();
+                }
+                // Auto close sibling menus
+                autoCloseAccordion($parentsLi, $parentsUl);
+                if ($('> ul', $activeLi).is(':visible')) {
+                  $('ul', $activeLi).slideUp('fast');
+                  $('a', $activeLi).removeClass('active');
+                } else {
+                  $(this).siblings('ul').slideToggle('fast');
+                  $('> a', $activeLi).addClass('active');
+                }
+              });
+              $("#hostpane"+element.hostid).append("<li><a href='#'  onclick='bulk("+element.hostid+
+              ")' style='color:#ff5555;padding:4px;font-size:16px'>Clear All</a></li>");
+
+            }else{
+              hostPane[test2].count += 1; //increment the number of alerts on the host
+            }
+            addAlertToHostPane(element);
+          }
+        });
+      });
+
+      // Auto-Close Open Menu Items
+		function autoCloseAccordion($parentsLi, $parentsUl){
+      var obj = this;
+			$('ul',obj).not($parentsUl).slideUp('fast');
+			// Reset active links
+			$('a',obj).removeClass('active');
+			$('> a',$parentsLi).addClass('active');
+		}
 
     </script>
+
 
   </body>
 </html>

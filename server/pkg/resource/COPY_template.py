@@ -67,6 +67,16 @@ class TODO_SAMPLE(r.Base):
 
         #FOR nullable=True, use a the checkNull method
         self.route_id = r.checkNull(insert_list,"route_id")
+
+    def default_add_action(self):
+        #This will be run when the table is added via r-add
+        try:
+            # may do some imports here
+            #from pkg.database.fsqlite import db_session
+            pass
+        except Exception as e:
+            #db_session.rollback()
+            raise ValueError(self.__tablename__,"default_add_action",str(e))
     ######################################################################################################
 
 #TODO : DEFINE ADD RES FORM

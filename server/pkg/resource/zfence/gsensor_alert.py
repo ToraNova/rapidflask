@@ -21,11 +21,15 @@ class GSensorAlert(r.Base):
     # EDITABLE ZONE
     ######################################################################################################
     # TODO: DEFINE LIST OF COLUMNS
+    rpi_id = r.Column(r.Integer, nullable=False)
+    branch_n = r.Column(r.Integer, nullable=False)
+    segment_n = r.Column(r.Integer, nullable=False)
+
     time = r.Column(r.DateTime, nullable=False)
-    sensor_id = r.Column(r.Integer, nullable=True)
-    rpi_id = r.Column(r.Integer, nullable=True)
-    reason = r.Column(r.String(r.lim.MAX_DESCRIPTION_SIZE), nullable=False, unique=False)
     wcut =  r.Column(r.Boolean(),unique=False,nullable=False)
+    magnitude = r.Column(r.Integer,unique=False,nullable=False)
+
+    reason = r.Column(r.String(r.lim.MAX_DESCRIPTION_SIZE), nullable=True, unique=False)
     param0 = r.Column(r.String(r.lim.MAX_UUPARAM_SIZE), nullable=True, unique=False)
     param1 = r.Column(r.String(r.lim.MAX_UUPARAM_SIZE), nullable=True, unique=False)
     # rlinking - do not have to change the variable name
@@ -34,10 +38,11 @@ class GSensorAlert(r.Base):
     #The following is for r-listing (resource listing)
     # the values in the rlist must be the same as the column var name
     rlist = {
-    "Segment Host (RPi) ID":"__link__/rpi_id/Segment_Host/id:id",
-    "Sensor Branch Number":"__link__/sensor_id/GSensor/id:branch_n",
-    "Sensor Segment Number":"__link__/sensor_id/Gsensor/id:segment_n",
+    "Segment Host (RPi) ID":"rpi_id",
+    "Sensor Branch Number":"branch_n",
+    "Sensor Segment Number":"segment_n",
     "Wirecut ?":"wcut",
+    "Magnitude":"magnitude",
     "Alert Timestamp":"time",
     "Alert Reason":"reason"
     # "Param0":"param0",
@@ -62,13 +67,14 @@ class GSensorAlert(r.Base):
     # TODO: CONSTRUCTOR DEFINES, PLEASE ADD IN ACCORDING TO COLUMNS
     # the key in the insert_list must be the same as the column var name
     def __init__(self,insert_list):
+        self.rpi_id = insert_list["rpi_id"]
+        self.branch_n = insert_list["branch_n"]
+        self.segment_n = insert_list["segment_n"]
         self.time = insert_list["time"]
-        self.reason = insert_list["reason"]
         self.wcut = insert_list["wcut"]
+        self.magnitude = insert_list["magnitude"]
         #FOR nullable=True, use a the checkNull method
-
-        self.sensor_id = r.checkNull(insert_list,"sensor_id")
-        self.rpi_id = r.checkNull(insert_list,"rpi_id")
+        self.reason = r.checkNull(insert_list,"reason")
         self.param0 = r.checkNull(insert_list,"param0")
         self.param1 = r.checkNull(insert_list,"param1")
 

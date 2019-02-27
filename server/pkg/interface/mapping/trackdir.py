@@ -48,4 +48,4 @@ def zfence_edit():
 	#query for all segment host
 	shostlist = res.seghost.SegmentHost.query.all() #obtain a hostlist
 	#rawlist
-	return render_template('standalone/zfence_edit_dashgum.html',hostlist=shostlist)
+	return render_template('standalone/zfence_edit_dashgum.html',list = shostlist)

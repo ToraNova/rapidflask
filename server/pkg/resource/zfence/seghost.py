@@ -23,17 +23,15 @@ class SegmentHost(r.Base):
     # TODO: DEFINE LIST OF COLUMNS
     ip_address = r.Column(r.String(r.lim.MAX_IPADDR_SIZE), nullable=False, unique=True)
     description = r.Column(r.String(r.lim.MAX_DESCRIPTION_SIZE), nullable=True, unique=False)
-    r_threshold = r.Column(r.Integer, nullable=False, unique=False) #for radar MAG (FFT control)
-    r_steptarhi = r.Column(r.Integer, nullable=False, unique=False)
-    r_steptarlo = r.Column(r.Integer, nullable=False, unique=False) #for radar step (FFT control)
+
     g_nsen1 = r.Column(r.Integer, nullable = False, unique = False)
     g_nsen2 = r.Column(r.Integer, nullable = False, unique = False)
 
+    r_nsen1 = r.Column(r.Integer, nullable = False, unique = False)
+    r_nsen2 = r.Column(r.Integer, nullable = False, unique = False)
+
     g_fdrawseg1 = r.Column(r.Integer, nullable=True, unique=True)
     g_fdrawseg2 = r.Column(r.Integer, nullable=True, unique=True)
-
-    trig_branch = r.Column(r.Integer, nullable=True) #the branch to trigger the ipcamera
-    trig_scam = r.Column(r.Integer, nullable=True)
 
     param0 = r.Column(r.String(r.lim.MAX_UUPARAM_SIZE), nullable=True, unique=False)
     param1 = r.Column(r.String(r.lim.MAX_UUPARAM_SIZE), nullable=True, unique=False)
@@ -46,13 +44,10 @@ class SegmentHost(r.Base):
     rlist = {
     "ID":"id",
     "IP address":"ip_address",
-    "Radar Threshold":"r_threshold",
-    "Radar Step Lower":"r_steptarlo",
-    "Radar Step High":"r_steptarhi",
-    "No. of sensors on branch 1":"g_nsen1",
-    "No. of sensors on branch 2":"g_nsen2",
-    "Triggering Segment Camera IP":"__link__/trig_scam/Segment_Camera/id:ip_address",
-    "Branch to trigger":"trig_branch"
+    "No. of Radars on branch 1":"g_nsen1",
+    "No. of Radars on branch 2":"g_nsen2",
+    "No. of GSensors on branch 1":"g_nsen1",
+    "No. of GSensors on branch 2":"g_nsen2"
     # "Param0":"param0",
     # "Param1":"param1", # __link__ is a reserved keyword
     # "Param2":"param2"
@@ -76,14 +71,12 @@ class SegmentHost(r.Base):
     # the key in the insert_list must be the same as the column var name
     def __init__(self,insert_list):
         self.ip_address = insert_list["ip_address"]
-        self.r_threshold = insert_list["r_threshold"]
-        self.r_steptarlo = insert_list["r_steptarlo"]
-        self.r_steptarhi = insert_list["r_steptarhi"]
+
         self.g_nsen1 = insert_list["g_nsen1"]
         self.g_nsen2 = insert_list["g_nsen2"]
 
-        self.trig_branch = r.checkNull(insert_list,"trig_branch")
-        self.trig_scam = r.checkNull(insert_list,"trig_scam")
+        self.r_nsen1 = insert_list["r_nsen1"]
+        self.r_nsen2 = insert_list["r_nsen2"]
 
         self.description = r.checkNull(insert_list,"description")
         self.g_fdrawseg1 = r.checkNull(insert_list,"g_fdrawseg1")
@@ -92,6 +85,32 @@ class SegmentHost(r.Base):
         self.param1 = r.checkNull(insert_list,"param1")
         self.param2 = r.checkNull(insert_list,"param2")
         #FOR nullable=True, use a the checkNull method
+
+    def default_add_action(self):
+        #This will be run when the table is added via r-add
+        try:
+            from pkg.resource.zfence.gsensor import GSensor
+            from pkg.resource.zfence.proxradar import ProxRadar
+            from pkg.database.fsqlite import db_session
+            for i in range(self.g_nsen1):
+                #add sensors based on how many we have
+                nsen = GSensor({"rpi_id":self.id,"segment_n":i+1,"branch_n":1,"threshold":1,"config_verify":False})
+                db_session.add(nsen)
+            for i in range(self.r_nsen1):
+                nrad = ProxRadar({"rpi_id":self.id,"segment_n":i+1,"branch_n":1,
+                "r_threshold":1,"r_steptarhi":15,"r_steptarlo":5,"config_verify":False})
+                db_session.add(nrad)
+            for i in range(self.g_nsen2):
+                nsen = GSensor({"rpi_id":self.id,"segment_n":i+1,"branch_n":2,"threshold":1,"config_verify":False})
+                db_session.add(nsen)
+            for i in range(self.r_nsen2):
+                nrad = ProxRadar({"rpi_id":self.id,"segment_n":i+1,"branch_n":2,
+                "r_threshold":1,"r_steptarhi":15,"r_steptarlo":5,"config_verify":False})
+                db_session.add(nrad)
+            db_session.commit()
+        except Exception as e:
+            db_session.rollback()
+            raise ValueError(self.__tablename__,"default_add_action",str(e))
 
     ######################################################################################################
 
@@ -102,29 +121,29 @@ class AddForm(r.FlaskForm):
     # The names here after the rgen_ prefix must correspond to a var name in the respective model
     rgen_ip_address = r.StringField('IP Address',validators=[r.InputRequired(),r.Length(min=1,max=r.lim.MAX_IPADDR_SIZE)])
     rgen_description = r.TextAreaField('Description',validators=[r.Length(min=1,max=r.lim.MAX_DESCRIPTION_SIZE)])
-    rgen_r_threshold = r.IntegerField('Triggering Threshold',validators=[r.InputRequired()])
-    rgen_r_steptarhi = r.IntegerField('Triggering Step Upper bound',validators=[r.InputRequired()])
-    rgen_r_steptarlo = r.IntegerField('Triggering Step Lower bound',validators=[r.InputRequired()])
 
     rgen_g_nsen1 = r.IntegerField('No. of Gsensors on Branch 1',validators=[r.InputRequired()])
     rgen_g_nsen2 = r.IntegerField('No. of Gsensors on Branch 2',validators=[r.InputRequired()])
 
-    rgensel_trig_scam = r.SelectField('Triggering RPi',choices=['0','No Camera'])
-    rgen_trig_branch = r.SelectField('Triggering Branch',choices=[('1','Branch 1'),('2','Branch 2')])
-    fKeylist = {"trig_scam":("Segment_Camera","ip_address")}
+    rgen_r_nsen1 = r.IntegerField('No. of Radars on Branch 1',validators=[r.InputRequired()])
+    rgen_r_nsen2 = r.IntegerField('No. of Radars on Branch 2',validators=[r.InputRequired()])
+
+    # rgensel_trig_scam = r.SelectField('Triggering RPi',choices=['0','No Camera'])
+    # rgen_trig_branch = r.SelectField('Triggering Branch',choices=[('1','Branch 1'),('2','Branch 2')])
+    # fKeylist = {"trig_scam":("Segment_Camera","ip_address")}
 
 class EditForm(r.FlaskForm):
     #TODO: List the fields here, FIELDS MUST BE PREFIXED WITH rgen_
     # The names here after the rgen_ prefix must correspond to a var name in the respective model
     rgen_ip_address = r.StringField('IP Address',validators=[r.InputRequired(),r.Length(min=1,max=r.lim.MAX_IPADDR_SIZE)])
     rgen_description = r.TextAreaField('Description',validators=[r.Length(min=1,max=r.lim.MAX_DESCRIPTION_SIZE)])
-    rgen_r_threshold = r.IntegerField('Triggering Threshold',validators=[r.InputRequired()])
-    rgen_r_steptarhi = r.IntegerField('Triggering Step Upper bound',validators=[r.InputRequired()])
-    rgen_r_steptarlo = r.IntegerField('Triggering Step Lower bound',validators=[r.InputRequired()])
 
     rgen_g_nsen1 = r.IntegerField('No. of Gsensors on Branch 1',validators=[r.InputRequired()])
     rgen_g_nsen2 = r.IntegerField('No. of Gsensors on Branch 2',validators=[r.InputRequired()])
 
-    rgensel_trig_scam = r.SelectField('Triggering RPi',choices=['0','No Camera'])
-    rgen_trig_branch = r.SelectField('Triggering Branch',choices=[('1','Branch 1'),('2','Branch 2')])
-    fKeylist = {"trig_scam":("Segment_Camera","ip_address")}
+    rgen_r_nsen1 = r.IntegerField('No. of Radars on Branch 1',validators=[r.InputRequired()])
+    rgen_r_nsen2 = r.IntegerField('No. of Radars on Branch 2',validators=[r.InputRequired()])
+
+    # rgensel_trig_scam = r.SelectField('Triggering RPi',choices=['0','No Camera'])
+    # rgen_trig_branch = r.SelectField('Triggering Branch',choices=[('1','Branch 1'),('2','Branch 2')])
+    # fKeylist = {"trig_scam":("Segment_Camera","ip_address")}
