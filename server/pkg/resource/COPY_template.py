@@ -75,8 +75,31 @@ class TODO_SAMPLE(r.Base):
             #from pkg.database.fsqlite import db_session
             pass
         except Exception as e:
+            #PLEASE DO NOT EDIT THIS, ENABLE the rollback if there are db changes
             #db_session.rollback()
             raise ValueError(self.__tablename__,"default_add_action",str(e))
+
+    def default_mod_action(self):
+        #This will be run when the table is added modified via r-mod
+        try:
+            # may do some imports here
+            #from pkg.database.fsqlite import db_session
+            pass
+        except Exception as e:
+            #PLEASE DO NOT EDIT THIS, ENABLE the rollback if there are db changes
+            #db_session.rollback()
+            raise ValueError(self.__tablename__,"default_mod_action",str(e))
+
+    def default_del_action(self):
+        #This will be run when the table is deleted
+        try:
+            # may do some imports here
+            #from pkg.database.fsqlite import db_session
+            pass
+        except Exception as e:
+            #PLEASE DO NOT EDIT THIS, ENABLE the rollback if there are db changes
+            #db_session.rollback()
+            raise ValueError(self.__tablename__,"default_del_action",str(e))
     ######################################################################################################
 
 #TODO : DEFINE ADD RES FORM

@@ -56,8 +56,8 @@ def radd(tablename):
 			target_add = res_model(d_point)
 			sq.db_session.add(target_add)
 			sq.db_session.commit()
-			if(target_add.default_add_action != None):
-				#perform the default_add_action
+
+			if callable( getattr(target_add, "default_add_action", None) ):
 				target_add.default_add_action()
 
 			return render_template("standard/message.html",
@@ -95,59 +95,48 @@ def rlist(tablename):
 # This route deals alot with the dist pkg as it is different from the packages.
 # Could be semi-permanent
 def rmod(tablename,primaryKey):
+
+	if(rdef.dist_resources[tablename][rdef.eForm] == None):
+		#edits disabled
+		return render_template("errors/error.html",
+		error_title="Modify Failure",
+		error_message="This resource cannot be modified!")
+	rmod_form = rdef.dist_resources[tablename][rdef.eForm]() #generates the edit form
+
 	if(request.method=="POST"):
 		res_model = rdef.dist_resources[tablename][rdef.sqlClass]
 		if(request.form["button"]=="Delete"):
 			#DELETION PROCEDURE
 			target_del =res_model.query.filter( getattr(res_model,res_model.rlist_priKey) == primaryKey ).first()
+			if callable( getattr(target_del, "default_del_action", None) ):
+				target_del.default_del_action()
 			sq.db_session.delete(target_del)
 			sq.db_session.commit()
 			return redirect(url_for('resource.rlist',tablename=tablename))
 
 		elif(request.form["button"]=="Modify"):
 
-			if(rdef.dist_resources[tablename][rdef.eForm] == None):
-				#edits disabled
-				return render_template("errors/error.html",
-	            error_title="Modify Failure",
-	            error_message="This resource cannot be modified!")
-
-			rmod_form = rdef.dist_resources[tablename][rdef.eForm]() #generates the edit form
 			target_mod =res_model.query.filter( getattr(res_model,res_model.rlist_priKey) == primaryKey).first()
 			#target_mod is the resource entity that we wish to edit
 			rmod_form = regenerateForm(rmod_form,target_mod)
-
-			# for a in dir(rmod_form): #for all form attributes
-			# 	if a.startswith(rdef.rgen_keyword): #only the ones defined under rgen
-			# 		model_field = a[len(rdef.rgen_keyword):]
-			# 		rmod_form.__getattribute__(a).default = target_mod.__getattribute__(model_field)
-			# 	elif a.startswith(rdef.rgen_selkey):
-			# 		model_field = a[len(rdef.rgen_selkey):]
-			# 		fkeyres = rdef.dist_resources[rmod_form.fkeyList[model_field][0]][rdef.sqlClass].query.all()
-			# 		rmod_form.__getattribute__(a).choices = dynamicSelectorHandler(fkeyres,rmod_form.fkeyList[model_field][1])
 
 			rmod_form.process()
 			return render_template('res/rmod0.html',
 			primaryKey=primaryKey,tablename=tablename,form=rmod_form)
 
 		elif(request.form["button"]=="Submit Changes"):
-			target_mod =res_model.query.filter( getattr(res_model,res_model.rlist_priKey) == primaryKey).first()
-			for f,name in request.form.items():
-				if f.startswith(rdef.rgen_keyword): #only the ones defined under rgen
-					model_field = f[len(rdef.rgen_keyword):]
-					target_mod.__setattr__(model_field,request.form.get(f))
-				elif f.startswith(rdef.rgen_timkey):
-					#time processing
-					model_field = f[len(rdef.rgen_timkey):]
-					target_mod.__setattr__(model_field,
-						datetime.datetime.strptime(request.form.get(f), "%Y-%m-%d"))
-				elif f.startswith(rdef.rgen_selkey):
-					model_field = f[len(rdef.rgen_selkey):]
-					target_mod.__setattr__(model_field,checkNull(request.form,f))
+			if rmod_form.validate_on_submit():
+				target_mod =res_model.query.filter( getattr(res_model,res_model.rlist_priKey) == primaryKey).first()
+				d_point = getFormAttrList(rmod_form) #d_point has a dictionary for obj modification
+				for f,val in  d_point.items():
+					target_mod.__setattr__(f,val)
 
-			sq.db_session.add(target_mod)
-			sq.db_session.commit()
-			return redirect(url_for('resource.rlist',tablename=tablename))
+				if callable( getattr(target_mod, "default_mod_action", None) ):
+					target_mod.default_mod_action()
+
+				sq.db_session.add(target_mod)
+				sq.db_session.commit()
+				return redirect(url_for('resource.rlist',tablename=tablename))
 		else:
 			abort(404)
 	else:
@@ -220,6 +209,8 @@ def getFormAttrList(form_obj):
 		if a.startswith(rdef.rgen_keyword):
 			out[a[len(rdef.rgen_keyword):]]=form_obj.__getattribute__(a).data
 		elif a.startswith(rdef.rgen_selkey):
+			out[a[len(rdef.rgen_selkey):]]=form_obj.__getattribute__(a).data
+		elif a.startswith(rdef.rgen_timkey):
 			out[a[len(rdef.rgen_selkey):]]=form_obj.__getattribute__(a).data
 	return out
 

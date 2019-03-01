@@ -7,6 +7,14 @@ import paho.mqtt.client as mqtt #MQTT
 from pkg.resource import rdef as res #resource importing
 from pkg.database.fsqlite import db_session
 
+# TYPE ENUM
+# 1 hostline drawing
+# 2 segcam drawing
+# 3 gsensor threshold
+# 4 obtain segment on alert
+# 5 segcam and host highligting
+# 6 radar threshold
+
 import datetime, time
 
 class Zfence(Namespace):
@@ -45,6 +53,27 @@ class Zfence(Namespace):
             db_session.add(target)
         db_session.commit()
 
+    def updateRSettings(self,hid,bid,sid,ith,ubd,lbd,v=True):
+        if(sid==0):
+            targetlist = res.proxradar.ProxRadar.query.filter(res.proxradar.ProxRadar.rpi_id == hid).filter(
+                res.proxradar.ProxRadar.branch_n == bid).all()
+            for t in targetlist:
+                t.config_verify = v
+                t.r_threshold = ith
+                t.r_steptarhi = ubd
+                t.r_steptarlo = lbd
+                db_session.add(t)
+        else:
+            target = res.proxradar.ProxRadar.query.filter(res.proxradar.ProxRadar.rpi_id == hid and
+                res.proxradar.ProxRadar.branch_n == bid and
+                res.proxradar.ProxRadar.segment_n == sid).first()
+            target.config_verify = v
+            target.r_threshold = ith
+            target.r_steptarhi = ubd
+            target.r_steptarlo = lbd
+            db_session.add(target)
+        db_session.commit()
+
     def insertGAlert(self,hostid,branch,segment,magnitude,wcut=False):
         insert_list = {
         "rpi_id":hostid,
@@ -69,11 +98,18 @@ class Zfence(Namespace):
                 repres = strpayload.split(',')[1]
                 #emit('mqreply',{'hostid':hostid,"rep":repres},namespace='/zfence')
                 if(userdata != None):
-                    if(repres == '0' and userdata[1] == 3):
+                    if(repres == '0'):
                         #success
-                        self.updateGThreshold(
-                        userdata[0].get("hid"),userdata[0].get("bid"),
-                        userdata[0].get("sid"),userdata[0].get("ith"))
+                        if(userdata[1] == 3):
+                            self.updateGThreshold(
+                            userdata[0].get("hid"),userdata[0].get("bid"),
+                            userdata[0].get("sid"),userdata[0].get("ith"))
+                        elif(userdata[1]==6):
+                            self.updateRSettings(
+                            userdata[0].get("hid"),userdata[0].get("bid"),
+                            userdata[0].get("sid"),userdata[0].get("ith"),
+                            userdata[0].get("ubd"),userdata[0].get("lbd")
+                            )
             elif(subtopic == 'gz'):
                 #alert detected
                 branch = strpayload.split(',')[1]
@@ -147,27 +183,34 @@ class Zfence(Namespace):
 
     def on_thresholdupdate0(self,json):
         pubstr = 'threshold,{},{},{}'.format(json.get('bid'),json.get('sid'),json.get('ith'))
+        print(pubstr)
         #print('zfence/cmd/'+str(json.get('hid')),pubstr)
         self.updateGThreshold(json.get('hid'),json.get('bid'),json.get('sid'),json.get('ith'),v=False)
         self.on_panelupdate({"type":3,"id":json.get('hid')})
         self.c.user_data_set([json,3])
         #unverify the sensor first
         self.c.publish('zfence/cmd/'+str(json.get('hid')),pubstr)
-        emit('remit',{"time":5,"target":"thresholdupdate1","type":3,"hid":json.get("hid")})
+        emit('remit',{"time":5,"target":"panelupdate","type":3,"id":json.get("hid")})
 
-    def on_thresholdupdate1(self,json):
-        self.on_panelupdate({"type":3,"id":json.get('hid')})
-        self.c.user_data_set(None)
+    def on_settingstweak0(self,json):
+        pubstr = 'radtweak,{},{},{},{},{}'.format(json.get('bid'),json.get('sid'),
+            json.get('ith'),json.get('ubd'),json.get('lbd'))
+        print(pubstr)
+        self.updateRSettings(json.get('hid'),json.get('bid'),json.get('sid'),json.get('ith'),json.get('ubd'),json.get('lbd'),v=False)
+        self.on_panelupdate({"type":6,"id":json.get('hid')})
+        self.c.user_data_set([json,6])
+        self.c.publish('zfence/cmd/'+str(json.get('hid')),pubstr)
+        emit('remit',{"time":5,"target":"panelupdate","type":6,"id":json.get("hid")})
 
     def getchkstr(self,hostid,branch,chain_chkstr,stroke_e=None):
         chkstr = chain_chkstr #for chaining
         target_host = res.seghost.SegmentHost.query.filter(res.seghost.SegmentHost.id == hostid).first()
         if(branch==1):
             target_line1 = res.canvas_line.CanvasLine.query.filter(res.canvas_line.CanvasLine.id == target_host.g_fdrawseg1).first()
-            chkstr[target_line1.id] = "#66ff66" if stroke_e == None else stroke_e #BLUE FOR SEG 1
+            chkstr[target_line1.id] = "#3366ff" if stroke_e == None else stroke_e #BLUE FOR SEG 1
         elif(branch==2):
             target_line2 = res.canvas_line.CanvasLine.query.filter(res.canvas_line.CanvasLine.id == target_host.g_fdrawseg2).first()
-            chkstr[target_line2.id] = "#3366ff" if stroke_e == None else stroke_e  #GREEN FOR SEG 2
+            chkstr[target_line2.id] = "#66ff66" if stroke_e == None else stroke_e  #GREEN FOR SEG 2
         else:
             target_line1 = res.canvas_line.CanvasLine.query.filter(res.canvas_line.CanvasLine.id == target_host.g_fdrawseg1).first()
             target_line2 = res.canvas_line.CanvasLine.query.filter(res.canvas_line.CanvasLine.id == target_host.g_fdrawseg2).first()
@@ -279,15 +322,18 @@ class Zfence(Namespace):
     def on_panelupdate(self,json):
         #update the panel
         type = json.get("type")
+        hid = json.get('id')
         list = []
-        hid = None
         if(type==1):
             rawlist = res.seghost.SegmentHost.query.all()
         elif(type==2):
             rawlist = res.segcam.SegmentCamera.query.all()
         elif(type==3):
-            hid = json.get('id')
+            self.c.user_data_set(None)
             rawlist = res.gsensor.GSensor.query.filter(res.gsensor.GSensor.rpi_id == hid).all()
+        elif(type==6):
+            self.c.user_data_set(None)
+            rawlist = res.proxradar.ProxRadar.query.filter(res.proxradar.ProxRadar.rpi_id == hid).all()
 
         if(type==1 or type==2):
             for ent in rawlist:
@@ -299,6 +345,7 @@ class Zfence(Namespace):
                     data_dict["seg2"] =  ent.g_fdrawseg2
                 elif(type==2):
                     data_dict["seg1"] = ent.los_segment
+                    data_dict["tbrh"] = ent.trig_branch
                 list.append(data_dict)
         elif(type == 3):
             for ent in rawlist:
@@ -306,6 +353,16 @@ class Zfence(Namespace):
                 data_dict['snum'] = ent.segment_n
                 data_dict['bnum'] = ent.branch_n
                 data_dict['threshold'] = ent.threshold
+                data_dict['cverify'] = ent.config_verify
+                list.append(data_dict)
+        elif(type ==6):
+            for ent in rawlist:
+                data_dict = {}
+                data_dict['snum'] = ent.segment_n
+                data_dict['bnum'] = ent.branch_n
+                data_dict['threshold'] = ent.r_threshold
+                data_dict['steptarhi'] = ent.r_steptarhi
+                data_dict['steptarlo'] = ent.r_steptarlo
                 data_dict['cverify'] = ent.config_verify
                 list.append(data_dict)
         emit('regen_panel',{"panelist":list,"type":type,"id":hid})

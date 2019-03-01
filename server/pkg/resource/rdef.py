@@ -72,6 +72,11 @@ dist_resources = {
     None,
     None
     ],
+    "ProxRadar":[
+    proxradar.ProxRadar,
+    None,
+    None
+    ],
     "GSensor_Alert":[
     gsensor_alert.GSensorAlert,
     None,

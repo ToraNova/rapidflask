@@ -92,25 +92,100 @@ class SegmentHost(r.Base):
             from pkg.resource.zfence.gsensor import GSensor
             from pkg.resource.zfence.proxradar import ProxRadar
             from pkg.database.fsqlite import db_session
+            from pkg.interface.API.zfence.mqtsockio import Zfence
             for i in range(self.g_nsen1):
                 #add sensors based on how many we have
                 nsen = GSensor({"rpi_id":self.id,"segment_n":i+1,"branch_n":1,"threshold":1,"config_verify":False})
                 db_session.add(nsen)
             for i in range(self.r_nsen1):
-                nrad = ProxRadar({"rpi_id":self.id,"segment_n":i+1,"branch_n":1,
+                nrad = ProxRadar({"rpi_id":self.id,"segment_n":i+1,"branch_n":3,
                 "r_threshold":1,"r_steptarhi":15,"r_steptarlo":5,"config_verify":False})
                 db_session.add(nrad)
             for i in range(self.g_nsen2):
                 nsen = GSensor({"rpi_id":self.id,"segment_n":i+1,"branch_n":2,"threshold":1,"config_verify":False})
                 db_session.add(nsen)
             for i in range(self.r_nsen2):
-                nrad = ProxRadar({"rpi_id":self.id,"segment_n":i+1,"branch_n":2,
+                nrad = ProxRadar({"rpi_id":self.id,"segment_n":i+1,"branch_n":4,
                 "r_threshold":1,"r_steptarhi":15,"r_steptarlo":5,"config_verify":False})
                 db_session.add(nrad)
+            Zfence.c.publish('zfence/cmd/'+str(self.id),'radsetup,3,{},3,5,15'.format(self.r_nsen1))
+            Zfence.c.publish('zfence/cmd/'+str(self.id),'radsetup,4,{},3,5,15'.format(self.r_nsen2))
             db_session.commit()
         except Exception as e:
             db_session.rollback()
             raise ValueError(self.__tablename__,"default_add_action",str(e))
+
+    def default_mod_action(self):
+        #This will be run when the table is added modified via r-mod
+        try:
+            from pkg.resource.zfence.gsensor import GSensor
+            from pkg.resource.zfence.proxradar import ProxRadar
+            from pkg.database.fsqlite import db_session
+            from pkg.interface.API.zfence.mqtsockio import Zfence
+            # may do some imports here
+            #from pkg.database.fsqlite import db_session
+            #delete all proxy radar and gsensor that belongs to this sensor,
+            #then readd again
+            glist = GSensor.query.filter(GSensor.rpi_id == self.id).all()
+            rlist = ProxRadar.query.filter(ProxRadar.rpi_id == self.id).all()
+            for g in glist:
+                db_session.delete(g)
+            for r in rlist:
+                db_session.delete(r)
+            for i in range(self.g_nsen1):
+                #add sensors based on how many we have
+                nsen = GSensor({"rpi_id":self.id,"segment_n":i+1,"branch_n":1,"threshold":1,"config_verify":False})
+                db_session.add(nsen)
+            for i in range(self.r_nsen1):
+                nrad = ProxRadar({"rpi_id":self.id,"segment_n":i+1,"branch_n":3,
+                "r_threshold":3,"r_steptarhi":15,"r_steptarlo":5,"config_verify":False})
+                db_session.add(nrad)
+            for i in range(self.g_nsen2):
+                nsen = GSensor({"rpi_id":self.id,"segment_n":i+1,"branch_n":2,"threshold":1,"config_verify":False})
+                db_session.add(nsen)
+            for i in range(self.r_nsen2):
+                nrad = ProxRadar({"rpi_id":self.id,"segment_n":i+1,"branch_n":4,
+                "r_threshold":3,"r_steptarhi":15,"r_steptarlo":5,"config_verify":False})
+                db_session.add(nrad)
+            #initialize
+            Zfence.c.publish('zfence/cmd/'+str(self.id),'radsetup,3,{},3,5,15'.format(self.r_nsen1))
+            Zfence.c.publish('zfence/cmd/'+str(self.id),'radsetup,4,{},3,5,15'.format(self.r_nsen2))
+            db_session.commit()
+        except Exception as e:
+            #db_session.rollback()
+            raise ValueError(self.__tablename__,"default_mod_action",str(e))
+
+    def default_del_action(self):
+        #This will be run when the table is deleted
+        try:
+            # may do some imports here
+            #from pkg.database.fsqlite import db_session
+            from pkg.database.fsqlite import db_session
+            from pkg.resource.zfence.gsensor import GSensor
+            from pkg.resource.zfence.proxradar import ProxRadar
+            from pkg.resource.generic.canvas_line import CanvasLine
+            from pkg.resource.zfence.segcam import SegmentCamera
+            glist = GSensor.query.filter(GSensor.rpi_id == self.id).all()
+            rlist = ProxRadar.query.filter(ProxRadar.rpi_id == self.id).all()
+            for g in glist:
+                db_session.delete(g)
+            for r in rlist:
+                db_session.delete(r)
+            line1 = CanvasLine.query.filter(CanvasLine.id == self.g_fdrawseg1).first()
+            line2 = CanvasLine.query.filter(CanvasLine.id == self.g_fdrawseg2).first()
+            cam = SegmentCamera.query.filter(SegmentCamera.trig_seghst == self.id).all()
+            for c in cam:
+                c.trig_seghst = None
+                db_session.add(c)
+            if(line1 != None):
+                db_session.delete(line1)
+            if(line2 != None):
+                db_session.delete(line2)
+            db_session.commit()
+        except Exception as e:
+            #PLEASE DO NOT EDIT THIS, ENABLE the rollback if there are db changes
+            db_session.rollback()
+            raise ValueError(self.__tablename__,"default_del_action",str(e))
 
     ######################################################################################################
 

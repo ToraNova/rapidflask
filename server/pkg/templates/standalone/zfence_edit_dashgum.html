@@ -118,6 +118,22 @@
                       </ul>
                   </li>
 
+                  <li class="sub-menu">
+                      <a href="#" >
+                          <i class="fa fa-cogs"></i>
+                          <span style="color:black">Proximity Radar Thresholds</span>
+                      </a>
+                      <ul class="sub">
+                      </br>
+                        <li>
+                        <select>
+                          {% for h in list %}
+                          <option value="{{h.id}}" onclick="regen_rpane(6,{{h.id}})">{{h.id}} : {{h.ip_address}}</option>
+                          {% endfor %}
+                        </select>
+                      </ul>
+                  </li>
+
               </ul>
 
           </div>
@@ -339,13 +355,13 @@
             }else{
               $("#sidepanel").append("<div>Segment host not fully initialized</div>");
             }
-            $("#sidepanel").append("<div style='background-color:#66ff66;color:#000000;padding:3px;'>Segment 1</div>");
+            $("#sidepanel").append("<div style='background-color:#3366ff;color:#000000;padding:3px;'>Segment 1</div>");
             if(element.seg1 == undefined){
               $("#sidepanel").append("<a href='#' onclick='drawSegment("+element.id+",1)'>Segment 1 Not initialized</a></br>");
             }else{
               $("#sidepanel").append("<a href='#' onclick='hlightSegment("+element.id+",1)'>Highlight S1</a></br>");
             }
-            $("#sidepanel").append("<div style='background-color:#3366ff;color:#000000;padding:3px;'>Segment 2</div>");
+            $("#sidepanel").append("<div style='background-color:#66ff66;color:#000000;padding:3px;'>Segment 2</div>");
             if(element.seg2 == undefined){
               $("#sidepanel").append("<a href='#' onclick='drawSegment("+element.id+",2)'>Segment 2 Not initialized</a></br>");
             }else{
@@ -355,7 +371,8 @@
         }else if(msg.type == 2){
           $("#sidepanel").append("<h3>Segment IP Camera list</h3><div class='desc'>");
           msg.panelist.forEach(function proc(element, index){
-            $("#sidepanel").append("<h7 style='background-color:#ff0066;color:#000000;padding:3px'>"+element.id+ " : " + element.ip + "</h7></br>");
+            $("#sidepanel").append("<h7 style='background-color:#ff0066;color:#000000;padding:3px'>"+element.id+ " : " + element.ip +
+            " Triggerred on branch "+element.tbrh+"</h7></br>");
             if(element.seg1 != undefined){
               $("#sidepanel").append("<a href='#' onclick='hlightSegment("+element.id+
               ",3)'>HighLight Line of Sight (LoS)</a><h7> | </h7><a href='#' onclick='delSegment("+element.id+")'>Clear LoS Indication</a></br>");
@@ -378,6 +395,40 @@
           $("#sidepanel").append("</br></br><a href='#' onclick='editThreshold("+msg.id+",1,0,1)'>Uniform Threshold for B1</a></br>");
           $("#sidepanel").append("<a href='#' onclick='editThreshold("+msg.id+",2,0,1)'>Uniform Threshold for B2</a>");
         }
+
+        else if(msg.type == 6){
+          $("#sidepanel").append("<h3>ProxRadar List for SHOST"+msg.id+"</h3><div class='desc'>");
+          msg.panelist.forEach(function proc(element, index){
+            $("#sidepanel").append("<h7 style='background-color:#999966;color:#000000;padding:3px'>Branch "+element.bnum+ " :  " + element.snum +"</h7>");
+            if(element.cverify == true){
+              $("#sidepanel").append("<h7> </h7><h7 style='background-color:#00ff00;color:#000000;padding:3px'>verified OK.</h7></br>");
+            }else{
+              $("#sidepanel").append("<h7> </h7><h7 style='background-color:#ff0000;color:#000000;padding:3px'>not verified</h7></br>");
+            }
+            $("#sidepanel").append("<h7> </h7><a href='#' onclick='editRSettings("+msg.id+','+element.bnum+','+
+            element.snum+','+element.threshold+','+element.steptarhi+','+element.steptarlo+",0)'>Threshold  @  "+
+            element.threshold+"</a></br>");
+            $("#sidepanel").append("<h7> </h7><a href='#' onclick='editRSettings("+msg.id+','+element.bnum+','+
+            element.snum+','+element.threshold+','+element.steptarhi+','+element.steptarlo+",1)'>Lower Bound  @  "+
+            element.steptarhi+"</a></br>");
+            $("#sidepanel").append("<h7> </h7><a href='#' onclick='editRSettings("+msg.id+','+element.bnum+','+
+            element.snum+','+element.threshold+','+element.steptarhi+','+element.steptarlo+",2)'>Upper Bound  @  "+
+            element.steptarlo+"</a></br></br>");
+          });
+          $("#sidepanel").append("<h7> </h7><a href='#' onclick='editRSettings("+msg.id+','+
+          "3,0,3,5,15,0)'>Uniform Threshlold for B3</a></br>");
+          $("#sidepanel").append("<h7> </h7><a href='#' onclick='editRSettings("+msg.id+','+
+          "3,0,3,5,15,1)'>Uniform UBound for B3</a></br>");
+          $("#sidepanel").append("<h7> </h7><a href='#' onclick='editRSettings("+msg.id+','+
+          "3,0,3,5,15,2)',3,5,15,5)'>Uniform LBound for B3</a></br></br>");
+
+          $("#sidepanel").append("<h7> </h7><a href='#' onclick='editRSettings("+msg.id+','+
+          "4,0,3,5,15,0)'>Uniform Threshlold for B4</a></br>");
+          $("#sidepanel").append("<h7> </h7><a href='#' onclick='editRSettings("+msg.id+','+
+          "4,0,3,5,15,1)'>Uniform UBound for B4</a></br>");
+          $("#sidepanel").append("<h7> </h7><a href='#' onclick='editRSettings("+msg.id+','+
+          "4,0,3,5,15,2)'>Uniform LBound for B4</a></br>");
+        }
         $("#sidepanel").append("</div>")
       });
 
@@ -390,6 +441,23 @@
             ith = 61;
           }
           socket.emit('thresholdupdate0',{"hid":hid,"sid":sid,"bid":bid,"ith":ith})
+        }
+
+        function editRSettings(hid,bid,sid,ith,ubd,lbd,ctype){
+          var e;
+          switch(ctype){
+            case 0:
+              e = parseInt(window.prompt("Please enter a threshold",ith));
+              socket.emit('settingstweak0',{"hid":hid,"sid":sid,"bid":bid,"ith":e,"ubd":ubd,"lbd":lbd});
+            break;
+            case 1:
+              e = parseInt(window.prompt("Please enter a upperbound limit",ubd));
+              socket.emit('settingstweak0',{"hid":hid,"sid":sid,"bid":bid,"ith":ith,"ubd":e,"lbd":lbd});
+            break;
+            case 2:
+              e = parseInt(window.prompt("Please enter a lowerbound limit",lbd));
+              socket.emit('settingstweak0',{"hid":hid,"sid":sid,"bid":bid,"ith":ith,"ubd":ubd,"lbd":e});
+          }
         }
 
         function delSegment(id){
