@@ -433,6 +433,7 @@
       });
 
         function editThreshold(hid,bid,sid,def){
+          console.log(hid,bid,sid,def);
           var threshold = window.prompt("Please enter a threshold (min ..1 --- 61... max)",def);
           var ith = parseInt(threshold)
           if(ith < 1){

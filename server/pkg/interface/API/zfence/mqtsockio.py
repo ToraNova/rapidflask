@@ -45,8 +45,8 @@ class Zfence(Namespace):
                 t.threshold = ith
                 db_session.add(t)
         else:
-            target = res.gsensor.GSensor.query.filter(res.gsensor.GSensor.rpi_id == hid and
-                res.gsensor.GSensor.branch_n == bid and
+            target = res.gsensor.GSensor.query.filter(res.gsensor.GSensor.rpi_id == hid).filter(
+                res.gsensor.GSensor.branch_n == bid).filter(
                 res.gsensor.GSensor.segment_n == sid).first()
             target.config_verify = v
             target.threshold = ith
