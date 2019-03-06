@@ -7,7 +7,6 @@
 #--------------------------------------------------
 
 #security and login imports
-from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_required, login_user, current_user, logout_user
 
 #flask routing imports
@@ -42,7 +41,7 @@ def login():
             return render_template("errors/invalid_login.html",
             display_message="User does not exist!")
         else:
-            if(check_password_hash(target_user.password,userlogin_form.password.data)):
+            if( target_user.check_password(userlogin_form.password.data)):
                 #successful login
                 srvlog["user"].info(userlogin_form.username.data+" logged onto the system") #logging
                 login_user(target_user)#login_manager logins

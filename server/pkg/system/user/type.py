@@ -15,7 +15,7 @@ from flask_login import current_user
 #usual imports (copy pasta this)
 import pkg.const as const
 from pkg.database import models as md
-from pkg.database import fsqlite as sq #extra for any db commits
+from pkg.database.fsqlite import sy_session #extra for any db commits
 from pkg.database import forms as fm
 from pkg.system import assertw as a
 from pkg.system.servlog import srvlog,logtofile
@@ -36,8 +36,8 @@ def typeadd():
         target_add = md.System_UserType.query.filter(md.System_UserType.typename == typeadd_form.typename.data).first()
         if(target_add == None):
             target_add = md.System_UserType(typeadd_form.typename.data,typeadd_form.prilevel.data)#create usertype obj
-            sq.db_session.add(target_add)#adds usertype object onto database.
-            sq.db_session.commit()
+            sy_session.add(target_add)#adds usertype object onto database.
+            sy_session.commit()
             srvlog["sys"].info(typeadd_form.typename.data+" registered as new type, prilevel="+typeadd_form.prilevel.data) #logging
             return render_template("standard/message.html",
                 display_title="Success",
@@ -78,22 +78,24 @@ def typemod(primaryKey):
     if(request.method=="POST"):
         if(request.form["button"]=="Delete"):
             target_del = md.System_UserType.query.filter(md.System_UserType.typename == primaryKey).first()
-            sq.db_session.delete(target_del)
-            sq.db_session.commit()
+            sy_session.delete(target_del)
+            sy_session.commit()
             srvlog["sys"].info(primaryKey+" usertype deleted from the system") #logging
             return redirect(url_for('systype.typelist'))
 
         elif(request.form["button"]=="Modify"):
             target_mod = md.System_UserType.query.filter(md.System_UserType.typename == primaryKey).first()
-            usermod_form = fm.System_UserType_EditForm()
+            typemod_form = fm.System_UserType_EditForm()
+            typemod_form.prilevel.default = str(target_mod.prilevel)
+            typemod_form.process()
             return render_template("sysuser/typemod.html",
-            primaryKey=primaryKey,form = usermod_form)
+            primaryKey=primaryKey,form = typemod_form)
 
         elif(request.form["button"]=="Submit Changes"):
             target_mod = md.System_UserType.query.filter(md.System_UserType.typename == primaryKey).first()
-            target_mod.usertype = request.form.get("usertype")
-            sq.db_session.add(target_mod)
-            sq.db_session.commit()
+            target_mod.prilevel = request.form.get("prilevel")
+            sy_session.add(target_mod)
+            sy_session.commit()
             return redirect(url_for('systype.typelist'))
 
         else:

@@ -10,9 +10,13 @@
 #--------------------------------------------------
 
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
-from pkg.database.fsqlite import Base    #fsqlite dependency
+from pkg.database.fsqlite import Base0 as Base    #fsqlite dependency (SYS u7)
 from pkg import limits as lim     #lim dependency
+from pkg import const as c
 from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
+
+import datetime #u7
 
 ###############################################################################
 #   System Permanent models
@@ -31,13 +35,21 @@ class System_User(Base, UserMixin):#This class is permanent in almost all pyFlas
     __tablename__ = "System_User"
     id = Column(Integer, primary_key=True)
     username = Column(String(lim.MAX_USERNAME_SIZE),unique=True,nullable=False)
-    password = Column(String(lim.MAX_PASSWORD_SIZE),unique=False,nullable=False)
+    passhash = Column(String(lim.MAX_PASSWORD_SIZE),unique=False,nullable=False)
     usertype = Column(Integer(),unique=False,nullable=False) #refers to a userType
+    creadate = Column(DateTime()) #date of user account creation
 
     def __init__(self,a_username = None,a_password = None,a_usertype = False):
         self.username = a_username
-        self.password = a_password
+        self.set_password(a_password)
         self.usertype = a_usertype
+        self.creadate = datetime.datetime.now()
+
+    def set_password(self,password):
+        self.passhash = generate_password_hash(password, method=c.HASH_ALGORITHM_0)
+
+    def check_password(self,password):
+        return check_password_hash(self.passhash,password)
 
     def getPriLevel(self):
         '''obtains the user privilege level'''
@@ -107,100 +119,3 @@ class System_Configuration(Base):#This class is permanent in almost all pyFlask 
 
     def __repr__(self):
         return '<%r %r>' % (self.__tablename__,self.id)
-
-
-
-#NOT USED ON THE LOCAL SITE
-# class Class_Scanner(Base):
-#     __tablename__ = "Class_Scanner"
-#     id = Column(Integer, primary_key=True)
-#     csn_id = Column(String(lim.MAX_CLASS_ID), unique=True, nullable=False)#classid is the entity ID.
-#     cs_label = Column(String(lim.MAX_CLASS_LABEL),unique=False,nullable=False)#Where is the class conducted ?
-#
-#     #The following is for r-listing (resource listing)
-#     rlist_col = ["Scanner ID","Label"] #header
-#     rlist_dat = ['csn_id','cs_label'] #row data
-#     rlist_dis = "RFID Scanner List" #display
-#
-#     def __init__(self,insert_list):
-#         self.csn_id = insert_list['csn_id']
-#         self.cs_label = insert_list['cs_label']
-#
-#     def __repr__(self):
-#     	return '<%r %r>' % (self.__tablename__,self.id)
-#
-#     priKey = 0 #rlist_dat[0] is the primary key :default
-
-# TODO implement the following.
-# class Class_Session(Base):
-#     __tablename__ = "Class_Session"
-#     id = Column(Integer, primary_key=True)
-#     c_id = Column(String(lim.MAX_CLASS_ID), unique=True, nullable=False)#classid is the entity ID.
-#     c_label = Column(String(lim.MAX_CLASS_LABEL),unique=False,nullable=False)#Name of class ?
-#     csn_id = Column(String(lim.MAX_CLASS_ID), unique=False, nullable=False)#Foreign key that links to class_scanner
-#     c_start = Column(DateTime())
-#     c_end = Column(DateTime())
-#     def __init__(self,a_classid,a_classlabel = None,a_csn_id,a_c_start,a_c_end):
-#         self.c_id = a_classid
-#         self.c_label = a_classlabel
-#         self.csn_id = a_csn_id
-#         self.c_start = a_c_start
-#         self.c_end = a_c_end
-#
-#     def __repr__(self):
-#     	return '<%r %r>' % (self.__tablename__,self.id)
-#
-# class Class_Registration(Base): #Implements M:N relationship between student & class_session
-#     __tablename__ = "Class_Registration"
-#     id = Column(Integer, primary_key=True)
-#     c_id = Column(String(lim.MAX_CLASS_ID), unique=True, nullable=False)#classid is the entity ID.
-#     s_id = Column(String(lim.MAX_STUDENT_ID),unique=True,nullable=False)#studentid is the entity ID
-#     def __init__(self,a_c_id,a_s_id):
-#         self.c_id = a_c_id
-#         self.s_id = a_s_id
-#
-#     def __repr__(self):
-#     	return '<%r %r>' % (self.__tablename__,self.id)
-
-# class Attendance(Base): #Attendance data. records s_id, csn_id, datetime and c_id
-#    __tablename__ = "Attendance"
-#    id = Column(Integer,primary_key=True)
-#    s_id = Column(String(lim.MAX_STUDENT_ID),unique=False,nullable=False)
-#    csn_id = Column(String(lim.MAX_CLASS_ID), unique=False, nullable=False)
-#    scan_time = Column(DateTime(),nullable=False)
-
-    #The following is for d-listing (data listing)
-#    dlist_col = ["uid","Student ID","Scanner ID","Scanning Time"]
-#    dlist_dat = ['id','s_id','csn_id','scan_time']
-#
-#    #rlist compatibility #TODO, independent compat.
-#    rlist_col = dlist_col
-#    rlist_dat = dlist_dat #FOR getMatch under pkg.fdist
-#
-#    def __init__(self,a_s_id,a_csn_id,a_scan):
-#        self.s_id = a_s_id
-#        self.csn_id = a_csn_id
-#        self.scan_time = a_scan
-#
-#    def __repr__(self):
-#        return '<%r %r>' % (self.__tablename__,self.id)
-
-#NOT USED ON THE LOCAL SITE
-# class Student(Base):
-#     __tablename__ = "Student"
-#     id = Column(Integer, primary_key=True)
-#     s_id = Column(String(lim.MAX_STUDENT_ID),unique=True,nullable=False)#studentid is the entity ID
-#     s_name = Column(String(lim.MAX_NAME_SIZE),nullable=False)
-#
-#     #The following is for r-listing (resource listing)
-#     rlist_col = ["Student ID","Student Name"] #header
-#     rlist_dat = ['s_id','s_name'] #row data
-#     rlist_dis = "Student Database" #display
-#     def __init__(self,insert_list):
-#         self.s_id = insert_list['s_id']
-#         self.s_name = insert_list['s_name']
-#
-#     def __repr__(self):
-#         return '<%r %r>' % (self.__tablename__,self.id)
-#
-#     priKey = 0 #rlist_dat[0] is the primary key :default

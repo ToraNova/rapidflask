@@ -22,8 +22,8 @@ class Param3(r.Base):
     __tablename__ = "Param3"
     # TODO: DEFINE LIST OF COLUMNS
     param0 = r.Column(r.String, nullable=False)
-    param1 = r.Column(r.String, nullable=False)
-    param2 = r.Column(r.String, nullable=False)
+    param1 = r.Column(r.String, nullable=True)
+    param2 = r.Column(r.String, nullable=True)
 
     # TODO: DEFINE THE RLIST
     #The following is for r-listing (resource listing)
@@ -40,26 +40,20 @@ class Param3(r.Base):
     rlist_priKey = "id"
     rlist_dis = "Param 3 Model" #display for r routes
 
-    # TODO: NOT IMPLEMENT YET, PLEASE IGNORE
-    #The following is for r-listing on foreign tables
-    rlist_flist = {
-
-    }
-
     # TODO: CONSTRUCTOR DEFINES, PLEASE ADD IN ACCORDING TO COLUMNS
     # the key in the insert_list must be the same as the column var name
     def __init__(self,insert_list):
         self.param0 = insert_list["param0"]
-        self.param1 = insert_list["param1"]
-        self.param2 = insert_list["param2"]
-
-    def default_add_action(self):
-        #This will be run when the table is added via r-add
-        try:
-            # may do some imports here
-            #from pkg.database.fsqlite import db_session
-            pass
-        except Exception as e:
-            #db_session.rollback()
-            raise ValueError(self.__tablename__,"default_add_action",str(e))
+        self.param1 = r.checkNull(insert_list,"param1")
+        self.param2 = r.checkNull(insert_list,"param2")
     ######################################################################################################
+
+#TODO : DEFINE ADD RES FORM
+#ADD FORM TEMPLATE
+class AddForm(r.FlaskForm):
+    #TODO: List the fields here, FIELDS MUST BE PREFIXED WITH rgen_
+    # The names here after the rgen_ prefix must correspond to a var name in the respective model
+    rgen_param0 = r.StringField('parameter0 Not Nullable',validators=[r.InputRequired()])
+    rgen_param1 = r.StringField('parameter1 Nullable')
+    rgen_param2 = r.StringField('parameter2 Nullable')
+    

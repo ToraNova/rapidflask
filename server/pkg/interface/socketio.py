@@ -19,32 +19,9 @@ bp = Blueprint('sock', __name__, url_prefix='') #flask sock bp
 # ROUTES
 #----------------------------------------------------------------------------------------
 
-@bp.route('/sampleflask',methods=['GET','POST'])
-def sample():
-	return render_template('flask_io/sample.html')
-
 @bp.route('/sysclock',methods=['GET','POST'])
 def sysclock():
 	return render_template('flask_io/sysclock.html')
-
-#----------------------------------------------------------------------------------------
-# callbacks
-#----------------------------------------------------------------------------------------
-class StandardIfaceNamespace(Namespace):
-    def on_connect(self):
-        pass
-
-    def on_disconnect(self):
-        pass
-
-    def on_handle_message(self,message):
-        print('received message: '+ message)
-
-    def on_handle_json(self,json):
-        print('received json: '+ str(json))
-
-    def on_handle_custom_event(self,json):
-        print('custom event: '+str(json))
 
 #SystemUtilNamespace is a socket.io class that handles system utility realtime
 #data, currently implemented methods is the on_sync_time that allows a realtime
@@ -56,6 +33,12 @@ class SystemUtilNamespace(Namespace):
 
 	def on_disconnect(self):
 		print("sysutil on_disconnect")
+
+	def on_handle_message(self,message):
+		print('received message: '+ message)
+
+	def on_handle_json(self,json):
+		print('received json: '+ str(json))
 
 	def on_sync_time(self,json):
 		#print("callback:",json['data'])

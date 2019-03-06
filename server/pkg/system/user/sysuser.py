@@ -15,7 +15,7 @@ from flask_login import current_user
 
 import pkg.const as const
 from pkg.database import models as md
-from pkg.database import fsqlite as sq #extra for any db commits
+from pkg.database.fsqlite import sy_session # sys.db commits
 from pkg.database import forms as fm
 from pkg.system import assertw as a
 from pkg.system.auth import removeTokenFile
@@ -40,10 +40,10 @@ def useradd():
     if useradd_form.validate_on_submit():
         target_user = md.System_User.query.filter(md.System_User.username == useradd_form.username.data).first()
         if(target_user == None):
-            hpass = generate_password_hash(useradd_form.password.data,method=const.HASH_ALGORITHM_0)#password hashing
-            target_add = md.System_User(useradd_form.username.data,hpass,useradd_form.usertype.data)#create user obj
-            sq.db_session.add(target_add)#adds user object onto database.
-            sq.db_session.commit()
+            target_add = md.System_User(
+                useradd_form.username.data,useradd_form.password.data,useradd_form.usertype.data)#create user obj
+            sy_session.add(target_add)#adds user object onto database.
+            sy_session.commit()
             srvlog["sys"].info(useradd_form.username.data+" registered as new user, type="+useradd_form.usertype.data) #logging
             return render_template("standard/message.html",
                 display_title="Success",
@@ -66,11 +66,11 @@ def useradd():
 @a.admin_required
 def userlist():
     '''list out system users'''
-    columnHead = ["username","usertype","privilege level"]
+    columnHead = ["username","usertype","privilege level","created on"]
     userlist = md.System_User.query.all()
     match = []
     for users in userlist:
-        temp = [users.username,users.getUserType(),users.getPriLevel()]
+        temp = [users.username,users.getUserType(),users.getPriLevel(),users.creadate.strftime('%Y-%m-%d %H:%M:%S')]
         match.append(temp)
     return render_template('sysuser/userlist.html',
         colNum=len(columnHead),matches=match,columnHead=columnHead)
@@ -88,8 +88,8 @@ def usermod(primaryKey):
     if(request.method=="POST"):
         if(request.form["button"]=="Delete"):
             target_del = md.System_User.query.filter(md.System_User.username == primaryKey).first()
-            sq.db_session.delete(target_del)
-            sq.db_session.commit()
+            sy_session.delete(target_del)
+            sy_session.commit()
             srvlog["sys"].info(primaryKey+" deleted from the system") #logging
             return redirect(url_for('sysuser.userlist'))
 
@@ -105,8 +105,8 @@ def usermod(primaryKey):
         elif(request.form["button"]=="Submit Changes"):
             target_mod = md.System_User.query.filter(md.System_User.username == primaryKey).first()
             target_mod.usertype = request.form.get("usertype")
-            sq.db_session.add(target_mod)
-            sq.db_session.commit()
+            sy_session.add(target_mod)
+            sy_session.commit()
             return redirect(url_for('sysuser.userlist'))
 
         elif(request.form["button"]=="Change Password"):
@@ -124,12 +124,10 @@ def usermod(primaryKey):
 ##############################################################################################
 
 def tupleGenerator(sqlresult): #FOR USERTYPE SQLRESULTS ONLY !
-	'''takes in the sql result, parses the output to allow generation of
-	a dynamic WTF select field this takes in a list of 3-tuples, merges
-	the last two into a string and spits a list of 2-tuples used together with
-	getattr(form,sfield).choices = dynamicSelectorHandler(query_all result,which element)'''
-	outList = []
-	for elements in sqlresult:
-		outList.append((elements.id,elements.typename))
-
-	return outList
+    '''takes in the sql result, parses the output to allow generation of
+    a dynamic WTF select field this takes in a list of 3-tuples, merges
+    the last two into a string and spits a list of 2-tuples used together with
+    getattr(form,sfield).choices = dynamicSelectorHandler(query_all result,which element)'''
+    #outList = [(str(elements.id),elements.typename) for elements in sqlresult]
+    outList = [(str(elements.id),elements.typename) for elements in sqlresult]
+    return outList

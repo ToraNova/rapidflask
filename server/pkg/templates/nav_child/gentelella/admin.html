@@ -8,36 +8,11 @@ routes or links to routes here instead of the _sidebar.html file-->
   <ul class="nav child_menu">
 
     <!--System USERS_______SEMI_PERMANENT__________-->
-
     <li><a href="{{ url_for('sysuser.useradd') }}">Register system user</a></li>
     <li><a href="{{ url_for('sysuser.userlist') }}">List system users</a></li>
     <li><a href="{{ url_for('systype.typeadd') }}">Add user type</a></li>
     <li><a href="{{ url_for('systype.typelist') }}">List user types</a></li>
 
-  </ul></li>
-
-  <li><a><i class="fa fa-cube"></i>Resource Adding<span class="fa fa-chevron-down"></span></a>
-  <ul class="nav child_menu">
-
-    <!--___________________NON PERMANENT_____________________-->
-    <!--<li><a href="{{ url_for('resource.radd', tablename = 'Georoute') }}">Register New Georoute</a></li>
-    <!--<li><a href="{{ url_for('resource.radd', tablename = 'Geopoint') }}">Register New Geopoint</a></li>
-    <!--___________________/NON PERMANENT____________________-->
-
-    <li><a href="{{ url_for('resource.radd', tablename = 'Segment_Host') }}">New Segment Host</a></li>
-    <li><a href="{{ url_for('resource.radd', tablename = 'IPCamera_Model') }}">Register IPCam Model</a></li>
-    <li><a href="{{ url_for('resource.radd', tablename = 'Segment_Camera') }}">New Segment Camera</a></li>
-  </ul></li>
-
-  <li><a><i class="fa fa-cubes"></i>Resource Listing<span class="fa fa-chevron-down"></span></a>
-  <ul class="nav child_menu">
-    <!--___________________NON PERMANENT_____________________-->
-    <!--<li><a href="{{ url_for('resource.radd', tablename = 'Georoute') }}">Register New Georoute</a></li>
-    <!--<li><a href="{{ url_for('resource.radd', tablename = 'Geopoint') }}">Register New Geopoint</a></li>
-    <!--___________________/NON PERMANENT____________________-->
-    <li><a href="{{ url_for('resource.rlist', tablename = 'Segment_Host') }}">Segment Hosts</a></li>
-    <li><a href="{{ url_for('resource.rlist', tablename = 'IPCamera_Model') }}">IPCam Models</a></li>
-    <li><a href="{{ url_for('resource.rlist', tablename = 'Segment_Camera') }}">Segment Cameras</a></li>
   </ul></li>
 
   <li><a href="{{ url_for('sock.sysclock') }}">System Clock</a></li> <!Flask socket io use cases>

@@ -86,4 +86,8 @@ update5   31/01/19---01:00am
 
 update6   25/02/19---03:53am
 [+  fixed some rlisting problem, rlist and rlink now together
-[   adding MQTT functionalities
+[+  adding MQTT functionalities to flask_socketio
+[+  split the database to sys and deploy
+[   sys for system user / config and usertype and other perma tables
+[   deploy for non-perma database models (resources)
+[   cleaned up the templating / interface packages

@@ -15,7 +15,7 @@
 ###############################################################################
 # STANDARD MODEL USAGE IMPORTS (COPY PASTA THIS!)-----------------------------
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Float
-from pkg.database.fsqlite import Base    #fsqlite dependency
+from pkg.database.fsqlite import Base1 as Base    #fsqlite dependency (DEP u7)
 from pkg import limits as lim     #lim dependency
 import datetime
 #-----------------and the forms--this as well!--------------------------------

@@ -14,6 +14,7 @@ from flask_login import LoginManager
 from flask import render_template
 
 from pkg.database.fsqlite import db_session
+from pkg.database.fsqlite import sy_session
 from flask_socketio import SocketIO
 
 def server(config=None):
@@ -21,7 +22,7 @@ def server(config=None):
 	out = Flask(__name__, instance_relative_config=True)
 	out.config.from_mapping(
 		SECRET_KEY='mmubus',
-		DATABASE=const.DB00_NAME
+		DATABASE=const.DB01_NAME
 		#check out out.instance_path
 	)
 
@@ -31,11 +32,11 @@ def server(config=None):
 		out.config.from_mapping(config)
 
 	from pkg.interface import socketio #socket io import
-	from pkg.interface.mapping import mapio
-	from pkg.interface.API.zfence.mqtsockio import Zfence
+	from pkg.resource.geores import mapio
+	from pkg.resource.zfence.mqtsockio import Zfence
 
 	from pkg.interface import home
-	from pkg.interface.mapping import debugging,trackdir
+	from pkg.interface import trackdir
 	from pkg.interface.API import push,pull
 	from pkg.system import auth,admintools
 	from pkg.system.user import sysuser,type,sysnologin
@@ -61,7 +62,7 @@ def server(config=None):
 
 	bplist = [	r.bp,auth.bp,home.bp,admintools.bp,socketio.bp,
 				push.bp,pull.bp,sysuser.bp,type.bp,sysnologin.bp,
-				debugging.bp,trackdir.bp]
+				trackdir.bp]
 
 	for bp in bplist:
 		out.register_blueprint(bp)
@@ -70,16 +71,20 @@ def server(config=None):
 	@out.teardown_appcontext
 	def shutdown_session(exception=None):
 		db_session.remove()
-
+		sy_session.remove()
 
 	# FLASK SOCKET USE 8/1/2019
 	out_nonsock = out
 	out = SocketIO(out_nonsock)
 	out.on_namespace(socketio.SystemUtilNamespace('/sysutil'))
-	#out.on_namespace(mapio.MapPointSocket('/geopoint'))
-	uspace = Zfence('/zfence')
-	uspace.startMQclient(True)
-	out.on_namespace(Zfence('/zfence/edit'))
-	out.on_namespace(uspace)
+
+	# Geopoint example
+	# out.on_namespace(mapio.MapPointSocket('/geopoint'))
+
+	# Zfence example
+	# uspace = Zfence('/zfence')
+	# uspace.startMQclient(True)
+	# out.on_namespace(Zfence('/zfence/edit'))
+	# out.on_namespace(uspace)
 
 	return out,out_nonsock

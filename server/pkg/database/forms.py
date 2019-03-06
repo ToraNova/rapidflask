@@ -14,6 +14,17 @@ from wtforms.validators import InputRequired, Email, Length, NumberRange
 import pkg.limits as lim # limits import
 
 ##############################################################################################
+# WTFORMS - Dynamic select field bypass
+##############################################################################################
+class NonValidatingSelectField(SelectField):
+    """
+    Attempt to make an open ended select multiple field that can accept dynamic
+    choices added by the browser.
+    """
+    def pre_validate(self, form): #Override the validation
+        pass
+
+##############################################################################################
 # Essential Forms (similar for each pyFlask deployment) Edited as of R7
 # u4 - added System_UserType forms
 ##############################################################################################
@@ -32,7 +43,7 @@ class System_User_RegisterForm(FlaskForm): #Last Edit R7
 		validators=[InputRequired(),Length(min=lim.MIN_USERNAME_SIZE,max=lim.MAX_USERNAME_SIZE)])
 	password = PasswordField('password',
 		validators=[InputRequired(),Length(min=lim.MIN_PASSWORD_SIZE,max=lim.MAX_PASSWORD_SIZE)])
-	usertype = SelectField('usertype',choices=[])
+	usertype = NonValidatingSelectField('usertype',choices=[])
 
 class System_User_URLRegisterForm(FlaskForm): #Last Edit R7
 	username = StringField('username',
@@ -45,7 +56,7 @@ class System_User_URLPasswordResetForm(FlaskForm): #Last Edit R7
 		validators=[InputRequired(),Length(min=lim.MIN_PASSWORD_SIZE,max=lim.MAX_PASSWORD_SIZE)])
 
 class System_User_EditForm(FlaskForm): #Last Edit R8
-	usertype = SelectField('usertype',choices=[])
+	usertype = NonValidatingSelectField('usertype',choices=[])
 
 ################################################################################################
 
@@ -80,7 +91,3 @@ class Configuration_EditForm(FlaskForm):
 	config_value = StringField('Config Value',
 		validators=[InputRequired(),Length(min=2,max=lim.MAX_CONFIG_VALU_SIZE)])
 	fieldlist = ['config_value']
-
-##############################################################################################
-# Distribution dependent forms
-##############################################################################################

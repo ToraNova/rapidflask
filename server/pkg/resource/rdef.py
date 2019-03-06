@@ -42,49 +42,14 @@ from pkg.resource.generic import canvas_circle, canvas_line
 ##########################################################
 
 dist_resources = {
+    "Param3":[
+    param3model.Param3,
+    param3model.AddForm,
+    param3model.AddForm
+    ],
     "IPCamera_Model":[
     ipcam_model.IPCameraModel,
     ipcam_model.AddForm,
     ipcam_model.EditForm
-    ],
-    "Georoute":[
-    georoute.Georoute,
-    georoute.AddForm,
-    georoute.EditForm
-    ],
-    "Geopoint":[
-    geopoint.Geopoint,
-    geopoint.AddForm,
-    geopoint.EditForm
-    ],
-    "Segment_Host":[
-    seghost.SegmentHost,
-    seghost.AddForm,
-    seghost.EditForm
-    ],
-    "Segment_Camera":[
-    segcam.SegmentCamera,
-    segcam.AddForm,
-    segcam.EditForm
-    ],
-    "GSensor":[
-    gsensor.GSensor,
-    None,
-    None
-    ],
-    "ProxRadar":[
-    proxradar.ProxRadar,
-    None,
-    None
-    ],
-    "GSensor_Alert":[
-    gsensor_alert.GSensorAlert,
-    None,
-    None
-    ],
-    "Radar_Alert":[
-    radar_alert.PRadarAlert,
-    None,
-    None
     ]
 }

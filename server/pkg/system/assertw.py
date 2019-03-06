@@ -24,6 +24,9 @@ import os
 # Wrappers
 ##############################################################################################
 def admin_required(fn):
+	'''used for path that requires the highest
+	privelege level only, equivalent to
+	userpriv_required(0)'''
 	@wraps(fn)
 	def decorated_view(*args, **kwargs):
 		if (not current_user.is_authenticated):
@@ -38,6 +41,29 @@ def admin_required(fn):
 			#here if user is admin and already logged in
 			return fn(*args, **kwargs)
 	return decorated_view
+
+def userpriv_required(level):
+	'''used to wrap for a path that
+	requires a certain user privelege level
+	e.g @userpriv_required(0) means admin or above required
+	@userpriv_required(3) so only users with privlevel 3,2,1
+	and 0 can access to that route'''
+	def outer_dec(fn):
+		@wraps(fn)
+		def decorated_view(*args, **kwargs):
+			if (not current_user.is_authenticated):
+				return logandDisplay("Unauthenticated access","Unauthenticated. Please login first !")
+			elif ( current_user.getPriLevel() > level ):
+				return render_template("errors/error.html",
+					username=current_user.username,
+					error_title="Unauthorized",
+					error_message="You are not authorized to access this content.")
+				#abort(401) #throw unauthorized_request 401'
+			else:
+				#here if user is admin and already logged in
+				return fn(*args, **kwargs)
+		return decorated_view
+	return outer_dec
 
 def token_check(fn):
 	'''this wrapper checks if the token exist, deletes it if it does and allow

@@ -10,12 +10,11 @@ from flask import request, abort
 from flask import Blueprint
 
 #flask security import
-from werkzeug.security import generate_password_hash
 from flask_login import current_user
 
 import pkg.const as const
 from pkg.database import models as md
-from pkg.database import fsqlite as sq #extra for any db commits
+from pkg.database.fsqlite import sy_session # sys.db commits
 from pkg.database import forms as fm
 from pkg.system import assertw as a
 from pkg.system.auth import removeTokenFile
@@ -39,10 +38,9 @@ def register():
     if form.validate_on_submit():
         target_user = md.System_User.query.filter(md.System_User.username == form.username.data).first()
         if(target_user == None):
-            hpass = generate_password_hash(form.password.data,method=const.HASH_ALGORITHM_0)#password hashing
-            target_add = md.System_User(form.username.data,hpass,typeid)#create user obj
-            sq.db_session.add(target_add)#adds user object onto database.
-            sq.db_session.commit()
+            target_add = md.System_User(form.username.data,form.password.data,typeid)#create user obj
+            sy_session.add(target_add)#adds user object onto database.
+            sy_session.commit()
             removeTokenFile(const.TOKN_SYS,request.args.get("token")) #remove token file
             srvlog["sys"].info(form.username.data+" registered as new user, type="+usertype) #logging
             return render_template("standard/redirect.html",
@@ -78,10 +76,9 @@ def pwreset():
             return render_template("errors/unauthorized.html",
         		display_message="Catastrophic Error, please contact administrator.")
         else:
-            hpass = generate_password_hash(form.password.data,method=const.HASH_ALGORITHM_0)#password hashing
-            target_user.password = hpass #edit user password
-            sq.db_session.add(target_user)#adds user object onto database.
-            sq.db_session.commit()
+            target_user.set_password(form.password.data)#edit user password
+            sy_session.add(target_user)#adds user object onto database.
+            sy_session.commit()
             removeTokenFile(const.TOKN_SYS,request.args.get("token")) #remove token file
             srvlog["sys"].info(username+" updated their password") #logging
             return render_template("standard/redirect.html",

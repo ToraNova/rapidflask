@@ -36,6 +36,12 @@ def basic():
 def point():
 	#return render_template('flask_io/basic_map.html')
 	return render_template('leaflet/geopoint/dashboard.html')
+
+@bp.route('/pin_geopoint')
+@login_required
+def pinpoint():
+	#return render_template('flask_io/basic_map.html')
+	return render_template('leaflet/geopoint/tooladd.html')
 #-------------------------------------------------------------------
 
 # U6 -- zfencing alert ui (Alert tracking)

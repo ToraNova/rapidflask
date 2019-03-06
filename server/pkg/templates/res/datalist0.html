@@ -4,6 +4,7 @@
 {% from "includes/helpers/_formhelpers.html" import render_field %}
 
 {% block head %}
+{% include 'includes/dtable/_css.html' %} <!--Includes the data table css files-->
 {% endblock %}
 
 {% block body %}
@@ -82,4 +83,5 @@
 {% endblock %}
 
 {% block script %}
+{% include 'includes/dtable/_js.html' %} <!--Includes the data table javascript files-->
 {% endblock %}

@@ -30,3 +30,6 @@ The COPY_template.py is available to start creating resources
 3. After that, proceed to rdef.py and add in the new resource.
 4. Add in the links on __sidebar so that you may access it
 5. verify your model!
+
+u7 - for each deployment, please create a folder and place resources into the folder.
+the folder must include a rdef file.

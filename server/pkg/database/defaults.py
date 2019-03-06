@@ -5,7 +5,7 @@
 # introduced 8/12/2018
 #--------------------------------------------------
 
-from pkg.database.fsqlite import db_session
+from pkg.database.fsqlite import sy_session
 
 def default_add():
 
@@ -18,17 +18,18 @@ def default_add():
     #default_config_list = [["ScannerID","AR001"],["MainServerIP","127.0.0.1"],["MainServerPort","4000"]] #used for attemoni
     default_config_list = []
     for configs in default_config_list:
-        db_session.add(System_Configuration(configs[0],configs[1]))
+        sy_session.add(System_Configuration(configs[0],configs[1]))
 
     #adding default user - admin
     default_username = "admin"
-    default_password = "sha256$mDDYIdTb$9cebe876c8e8fea365c8116a49cc0376ddbb14e03d5043950eb8d8978523fea5"
+    default_password = "1996-June-26" #placeholder
     default_user = System_User(default_username,default_password,1)
-    db_session.add(default_user)
-    
+    default_user.passhash = 'pbkdf2:sha512:50000$Bpl7mvp6$d16d6dfff5047c77e14334c3562cc8cecf1e6d4a88cf13a990541317405231d204d6577ddc3a459cd5a5b4f3a6302adbc628ef26a1e0a47d9140a28ea47ee326'
+    sy_session.add(default_user)
+
     #adding default userType - admin, seer
     default_utypelist = [["admin",0],["seer",1]]
     for utype in default_utypelist:
-        db_session.add(System_UserType(utype[0],utype[1]))
+        sy_session.add(System_UserType(utype[0],utype[1]))
 
-    db_session.commit()
+    sy_session.commit()
