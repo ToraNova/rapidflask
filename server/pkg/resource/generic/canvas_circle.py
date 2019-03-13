@@ -14,7 +14,7 @@ from pkg.resource import res_import as r
 
 class CanvasCircle(r.Base):
     # PERMA : DO NOT CHANGE ANYTHING HERE UNLESS NECESSARY
-    __tablename__ = "Canvas_Circle"
+    __tablename__ = "Canvas_Circles"
     id = r.Column(r.Integer, primary_key=True)
     def __repr__(self):
     	return '<%r %r>' % (self.__tablename__,self.id)

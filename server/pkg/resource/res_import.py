@@ -17,10 +17,15 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Float
 from pkg.database.fsqlite import Base1 as Base    #fsqlite dependency (DEP u7)
 from pkg import limits as lim     #lim dependency
-import datetime
+from pkg import const
+from flask_login import current_user
+import datetime,os
 #-----------------and the forms--this as well!--------------------------------
 from flask_admin.form.widgets import DatePickerWidget
 from flask_wtf import FlaskForm
+from flask_wtf import Form
+from flask_wtf.file import FileField
+from werkzeug import secure_filename
 from wtforms import StringField, PasswordField, BooleanField
 from wtforms import SelectField, IntegerField, RadioField
 from wtforms import SubmitField, SelectMultipleField, DateField
@@ -36,3 +41,11 @@ def checkNull(list,colName):
         return None
     else:
         return list.get(colName)
+
+class NonValidatingSelectField(SelectField):
+    """
+    Attempt to make an open ended select multiple field that can accept dynamic
+    choices added by the browser.
+    """
+    def pre_validate(self, form): #Override the validation
+        pass

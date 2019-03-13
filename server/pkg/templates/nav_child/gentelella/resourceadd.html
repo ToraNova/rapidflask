@@ -2,7 +2,9 @@
 <li><a><i class="fa fa-cube"></i>Resource Adding<span class="fa fa-chevron-down"></span></a>
 <ul class="nav child_menu">
 
+  <!--Generic Deployment-->
   <li><a href="{{ url_for('resource.radd', tablename = 'Param3') }}">New Param3 Object</a></li>
+  <li><a href="{{ url_for('resource.radd', tablename = 'Standard_File') }}">Upload a file</a></li>
 
   <!--___________________NON PERMANENT GEOPOINT DEPLOYMENT_____________________-->
   <!--<li><a href="{{ url_for('resource.radd', tablename = 'Georoute') }}">Register New Georoute</a></li>

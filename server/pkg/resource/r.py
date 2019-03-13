@@ -43,6 +43,10 @@ bp = Blueprint('resource', __name__, url_prefix='/resource')
 # Could be semi-permanent
 def radd(tablename):
 
+	if rdef.dist_resources[tablename][rdef.aForm] == None:
+		return render_template("errors/error.html",
+		error_title="Adding Failure",
+		error_message="This resource cannot be added manually!")
 	resadd_form = rdef.dist_resources[tablename][rdef.aForm]() #creates an ADD FORM
 
 	resadd_form = regenerateForm(resadd_form,None)
@@ -58,7 +62,11 @@ def radd(tablename):
 			sq.db_session.commit()
 
 			if callable( getattr(target_add, "default_add_action", None) ):
-				target_add.default_add_action()
+				try:
+					target_add.default_add_action()
+				except Exception as e:
+					sq.db_session.rollback()
+					raise ValueError(tablename,"default_add_action",str(e))
 
 			return render_template("standard/message.html",
                 display_title="Success",
@@ -67,7 +75,7 @@ def radd(tablename):
 			print("radd exception has occurred :",str(e))
 			sq.db_session.rollback() #immediately rollback changes
 			return render_template("errors/error.html",
-            error_title="Failure",
+            error_title="Failure (Key Error?)",
             error_message=str(e))
 
 	return render_template('res/radd0.html',
@@ -101,20 +109,35 @@ def rmod(tablename,primaryKey):
 		return render_template("errors/error.html",
 		error_title="Modify Failure",
 		error_message="This resource cannot be modified!")
-	rmod_form = rdef.dist_resources[tablename][rdef.eForm]() #generates the edit form
+	elif(rdef.dist_resources[tablename][rdef.eForm] == rdef.del_only):
+		#delete only
+		pass
+	else:
+		rmod_form = rdef.dist_resources[tablename][rdef.eForm]() #generates the edit form
 
 	if(request.method=="POST"):
 		res_model = rdef.dist_resources[tablename][rdef.sqlClass]
 		if(request.form["button"]=="Delete"):
 			#DELETION PROCEDURE
 			target_del =res_model.query.filter( getattr(res_model,res_model.rlist_priKey) == primaryKey ).first()
+
 			if callable( getattr(target_del, "default_del_action", None) ):
-				target_del.default_del_action()
+				try:
+					target_del.default_del_action()
+				except Exception as e:
+					sq.db_session.rollback()
+					raise ValueError(tablename,"default_del_action",primaryKey,str(e))
+
 			sq.db_session.delete(target_del)
 			sq.db_session.commit()
 			return redirect(url_for('resource.rlist',tablename=tablename))
 
 		elif(request.form["button"]=="Modify"):
+
+			if(rdef.dist_resources[tablename][rdef.eForm] == rdef.del_only):
+				return render_template("errors/error.html",
+				error_title="Modify Failure",
+				error_message="This resource can only be deleted!")
 
 			target_mod =res_model.query.filter( getattr(res_model,res_model.rlist_priKey) == primaryKey).first()
 			#target_mod is the resource entity that we wish to edit
@@ -132,7 +155,11 @@ def rmod(tablename,primaryKey):
 					target_mod.__setattr__(f,val)
 
 				if callable( getattr(target_mod, "default_mod_action", None) ):
-					target_mod.default_mod_action()
+					try:
+						target_mod.default_mod_action()
+					except Exception as e:
+						sq.db_session.rollback()
+						raise ValueError(tablename,"default_mod_action",primaryKey,str(e))
 
 				sq.db_session.add(target_mod)
 				sq.db_session.commit()
@@ -160,6 +187,7 @@ def getMatch(tablename):
 	for entry in rawlist:
 		temp = []
 		for key in reslist:
+			coltmp = {"meta":"text"}
 			if(reslist[key].startswith("__link__")):
 				try:
 					rkey = reslist[key].split('/')[1]
@@ -168,24 +196,60 @@ def getMatch(tablename):
 					refFKey = refFKey[:refFKey.find(':')]
 					refLook = reslist[key].split(':')[1]
 					refEntClass = rdef.dist_resources[refTable][rdef.sqlClass]
-					if(entry.__getattribute__(rkey) == None):
-						aptTar = "Unlinked"
-					else:
-						aptTar = refEntClass.query.filter(
+					if(entry.__getattribute__(rkey) != None):
+						coltmp["data"] = refEntClass.query.filter(
 							getattr(refEntClass,refFKey) ==
 							entry.__getattribute__(rkey)
 						).first().__getattribute__(refLook)
+					else:
+						coltmp["data"] = "Unlinked"
 				except Exception as e:
 					#revert to simple display of id
 					#error must have occured here
 					# TODO: Logging
-					print("Exception occurred while rlisting :",str(e))
-					aptTar = entry.__getattribute__(rkey)
-				finally:
-					temp.append(aptTar)
+					print("Exception occurred while rlisting with __link__ :",str(e))
+					try:
+						coltmp["data"] = entry.__getattribute__(rkey)
+					except Exception as e:
+						coltmp["data"] = "err:__link__ "+str(e)
+
+			elif(reslist[key].startswith("__time__")):
+				# For formatting of time fields
+				try:
+					tformat = reslist[key].split('/')[1]
+					timedat = reslist[key].split('/')[2]
+					if( entry.__getattribute__(timedat) != None ):
+						coltmp["data"] = entry.__getattribute__(timedat).strftime(tformat)
+					else:
+						coltmp["data"] = "Null (No data)"
+				except Exception as e:
+					print("Exception occurred while rlisting with __time__ :",str(e))
+					try:
+						coltmp["data"] = entry.__getattribute__(timedat)
+					except Exception as e:
+						coltmp["data"] = "err:__time__ "+str(e)
+
+			elif(reslist[key].startswith("__url__")):
+				try:
+					urltarget = reslist[key].split('/')[1]
+					urlparam = reslist[key].split('/')[2]
+					if( entry.__getattribute__(urlparam) != None ):
+						coltmp["meta"] = "url"
+						coltmp["data"] = url_for(urltarget,urlparam=entry.__getattribute__(urlparam))
+					else:
+						coltmp["data"] = "Null (No data)"
+				except Exception as e:
+					print("Exception occurred while rlisting with __url__ :",str(e))
+					try:
+						coltmp["data"] = entry.__getattribute__(urlparam)
+					except Exception as e:
+						coltmp["data"] = "err:__url__ "+str(e)
+
 			else:
-				temp.append(entry.__getattribute__(reslist[key]))
+				coltmp["data"] = entry.__getattribute__(reslist[key])
+
 			#print(temp[-1]) #DEBUGGING USE ONLY
+			temp.append(coltmp)
 		match.append(temp)
 		pkey.append(entry.__getattribute__(entry.__getattribute__('rlist_priKey')))
 	return [columnHead,match,pkey]
@@ -212,6 +276,11 @@ def getFormAttrList(form_obj):
 			out[a[len(rdef.rgen_selkey):]]=form_obj.__getattribute__(a).data
 		elif a.startswith(rdef.rgen_timkey):
 			out[a[len(rdef.rgen_selkey):]]=form_obj.__getattribute__(a).data
+		elif a.startswith(rdef.rgen_actkey):
+			form_action = form_obj.__getattribute__(a[len(rdef.rgen_actkey):])
+			if callable( form_action ):
+				out.update( form_action( form_obj ) )
+
 	return out
 
 def regenerateForm(in_form,target=None):
@@ -225,6 +294,8 @@ def regenerateForm(in_form,target=None):
 			in_form.__getattribute__(a).choices = dynamicSelectorHandler(fkeyres,in_form.fKeylist[model_field][1])
 			if(target != None):
 				in_form.__getattribute__(a).default = target.__getattribute__(model_field)
+		elif a.startswith(rdef.rgen_actkey):
+			pass
 	return in_form
 
 

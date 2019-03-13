@@ -312,6 +312,10 @@
           socket.emit('segmentrequest',{});
       });
 
+      socket.on('disconnect',function(){
+          alert("Disconnected From SERVER!")
+      })
+
       function timercallback(){
         //ask the socketserver for any alerts
         socket.emit("alertquery");

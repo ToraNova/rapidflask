@@ -5,3 +5,5 @@ __pycache__/
 tokens/
 tokens/sysuser/
 init.token
+pkg/uploads/
+!pkg/uploads/.gitkeep

@@ -24,6 +24,9 @@ LOGS_DIR = 'logs'
 TOKN_DIR = 'tokens'
 TOKN_SYS = 'sysuser'
 
+# File upload directories
+STD_FILEDIR = 'uploads'
+
 SERVER_NAME = "minimal_server"
 ADMIN_PLAINT_APIKEY = "abc123"
 DISABLE_CRIT_ROUTE = False

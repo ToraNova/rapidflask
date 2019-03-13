@@ -11,7 +11,7 @@ from pkg.resource import res_import as r
 
 class IPCameraModel(r.Base):
     # PERMA : DO NOT CHANGE ANYTHING HERE UNLESS NECESSARY
-    __tablename__ = "IPCamera_Model"
+    __tablename__ = "IPCamera_Models"
     id = r.Column(r.Integer, primary_key=True)
     def __repr__(self):
     	return '<%r %r>' % (self.__tablename__,self.id)
@@ -24,6 +24,8 @@ class IPCameraModel(r.Base):
     model_name = r.Column(r.String(r.lim.MAX_USERNAME_SIZE), nullable=False, unique=True)
     ffmpeg_url = r.Column(r.String(r.lim.MAX_DESCRIPTION_SIZE), nullable=False, unique=False)
     jpgcap_url = r.Column(r.String(r.lim.MAX_DESCRIPTION_SIZE), nullable=False, unique=False)
+    def_uname = r.Column(r.String(r.lim.MAX_USERNAME_SIZE),nullable=True,unique=False)
+    def_upass = r.Column(r.String(r.lim.MAX_PASSWORD_SIZE),nullable=True,unique=False)
     description = r.Column(r.String(r.lim.MAX_DESCRIPTION_SIZE), nullable=True, unique=False)
 
     # rlinking - do not have to change the variable name
@@ -35,7 +37,9 @@ class IPCameraModel(r.Base):
     "Model Name":"model_name",
     "FFMPEG":"ffmpeg_url",
     "JPEG":"jpgcap_url",
-    "Description":"description"# __link__ is a reserved keyword
+    "Description":"description",# __link__ is a reserved keyword
+    "Access username (default)":"def_uname",
+    "Access password (default)":"def_upass"
     } #header:row data
     # use the __link__/ and __ route_id to 'link' route_id onto something
     # the linkage is defined under the rlink dictionary down there
@@ -59,17 +63,14 @@ class IPCameraModel(r.Base):
         self.ffmpeg_url = insert_list["ffmpeg_url"]
         self.jpgcap_url = insert_list["jpgcap_url"]
 
+        self.def_uname = r.checkNull(insert_list,"def_uname")
+        self.def_upass = r.checkNull(insert_list,"def_upass")
         self.description = r.checkNull(insert_list,"description")
 
     def default_add_action(self):
         #This will be run when the table is added via r-add
-        try:
-            # may do some imports here
-            #from pkg.database.fsqlite import db_session
-            pass
-        except Exception as e:
-            #db_session.rollback()
-            raise ValueError(self.__tablename__,"default_add_action",str(e))
+        pass
+
     ######################################################################################################
 
 #TODO : DEFINE ADD RES FORM
@@ -84,6 +85,11 @@ class AddForm(r.FlaskForm):
     rgen_jpgcap_url = r.StringField('JPEG CAPTURE URL',
     validators=[r.InputRequired(),r.Length(min=1,max=r.lim.MAX_DESCRIPTION_SIZE)])
 
+    rgen_def_uname = r.StringField('Camera Access Username',
+    validators=[r.Length(min=4,max=r.lim.MAX_USERNAME_SIZE)])
+    rgen_def_upass = r.StringField('Camera Access Password',
+    validators=[r.Length(min=8,max=r.lim.MAX_PASSWORD_SIZE)])
+
     rgen_description = r.TextAreaField('Description',
     validators=[r.Length(min=1,max=r.lim.MAX_DESCRIPTION_SIZE)])
 
@@ -96,6 +102,11 @@ class EditForm(r.FlaskForm):
     validators=[r.InputRequired(),r.Length(min=1,max=r.lim.MAX_DESCRIPTION_SIZE)])
     rgen_jpgcap_url = r.StringField('JPEG CAPTURE URL',
     validators=[r.InputRequired(),r.Length(min=1,max=r.lim.MAX_DESCRIPTION_SIZE)])
+
+    rgen_def_uname = r.StringField('Camera Access Username',
+    validators=[r.Length(min=4,max=r.lim.MAX_USERNAME_SIZE)])
+    rgen_def_upass = r.StringField('Camera Access Password',
+    validators=[r.Length(min=8,max=r.lim.MAX_PASSWORD_SIZE)])
 
     rgen_description = r.TextAreaField('Description',
     validators=[r.Length(min=1,max=r.lim.MAX_DESCRIPTION_SIZE)])

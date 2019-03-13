@@ -2,7 +2,9 @@
 <li><a><i class="fa fa-cubes"></i>Resource Listing<span class="fa fa-chevron-down"></span></a>
 <ul class="nav child_menu">
 
+  <!--Generic Deployment-->
   <li><a href="{{ url_for('resource.rlist', tablename = 'Param3') }}">List Param3 Object</a></li>
+  <li><a href="{{ url_for('resource.rlist', tablename = 'Standard_File') }}">List uploaded files</a></li>
 
   <!--___________________NON PERMANENT GEOPOINT_____________________-->
   <!--<li><a href="{{ url_for('resource.radd', tablename = 'Georoute') }}">Register New Georoute</a></li>

@@ -18,6 +18,7 @@ MAX_CONFIG_VALU_SIZE = 50
 MAX_DESCRIPTION_SIZE = 250
 MAX_UUPARAM_SIZE = 100
 MAX_IPADDR_SIZE = 16
+MAX_FILENAME_SIZE = 30
 LOGS_MAX_BYTES = 100000
 TOKEN_LENGTH = 10
 ################################################################

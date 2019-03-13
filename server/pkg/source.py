@@ -21,8 +21,9 @@ def server(config=None):
 	#create and configures the server
 	out = Flask(__name__, instance_relative_config=True)
 	out.config.from_mapping(
-		SECRET_KEY='mmubus',
-		DATABASE=const.DB01_NAME
+		SECRET_KEY='torabuilds',
+		DATABASE=const.DB01_NAME,
+		UPLOAD_FOLDER='uploads'
 		#check out out.instance_path
 	)
 
@@ -41,6 +42,8 @@ def server(config=None):
 	from pkg.system import auth,admintools
 	from pkg.system.user import sysuser,type,sysnologin
 	from pkg.resource import r
+
+	from pkg.resource.generic import standard_file
 
 	#######################################################################################################
 	# Login manager section
@@ -62,7 +65,7 @@ def server(config=None):
 
 	bplist = [	r.bp,auth.bp,home.bp,admintools.bp,socketio.bp,
 				push.bp,pull.bp,sysuser.bp,type.bp,sysnologin.bp,
-				trackdir.bp]
+				trackdir.bp,standard_file.bp]
 
 	for bp in bplist:
 		out.register_blueprint(bp)

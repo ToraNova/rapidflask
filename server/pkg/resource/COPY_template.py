@@ -11,7 +11,7 @@ from pkg.resource import res_import as r
 
 class TODO_SAMPLE(r.Base):
     # PERMA : DO NOT CHANGE ANYTHING HERE UNLESS NECESSARY
-    __tablename__ = "PLS CHANGE THIS"
+    __tablename__ = "CHANGE_THIS" #Try to use plurals here (i.e car's')
     id = r.Column(r.Integer, primary_key=True)
     def __repr__(self):
     	return '<%r %r>' % (self.__tablename__,self.id)
@@ -69,37 +69,19 @@ class TODO_SAMPLE(r.Base):
         self.route_id = r.checkNull(insert_list,"route_id")
 
     def default_add_action(self):
-        #This will be run when the table is added via r-add
-        try:
-            # may do some imports here
-            #from pkg.database.fsqlite import db_session
-            pass
-        except Exception as e:
-            #PLEASE DO NOT EDIT THIS, ENABLE the rollback if there are db changes
-            #db_session.rollback()
-            raise ValueError(self.__tablename__,"default_add_action",str(e))
+        # This will be run when the table is added via r-add
+        # may do some imports here i.e (from pkg.database.fsqlite import db_session)
+        pass
 
     def default_mod_action(self):
-        #This will be run when the table is added modified via r-mod
-        try:
-            # may do some imports here
-            #from pkg.database.fsqlite import db_session
-            pass
-        except Exception as e:
-            #PLEASE DO NOT EDIT THIS, ENABLE the rollback if there are db changes
-            #db_session.rollback()
-            raise ValueError(self.__tablename__,"default_mod_action",str(e))
+        # This will be run when the table is added modified via r-mod
+        # may do some imports here i.e (from pkg.database.fsqlite import db_session)
+        pass
 
     def default_del_action(self):
-        #This will be run when the table is deleted
-        try:
-            # may do some imports here
-            #from pkg.database.fsqlite import db_session
-            pass
-        except Exception as e:
-            #PLEASE DO NOT EDIT THIS, ENABLE the rollback if there are db changes
-            #db_session.rollback()
-            raise ValueError(self.__tablename__,"default_del_action",str(e))
+        # This will be run when the table is deleted
+        # may do some imports here i.e (from pkg.database.fsqlite import db_session)
+        pass
     ######################################################################################################
 
 #TODO : DEFINE ADD RES FORM

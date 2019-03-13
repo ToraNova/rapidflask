@@ -13,7 +13,7 @@ from pkg.resource import res_import as r
 
 class CanvasLine(r.Base):
     # PERMA : DO NOT CHANGE ANYTHING HERE UNLESS NECESSARY
-    __tablename__ = "Canvas_Line"
+    __tablename__ = "Canvas_Lines"
     id = r.Column(r.Integer, primary_key=True)
     def __repr__(self):
     	return '<%r %r>' % (self.__tablename__,self.id)

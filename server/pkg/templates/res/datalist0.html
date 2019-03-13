@@ -60,9 +60,15 @@
 				<tbody>
 				{% for row in matches %}
 					<tr>
-					{% for count in range(colNum) %}
-					<td>{{row[count]}}</td>
-					{% endfor %}
+						{% for count in range(colNum) %}
+						{% if row[count].get('meta') == 'text' %}
+							<td>{{row[count].get('data')}}</td>
+						{% elif row[count].get('meta') == 'url' %}
+							<td><a href="{{row[count].get('data')}}">{{row[count].get('data')}}</a>
+						{% else %}
+							<td>{{row[count]}}</td>
+						{% endif %}
+						{% endfor %}
 					<td>
 						<form
 						action="{{ url_for('resource.rmod', tablename=tablename ,primaryKey=prikeyMatch[loop.index0])}}"
