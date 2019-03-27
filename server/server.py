@@ -39,12 +39,12 @@ if __name__ == '__main__':
         print (e)
 
 
-    petabus_sock,petabus = server()
+    mainsrv_sock,mainsrv = server()
     srvlog["sys"].info("system start") #logging
     try:
         #fsock_app.run(routed_app,debug=app_debug,host=main_host, port=main_port, use_reloader = False) #FlaskIO run
 
-        petabus_sock.run(petabus,debug=app_debug,host=main_host, port=main_port, use_reloader = True)
+        mainsrv_sock.run(mainsrv,debug=app_debug,host=main_host, port=main_port, use_reloader = True)
     except Exception as e:
         print("Exception error",e)
         srvlog["sys"].error("exception error")
