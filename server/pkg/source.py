@@ -32,7 +32,7 @@ def server(config=None):
 	else:
 		out.config.from_mapping(config)
 
-	from pkg.interface import socketio #socket io import
+	from pkg.interface import sysutilio #socket io import
 	from pkg.resource.geores import mapio
 	from pkg.resource.zfence.mqtsockio import Zfence
 
@@ -63,7 +63,7 @@ def server(config=None):
 	login_manager.login_message = "Please login first."
 	login_manager.login_message_category = "info"
 
-	bplist = [	r.bp,auth.bp,home.bp,admintools.bp,socketio.bp,
+	bplist = [	r.bp,auth.bp,home.bp,admintools.bp,sysutilio.bp,
 				push.bp,pull.bp,sysuser.bp,type.bp,sysnologin.bp,
 				trackdir.bp,standard_file.bp]
 
@@ -79,7 +79,7 @@ def server(config=None):
 	# FLASK SOCKET USE 8/1/2019
 	out_nonsock = out
 	out = SocketIO(out_nonsock)
-	out.on_namespace(socketio.SystemUtilNamespace('/sysutil'))
+	out.on_namespace(sysutilio.SystemUtilNamespace('/sysutil'))
 
 	# Geopoint example
 	# out.on_namespace(mapio.MapPointSocket('/geopoint'))
