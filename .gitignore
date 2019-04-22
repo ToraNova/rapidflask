@@ -1,9 +1,15 @@
 __pycache__/
 *.pyc
 *.db
-*.log
+
+logs/*
+!logs/.gitkeep
+
 tokens/
+!tokens/.gitkeep
+
 tokens/sysuser/
-init.token
+!tokens/sysuser/.gitkeep
+
 pkg/uploads/
 !pkg/uploads/.gitkeep
