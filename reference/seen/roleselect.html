@@ -1,0 +1,57 @@
+{% extends 'support/gentelella.html' %}
+
+<!--Import line from a pre-defined formhelpers in the include dir-->
+{% from "includes/helpers/_formhelpers.html" import render_field %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block body %}
+<div class="page-title">
+	<div class="title_left">
+		<h3> <small></small></h3>
+	</div>
+
+	<div class="title_right">
+	</div>
+</div>
+
+<div class="clearfix"></div>
+
+<div class="row">
+	<div class="col-md-12 col-sm-12 col-xs-12">
+		<div class="x_panel">
+		<div class="x_title">
+			<h2>Machine configuration (Demo)<small></small></h2>
+			<div class="clearfix"></div>
+		</div>
+		<div class="x_content">
+			<br/>
+			<!--Content-->
+			<form class="form-group" method="POST" action="{{url_for('home.role')}}"
+			enctype="multipart/form-data">
+					{{ form.hidden_tag() }}
+					<dl>
+					{% for field in form %}
+					{% if field.id == "csrf_token" %}
+					<!--Do nothing-->
+					{% else %}
+					{{ render_field(field)}}
+					{% include 'includes/helpers/_space1br.html' %}
+					{% endif %}
+					{% endfor %}
+					</dl>
+				<input type="submit" name="button" value="Establish Machine" class="btn btn-success"></input>
+			</form>
+
+		</div>
+		</div>
+	</div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+
+{% endblock %}

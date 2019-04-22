@@ -2,15 +2,17 @@ This readme file stores version information as well as
 features and changelogs. pls keep this up to date whenever
 you commit.
 
-use pip3 (python3-pip) to install the following modules
+use pip3 (python3-pip) to install the following modules:
 flask
 flask_wtf
 flask_sqlalchemy
 flask_bootstrap
 flask_login
 flask_admin
-flask_io
 flask_socketio
+
+no longer required:
+flask_io
 
 changelogs formatting
 update<N>	<date:DD/MM/YY>---<time>
@@ -91,3 +93,9 @@ update6   25/02/19---03:53am
 [   sys for system user / config and usertype and other perma tables
 [   deploy for non-perma database models (resources)
 [   cleaned up the templating / interface packages
+
+update7   22/04/19---10:59am
+[+ renamed to rapidflask since it is no longer 'minimal'
+[+ introduced realtime login logs (learning how to use emit correctly)
+[  emits now can be used outside of namespaced
+[  source.py now source based rather than a functional one.

@@ -14,6 +14,9 @@ from flask import render_template, redirect, url_for
 from flask import request, abort
 from flask import Blueprint
 
+# for live logins view
+from pkg.interface.sysutilio import livelog
+
 #usual imports (copy pasta this)
 import pkg.const as const
 from pkg.database import models as md
@@ -45,6 +48,10 @@ def login():
                 #successful login
                 srvlog["user"].info(userlogin_form.username.data+" logged onto the system") #logging
                 login_user(target_user)#login_manager logins
+
+                #logs it to the livelog monitor
+                livelog('{} ({}) Logon to server.'.format(target_user.username,target_user.getUserType()),'logins')
+
                 return redirect(url_for("home.home",username=target_user.username))
             else:
                 #incorrect password
@@ -56,7 +63,10 @@ def login():
 @login_required
 def logout():
     logout_username = current_user.username
+    logout_usertype = current_user.getUserType()
     logout_user()
+    #logs it to the livelog monitor
+    livelog('{} ({}) Logoff from server.'.format(logout_username,logout_usertype),'logins')
     srvlog["user"].info(logout_username+" logged out the system") #logging
     return redirect(url_for("auth.login"))
 

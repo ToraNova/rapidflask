@@ -39,7 +39,7 @@ class System_User(Base, UserMixin):#This class is permanent in almost all pyFlas
     usertype = Column(Integer(),unique=False,nullable=False) #refers to a userType
     creadate = Column(DateTime()) #date of user account creation
 
-    def __init__(self,a_username = None,a_password = None,a_usertype = False):
+    def __init__(self,a_username = None,a_password = None,a_usertype = 10): #by default it is a guess account
         self.username = a_username
         self.set_password(a_password)
         self.usertype = a_usertype

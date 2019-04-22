@@ -1,0 +1,75 @@
+{% extends 'support/gentelella.html' %}
+
+<!--Import line from a pre-defined formhelpers in the include dir-->
+{% from "includes/helpers/_formhelpers.html" import render_field %}
+
+{% block head %}
+<!-- iCheck -->
+<link href="{{url_for('static', filename='vendors/iCheck/skins/flat/green.css')}}" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+<div class="page-title">
+	<div class="title_left">
+		<h3> <small></small></h3>
+		<!-- No title on left -->
+	</div>
+
+	<div class="title_right">
+		<h3> <small></small></h3>
+		<!-- No title on right -->
+	</div>
+</div>
+
+<div class="clearfix"></div>
+
+<div class="row">
+	<div class="col-md-12 col-sm-12 col-xs-12">
+		<div class="x_panel">
+		<div class="x_title">
+			<h2>Live Logs (Flask-SocketIO)<small></small></h2>
+			<div class="clearfix"></div>
+		</div>
+		<div class="x_content">
+
+			<br/>
+			<!--Content-->
+			<div class="row">
+			<div class="col-md-4 col-sm-4 col-xs-4">
+
+				<label for="logview" id="logview_label">Live {{logtype}}</label>
+				<textarea id='logview' class='col-md-12' rows="30" cols="80" wrap="soft"
+				style="max-height:500px;min-height:500px; resize: none"></textarea>
+
+			</div>
+
+		</div>
+
+		</div>
+	</div>
+	</div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+	<script type="text/javascript" src="{{url_for('static', filename='flask_io/socket.io.min.js')}}"></script>
+	<script type="text/javascript" charset="utf-8">
+	var namespace = '/sysutil'
+	var logtype = '{{logtype}}' //obtained this from flask's render_template
+	var socket = io.connect('http://' + document.domain + ':' + location.port + namespace); //persistent
+	socket.on('connect', function() {
+		console.log("sysloginlive_test connected...");
+	});
+
+	socket.on('livelog_cast', function(msg){
+		if(msg.logtype == logtype || msg.logtype == 'all'){
+			//display relevant logs only, all is the exception type. livelog views with all display all logs
+			//inserts a newline into the text area
+
+			document.getElementById('logview').value = (document.getElementById('logview').value +
+			new Date().toLocaleString() + ' :: ' + msg.logstring + '\n');
+		}
+	});
+	</script>
+{% endblock %}

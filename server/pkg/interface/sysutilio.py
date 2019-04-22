@@ -5,15 +5,33 @@
 #--------------------------------------------------
 
 from flask import Blueprint
-from flask_socketio import Namespace, emit
+from flask_socketio import Namespace
+from flask_socketio import send, emit
+
 from flask import render_template, redirect, url_for
 import datetime
 
+from pkg.system.servlog import srvlog
 import pkg.const as const
 import pkg.resource.rdef as res
 import json
 
-bp = Blueprint('sock', __name__, url_prefix='') #flask sock bp
+bp = Blueprint('sock_sysutil', __name__, url_prefix='') #flask sock bp
+
+def livelog(logstring,logtype='logins'):
+
+	from pkg.source import out as socketio # use carefully to prevent circular imports
+
+	try:
+		#live logins - update7
+		socketio.emit('livelog_cast',
+		{'logtype':logtype,
+		'logstring':logstring},
+		namespace='/sysutil')
+		# emit may also contain namespaces to emit to other classes
+	except Exception as e:
+		print("Exception has occurred".str(e))
+		srvlog["oper"].info("Exception ocurred in live logging :"+str(e))
 
 #----------------------------------------------------------------------------------------
 # ROUTES
@@ -21,7 +39,7 @@ bp = Blueprint('sock', __name__, url_prefix='') #flask sock bp
 
 @bp.route('/sysclock',methods=['GET','POST'])
 def sysclock():
-	return render_template('flask_io/sysclock.html')
+	return render_template('flask_sockio/sysclock.html')
 
 #SystemUtilNamespace is a socket.io class that handles system utility realtime
 #data, currently implemented methods is the on_sync_time that allows a realtime
@@ -44,3 +62,7 @@ class SystemUtilNamespace(Namespace):
 		#print("callback:",json['data'])
 		dTString = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 		emit('recv_sync', {"datetime":dTString})
+
+	# system interface methods
+	# non context aware
+	# live logins - update7

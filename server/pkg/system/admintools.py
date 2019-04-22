@@ -109,3 +109,13 @@ def logview(logtype):
         if(len(filebuff) == 0):
             filebuff = ["Empty, No logs at the moment"]
         return render_template("admintools/logging.html",logfile = filebuff)
+
+##############################################################################################
+# Live Logs (in conjunction with flask_socketio)
+# Introduced update7
+##############################################################################################
+@bp.route('/logs/live/<logtype>')
+@a.admin_required
+def livelogview(logtype):
+    #Allow viewing of live logs
+    return render_template("flask_sockio/livelogs.html",logtype="logins")

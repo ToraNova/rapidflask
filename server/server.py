@@ -6,8 +6,10 @@
 # created 8/12/2018
 #--------------------------------------------------
 
-#from pkg.fsock import fsock_app #re-import the app after routing and socketing
-from pkg.source import server
+# perform monkey patching
+from gevent import monkey
+monkey.patch_all()
+
 from pkg.system.servlog import srvlog
 
 from pkg.database.fsqlite import init_db
@@ -38,12 +40,12 @@ if __name__ == '__main__':
         print("[ER]",__name__," : ","Exception occured while trying to create database")
         print (e)
 
-
-    mainsrv_sock,mainsrv = server()
+    from pkg.source import out_nonsock, out
+    mainsrv_sock = out
+    mainsrv = out_nonsock
     srvlog["sys"].info("system start") #logging
     try:
-        #fsock_app.run(routed_app,debug=app_debug,host=main_host, port=main_port, use_reloader = False) #FlaskIO run
-
+        #mainsrv.run(debug=app_debug,host=main_host, port=main_port, use_reloader = True) #flask run
         mainsrv_sock.run(mainsrv,debug=app_debug,host=main_host, port=main_port, use_reloader = True)
     except Exception as e:
         print("Exception error",e)

@@ -17,77 +17,70 @@ from pkg.database.fsqlite import db_session
 from pkg.database.fsqlite import sy_session
 from flask_socketio import SocketIO
 
-def server(config=None):
-	#create and configures the server
-	out = Flask(__name__, instance_relative_config=True)
-	out.config.from_mapping(
-		SECRET_KEY='torabuilds',
-		DATABASE=const.DB01_NAME,
-		UPLOAD_FOLDER='uploads'
-		#check out out.instance_path
-	)
+# This script works like a source file, sourcing files from pkg and leasing the important
+# ones such as out (socketIO) and out_flask - the vanilla
+config = None
 
-	if config is None:
-		out.config.from_pyfile('config.py',silent=True)
-	else:
-		out.config.from_mapping(config)
+#create and configures the server
+out = Flask(__name__, instance_relative_config=True)
+out.config.from_mapping(
+	SECRET_KEY='torabuilds',
+	DATABASE=const.DB01_NAME,
+	UPLOAD_FOLDER='uploads'
+	#check out out.instance_path
+)
 
-	from pkg.interface import sysutilio #socket io import
-	from pkg.resource.geores import mapio
-	from pkg.resource.zfence.mqtsockio import Zfence
+if config is None:
+	out.config.from_pyfile('config.py',silent=True)
+else:
+	out.config.from_mapping(config)
 
-	from pkg.interface import home
-	from pkg.interface import trackdir
-	from pkg.interface.API import push,pull
-	from pkg.system import auth,admintools
-	from pkg.system.user import sysuser,type,sysnologin
-	from pkg.resource import r
+from pkg.interface import sysutilio #socket io import
 
-	from pkg.resource.generic import standard_file
+from pkg.interface import home
+from pkg.interface.API import push,pull
+from pkg.system import auth,admintools
+from pkg.system.user import sysuser,type,sysnologin
+from pkg.resource import r
 
-	#######################################################################################################
-	# Login manager section
-	#######################################################################################################
-	login_manager = LoginManager()
-	login_manager.init_app(out)
-	@out.login_manager.user_loader
-	def load_user(id): #loads a sql object model as "login-ed"
-		target_user = auth.sysuser_getobj(id)
-		return target_user
+from pkg.resource.generic import standard_file
 
-	@out.login_manager.unauthorized_handler
-	def unauthorized_warning():
-		return render_template("errors/unauthorized.html",
-			displat_message="Login required!")
-	login_manager.login_view = "login"
-	login_manager.login_message = "Please login first."
-	login_manager.login_message_category = "info"
+#######################################################################################################
+# Login manager section
+#######################################################################################################
+login_manager = LoginManager()
+login_manager.init_app(out)
+@out.login_manager.user_loader
+def load_user(id): #loads a sql object model as "login-ed"
+	target_user = auth.sysuser_getobj(id)
+	return target_user
 
-	bplist = [	r.bp,auth.bp,home.bp,admintools.bp,sysutilio.bp,
-				push.bp,pull.bp,sysuser.bp,type.bp,sysnologin.bp,
-				trackdir.bp,standard_file.bp]
+@out.login_manager.unauthorized_handler
+def unauthorized_warning():
+	return render_template("errors/unauthorized.html",
+		displat_message="Login required!")
+login_manager.login_view = "login"
+login_manager.login_message = "Please login first."
+login_manager.login_message_category = "info"
 
-	for bp in bplist:
-		out.register_blueprint(bp)
+bplist = [	r.bp,auth.bp,home.bp,admintools.bp,sysutilio.bp,
+			push.bp,pull.bp,sysuser.bp,type.bp,sysnologin.bp,
+			standard_file.bp]
 
-	#tear down context is done here.
-	@out.teardown_appcontext
-	def shutdown_session(exception=None):
-		db_session.remove()
-		sy_session.remove()
+for bp in bplist:
+	out.register_blueprint(bp)
 
-	# FLASK SOCKET USE 8/1/2019
-	out_nonsock = out
-	out = SocketIO(out_nonsock)
-	out.on_namespace(sysutilio.SystemUtilNamespace('/sysutil'))
+#tear down context is done here.
+@out.teardown_appcontext
+def shutdown_session(exception=None):
+	db_session.remove()
+	sy_session.remove()
 
-	# Geopoint example
-	# out.on_namespace(mapio.MapPointSocket('/geopoint'))
+# FLASK SOCKET USE 8/1/2019
+out_nonsock = out
+out = SocketIO(out_nonsock)
 
-	# Zfence example
-	# uspace = Zfence('/zfence')
-	# uspace.startMQclient(True)
-	# out.on_namespace(Zfence('/zfence/edit'))
-	# out.on_namespace(uspace)
+# out is rexported for use in emits
 
-	return out,out_nonsock
+sysutil_ns = sysutilio.SystemUtilNamespace('/sysutil')
+out.on_namespace(sysutil_ns)

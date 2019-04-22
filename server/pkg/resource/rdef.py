@@ -27,13 +27,6 @@ del_only = "DELONLY" #keyword for delete only objects (not modifiable but could 
 ##########################################################
 
 #IMPORT RESOURCE CLASS HERE (MODEL AND FORMS)
-# GEORES RESOURCES
-from pkg.resource.geores import geopoint,georoute
-
-# ZFENCING PROJECT
-from pkg.resource.zfence import seghost, segcam
-from pkg.resource.zfence import gsensor, proxradar
-from pkg.resource.zfence import radar_alert, gsensor_alert
 
 # Generic models
 from pkg.resource.generic import param3model, ipcam_model
