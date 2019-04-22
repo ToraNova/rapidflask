@@ -5,11 +5,11 @@ __pycache__/
 logs/*.log*
 !logs/.gitkeep
 
-tokens/
+tokens/*
 !tokens/.gitkeep
 
-tokens/sysuser/
+tokens/sysuser/*
 !tokens/sysuser/.gitkeep
 
-pkg/uploads/
+pkg/uploads/*
 !pkg/uploads/.gitkeep
