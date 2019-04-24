@@ -17,6 +17,7 @@ from pkg.database.fsqlite import db_session
 
 import os.path
 import configparser
+import logging
 import pkg.const as const
 
 if __name__ == '__main__':
@@ -27,11 +28,23 @@ if __name__ == '__main__':
     rcf = configparser.RawConfigParser()
     rcf.read("rapid.conf")
     main_host = rcf.get('conn','hostaddr')
-    main_port = int(rcf.get('conn','port'))
-    main_debug = True if rcf.get('flags','debug') else False
-    main_reload = True if rcf.get('flags','reload') else False
+    try:
+        main_port = int(rcf.get('conn','port'))
+    except Exception as e:
+        print("[ER]",__name__," : ","Exception occured while parsing port number.")
+        print(str(e))
+        srvlog["sys"].error("Parsing port exception "+str(e))
+    main_debug = True if rcf.get('flags','debug')=='1' else False
+    main_reload = True if rcf.get('flags','reload')=='1' else False
     ##################################################################
 
+    # print and log out configuration details
+    print("[IF]",__name__," : ","Hosting RapidFlask on",main_host,str(main_port))
+    print("[IF]",__name__," : ","Debug/Reload :",main_debug,"/",main_reload)
+    srvlog["sys"].info(main_host+":"+str(main_port))
+    srvlog["sys"].info("debug/reload : "+
+            "yes/" if main_debug else "no/"+
+            "yes" if main_reload else "no")
 
     ##################################################################
     #First run issues (create database)
@@ -56,13 +69,19 @@ if __name__ == '__main__':
     mainsrv_sock = out
     mainsrv = out_nonsock
     srvlog["sys"].info("system start") #logging
+
+    if(not main_debug):
+        # Restrict werkzeug logs to only errors
+        log = logging.getLogger('werkzeug')
+        log.setLevel(logging.ERROR)
+
     try:
         #mainsrv.run(debug=app_debug,host=main_host, port=main_port, use_reloader = True) #flask run
         mainsrv_sock.run(mainsrv,debug= main_debug,host=main_host, port=main_port, use_reloader = main_reload)
     except Exception as e:
-        print("Exception error",e)
+        print("Exception error",str(e))
         srvlog["sys"].error("exception error")
-        srvlog["sys"].error(e)
+        srvlog["sys"].error(str(e))
     finally:
         print("[IF]",__name__," Server terminated.")
         srvlog["sys"].info("system halt") #logging
