@@ -12,6 +12,7 @@ from flask import Blueprint
 import pkg.const as const
 from flask_login import LoginManager
 from flask import render_template
+import logging #to disable werkzeug logs
 
 from pkg.database.fsqlite import db_session
 from pkg.database.fsqlite import sy_session
@@ -34,6 +35,10 @@ if config is None:
 	out.config.from_pyfile('config.py',silent=True)
 else:
 	out.config.from_mapping(config)
+
+# Restrict werkzeug logs to only errors
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 
 from pkg.interface import sysutilio #socket io import
 

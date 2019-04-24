@@ -3,3 +3,5 @@ update7   22/04/19---10:59am
 [+ introduced realtime login logs (learning how to use emit correctly)
 [  emits now can be used outside of namespaced
 [  source.py now source based rather than a functional one.
+[+ added sysutilio chatter (chatting system based on flask-socketio)
+[+ nav bar login as "WHO" display

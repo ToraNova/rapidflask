@@ -16,16 +16,26 @@ from pkg.database.fsqlite import init_db
 from pkg.database.fsqlite import db_session
 
 import os.path
+import configparser
 import pkg.const as const
-
-main_host = '0.0.0.0'
-main_port = 8000
-main_debug = True
-app_debug = True
 
 if __name__ == '__main__':
 
+    ##################################################################
+    # Performs config parsing
+    ##################################################################
+    rcf = configparser.RawConfigParser()
+    rcf.read("rapid.conf")
+    main_host = rcf.get('conn','hostaddr')
+    main_port = int(rcf.get('conn','port'))
+    main_debug = True if rcf.get('flags','debug') else False
+    main_reload = True if rcf.get('flags','reload') else False
+    ##################################################################
+
+
+    ##################################################################
     #First run issues (create database)
+    ##################################################################
     try:
         if(not os.path.isdir(os.path.join(const.TOKN_DIR,const.TOKN_SYS))):
             #creates the directory if it does not exist
@@ -38,7 +48,9 @@ if __name__ == '__main__':
             pass
     except  Exception as e:
         print("[ER]",__name__," : ","Exception occured while trying to create database")
-        print (e)
+        print (str(e))
+        srvlog['sys'].error("Database creation exception :"+str(e))
+    ##################################################################
 
     from pkg.source import out_nonsock, out
     mainsrv_sock = out
@@ -46,7 +58,7 @@ if __name__ == '__main__':
     srvlog["sys"].info("system start") #logging
     try:
         #mainsrv.run(debug=app_debug,host=main_host, port=main_port, use_reloader = True) #flask run
-        mainsrv_sock.run(mainsrv,debug=app_debug,host=main_host, port=main_port, use_reloader = True)
+        mainsrv_sock.run(mainsrv,debug= main_debug,host=main_host, port=main_port, use_reloader = main_reload)
     except Exception as e:
         print("Exception error",e)
         srvlog["sys"].error("exception error")

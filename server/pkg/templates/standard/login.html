@@ -12,14 +12,14 @@
 
 {% block content %}
 <div class="container">
-  {% include 'includes/helpers/_space1br.html' %}<!use these to 'space vertically'>
+  {% include 'includes/helpers/_space1br.html' %}<!--use these to 'space vertically'-->
   {% include 'includes/helpers/_space1br.html' %}
 
   <div class="row">
     <div class="col-sm-2 col-xs-2 col-md-2 col-lg-2"></div>
     <div class="col-sm-8 col-xs-8 col-md-8 col-lg-8">
       <div class="container">
-        <h2 class="text-primary">User Login</h2> <!Editable Header>
+        <h2 class="text-primary">User Login</h2> <!--Editable Header-->
           {% include 'includes/helpers/_space1br.html' %}
         <form class="form-group" method="POST" action="{{url_for('auth.login')}}"
         enctype="multipart/form-data">
