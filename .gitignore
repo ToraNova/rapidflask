@@ -8,10 +8,10 @@
 # Ignore logs
 /logs/*.log*
 
-# except all .gitkeep
-!*.gitkeep
-
 # Ignore tokens, and uploaded files
 /tokens/*
 /tokens/sysuser/*
 /pkg/uploads/*
+
+# except all .gitkeep
+!*.gitkeep
