@@ -1,0 +1,17 @@
+# ignore python caches
+/__pycache__/*
+*.pyc
+
+# ignore databases (new deployment should re-init their dbs)
+*.db
+
+# Ignore logs
+/logs/*.log*
+
+# except all .gitkeep
+!*.gitkeep
+
+# Ignore tokens, and uploaded files
+/tokens/*
+/tokens/sysuser/*
+/pkg/uploads/*
