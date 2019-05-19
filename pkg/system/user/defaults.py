@@ -10,9 +10,9 @@ from pkg.system.database import dbms
 def default_add():
 
     #Perma models
-    from pkg.system.database.models import System_User
-    from pkg.system.database.models import System_UserType
-    from pkg.system.database.models import System_Configuration
+    from pkg.system.user.models import System_User
+    from pkg.system.user.models import System_UserType
+    from pkg.system.user.models import System_Configuration
 
     #add default values of the configuration table
     #default_config_list = [["ScannerID","AR001"],["MainServerIP","127.0.0.1"],["MainServerPort","4000"]] #used for attemoni

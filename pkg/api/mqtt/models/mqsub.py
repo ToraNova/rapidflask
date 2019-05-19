@@ -1,14 +1,14 @@
 #--------------------------------------------------
-# mqtt_control.py
-# MQTT_Control is a database model to control subscriptions
-# and publications
+# mqsub.py
+# MQTSUB is a database model to control subscriptions
 # introduced in u8
 # ToraNova
 #--------------------------------------------------
 
 from pkg.resource import res_import as r
+from pkg.system.database import dbms
 
-class MQTTSubs(r.Base):
+class MQTTSubs(dbms.Base0):
     # PERMA : DO NOT CHANGE ANYTHING HERE UNLESS NECESSARY
     __tablename__ = "MQTT_Subs" #Try to use plurals here (i.e car's')
     id = r.Column(r.Integer, primary_key=True)

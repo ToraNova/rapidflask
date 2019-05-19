@@ -16,11 +16,11 @@ from flask_login import current_user
 
 #usual imports (copy pasta this)
 import pkg.const as const
-from pkg.system.database import dbms
-from pkg.system.database import models as md
-from pkg.system.database import forms as fm
-from pkg.system.database import forms as fm
+import pkg.limits as limits
 from pkg.system import assertw as a
+from pkg.system.database import dbms
+from pkg.system.user import models as md
+from pkg.system.user import forms as fm
 from pkg.system.servlog import srvlog,logtofile
 
 from pkg.system.user.sysuser import tupleGenerator
@@ -69,11 +69,15 @@ def totalreset():
         dbms.init_db()
         print("[IF]",__name__," Total Database reset.")
         srvlog["sys"].warning("Database total reset under admintools/totalreset") #logging
-        return "admintools : ok"
+        return render_template("standard/message.html",
+            display_title="Admintools (TotalReset)",
+            display_message="OK")
     except Exception as e:
         print("[ER]",__name__," Exception has occurred:",str(e))
         srvlog["sys"].warning("Database total reset with exception "+str(e)) #logging
-        return "admintools : fail"
+        return render_template("errors/error.html",
+            error_title="Admintools (TotalReset)",
+            error_message="Failed:"+str(e))
 
 @bp.route('/resetdb')
 @a.route_disabled #disable if DISABLE_CRIT_ROUTE from CONST is set to TRUE
@@ -86,11 +90,15 @@ def resetdb():
         dbms.reset_db()
         print("[IF]",__name__," Database reset.")
         srvlog["sys"].warning("Deployment resource (deploy.db) reset under admintools/resetdb") #logging
-        return "admintools : ok"
+        return render_template("standard/message.html",
+            display_title="Admintools (DB Reset)",
+            display_message="OK")
     except Exception as e:
         print("[ER]",__name__," Exception has occurred:",str(e))
         srvlog["sys"].warning("Deployment resource (deploy.db) reset with exception "+str(e)) #logging
-        return "admintools : fail"
+        return render_template("errors/error.html",
+            error_title="Admintools (DB Reset)",
+            error_message="Failed:"+str(e))
 
 ##############################################################################################
 # Logging routes (display server logs)

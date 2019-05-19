@@ -35,8 +35,8 @@ def init_db():
     update_sys()
     update_meta()
 
-    from pkg.system.database.defaults import default_add
-    default_add()
+    from pkg.system.user.defaults import default_add
+    default_add() # adds the default system users (and configuration)
     tokenfile = open(os.path.join(const.TOKN_DIR,"init.token"),"w+")
     tokenfile.close()
     return
@@ -61,20 +61,15 @@ def reset_db():
     return
 
 def update_sys():
+    '''this is called when we want to update our system database'''
     #-----------------------PERMA MODELS-------------------------------------
-    from pkg.system.database.models import System_User #perma
-    from pkg.system.database.models import System_Configuration #perma
-    from pkg.system.database.models import System_UserType #perma
-    #------------------------------------------------------------------------
-
+    from pkg.system import sdef #sdef is for perma imports (system)
     Base0.metadata.create_all(bind=engine_sys)
+    #------------------------------------------------------------------------
 
 def update_meta():
-    #this is called when we want to change our db
-    #NOTE please add imports of new models here
-    #as of u6 - r, just import rdef here
+    '''this is called when we want to update our deployment database'''
     #-----------------------Non PERMA----------------------------------------
-    from pkg.resource import rdef
-    #------------------------------------------------------------------------
-
+    from pkg.resource import rdef #rdef is for deployment dependent resources
     Base1.metadata.create_all(bind=engine_dep)
+    #------------------------------------------------------------------------

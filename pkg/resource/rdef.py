@@ -36,6 +36,7 @@ from pkg.resource.generic import standard_log, standard_file
 ##########################################################
 # PLEASE EDIT THE FOLLOWING FOR EACH DEPLOYMENT!
 # The following dictionary will be exported to r.py
+# This is only for deployment dependent resources.
 ##########################################################
 
 dist_resources = {
