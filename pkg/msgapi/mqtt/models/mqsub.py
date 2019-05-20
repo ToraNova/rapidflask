@@ -1,7 +1,6 @@
 #--------------------------------------------------
-# mqtt_control.py
-# MQTT_Control is a database model to control subscriptions
-# and publications
+# mqsub.py
+# MQTSUB is a database model to control subscriptions
 # introduced in u8
 # ToraNova
 #--------------------------------------------------
@@ -10,9 +9,9 @@ from pkg.resource import res_import as r
 from pkg.system.database import dbms
 Base = dbms.msgapi.base
 
-class MQTT_Msg(Base):
+class MQTT_Sub(Base):
     # PERMA : DO NOT CHANGE ANYTHING HERE UNLESS NECESSARY
-    __tablename__ = "MQTT_Msgs" #Try to use plurals here (i.e car's')
+    __tablename__ = "MQTT_Subs" #Try to use plurals here (i.e car's')
     id = r.Column(r.Integer, primary_key=True)
     def __repr__(self):
     	return '<%r %r>' % (self.__tablename__,self.id)
@@ -23,25 +22,23 @@ class MQTT_Msg(Base):
     ######################################################################################################
     # TODO: DEFINE LIST OF COLUMNS
     # the string topic of the topic to subscribe to
-    topic = r.Column(r.String(r.lim.MAX_MQTT_TOPIC_SIZE), nullable=False)
-    tlink = r.Column(r.Integer, nullable=True) #links to one of our subscribed topic
-    msg = r.Column(r.String(r.lim.MAX_MQTT_MSGCT_SIZE), nullable=False)
-    timev0 = r.Column(r.DateTime, nullable=False) #insertion time
-    timed0 = r.Column(r.DateTime, nullable=True) #deletion time (msg to be kept until)
-    pflag0 = r.Column(r.Boolean, nullable=False)  #flag to check if the msg has been processed
-    delonproc = r.Column(r.Boolean, nullable=False) #flag to check if this message should be delete on process
+    topic = r.Column(r.String(r.lim.MAX_MQTT_TOPIC_SIZE), nullable=False) 
+    description = r.Column(r.String(r.lim.MAX_DESCRIPTION_SIZE), nullable=True, unique=False)
+    stordur = r.Column(r.Integer, nullable=True) #how long to store messages
+    delonproc = r.Column(r.Boolean, nullable=False) #delete the messages after processing?
+    deloncas = r.Column(r.Boolean, nullable=False) #delete all msg if the topics get deleted
 
     # TODO: DEFINE THE RLIST
     # CHANGED ON U6 : RLISTING NOW MERGED WITH RLINKING : see 'RLINKING _ HOW TO USE:'
     # The following is for r-listing (as of u6, rlinking as well) (resource listing)
     # the values in the rlist must be the same as the column var name
     rlist = {
-    "Topic":"topic",
-    "Linked (description)":"__link__/tlink/MQTT_Sub/id:description",
-    "Content":"msg",
-    "Received":"__time__/%b-%d-%Y %H:%M:%S/timev1",
-    "Delete on":"__time__/%b-%d-%Y %H:%M:%S/timed0",
-    "Processed?":"pflag0"
+    "Subscription ID":"id",
+    "Topic Name":"topic",
+    "Description":"description",
+    "Store N seconds (None/Null = Forever)":"stordur",
+    "Delete on processed?":"delonproc",
+    "Delete on cascade?":"deloncas"
     } #header:row data
 
     # RLINKING _ HOW TO USE :
@@ -60,36 +57,18 @@ class MQTT_Msg(Base):
     # TODO: DEFINE THE priKey and display text
     #this primary key is used for rlisting/adding and mod.
     rlist_priKey = "id"
-    rlist_dis = "MQTT Message Stack" #display for r routes
+    rlist_dis = "MQTT Subscriptions" #display for r routes
 
     # TODO: CONSTRUCTOR DEFINES, PLEASE ADD IN ACCORDING TO COLUMNS
     # the key in the insert_list must be the same as the column var name
     def __init__(self,insert_list):
-        '''requirements in insert_list
-        @param tlink - link to the mqtt sub record
-        @param topic - the topic string (incase linking failed)
-        @param msg - the msg content'''
-        from pkg.api.mqtt.models import MQTT_Sub
-        from pkg.system.servlog import srvlog
-        import timedelta, datetime
-        # find links
-        self.tlink = r.checkNull( insert_list, "tlink")
         self.topic = insert_list["topic"]
-        self.msg = insert_list["msg"]
-        self.timev0 = datetime.datetime.now()
-        self.pflag0 = False
-        submaster = MQTT_Sub.query.filter( MQTT_Sub.id == self.tlink ).first()
-        if(submaster is not None):
-            if( submaster.stordur is None):
-                self.timed0 = None #store forever
-            else:
-                self.timed0 = self.timev0 + timedelta( seconds= submaster.stordur)
-            self.delonproc = submaster.delonproc #inherits from the topic master
-        else:
-            srvlog["oper"].warning("MQTT message added to unknown link topic:"+self.topic+
-                    " id="+int(self.tlink))
-            self.timed0 = r.lim.DEF_MQTT_MSGST_DURA
-            self.delonproc = True
+        self.delonproc = bool(insert_list["delonproc"])
+        self.deloncas = bool(insert_list["deloncas"])
+
+        #FOR nullable=True, use a the checkNull method
+        self.description = r.checkNull(insert_list,"description")
+        self.stordur = r.checkNull(insert_list,"stordur")
 
     def default_add_action(self):
         # This will be run when the table is added via r-add
@@ -105,6 +84,27 @@ class MQTT_Msg(Base):
     def default_del_action(self):
         # This will be run when the table is deleted
         # may do some imports here i.e (from pkg.database.fsqlite import db_session)
-        pass
+        # delete all linked on cascade
+        if(self.deloncas):
+            import pkg.system.database.dbms as dbms
+            from pkg.msgapi.mqtt.models import MQTT_Msg
+            links = MQTT_Msg.query.filter( MQTT_Msg.tlink == self.id ).all()
+            for m in links:
+                dbms.sy_session.delete( m )
+            srvlog["oper"].warning("Removed MQTT SubTopic and messages with cascade")
+            dbms.sy_session.commit()
+
     ######################################################################################################
+
+# The add and edit forms are the same
+class AddForm(r.FlaskForm):
+    #TODO: List the fields here, FIELDS MUST BE PREFIXED WITH rgen_
+    # The names here after the rgen_ prefix must correspond to a var name in the respective model
+    rgen_topic = r.StringField('MQTT Topic',validators=[ r.Length(max=r.lim.MAX_MQTT_TOPIC_SIZE) ] )
+    rgen_description = r.TextAreaField('Description',validators=[r.Length(max=r.lim.MAX_DESCRIPTION_SIZE)])
+    rgen_stordur = r.IntegerField('Store at most N seconds (leave empty to store forever)')
+    rgen_delonproc = r.SelectField('Delete messages after process?',choices=[('1','True'),('0','False')])
+    rgen_deloncas = r.SelectField('Delete messages on cascade?',choices=[('1','True'),('0','False')])
+
+
 

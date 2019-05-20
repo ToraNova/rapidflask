@@ -1,8 +1,10 @@
 #--------------------------------------------------
-# r.py <DONOT USE! WIP>!!
-# this file contains functions and routes
-# for admin usage
+# r.py 
+# r is a power tool that allows creation of database
+# objects. r allows is the framework for object routes
+# so users will only need to worry about model definitions
 # introduced 8/12/2018
+# updated on u8 (20/05/2019)
 #--------------------------------------------------
 
 #flask routing imports
@@ -18,12 +20,15 @@ import pkg.const as const
 from pkg.system.database import dbms
 from pkg.system import assertw as a
 from pkg.system.servlog import srvlog,logtofile
-#from pkg.database import models as md #!!MODELS FROM DATABASE ARE NOT USED IN r.PY
-#from pkg.interface import forms as fm #!!FORMS FROM INTERFACE ARE NOT USED IN r.PY
+
+# resource imports
+from pkg.resource.res_import import checkNull
+import pkg.resource.rstruct as rstruct
 
 #r.py (u3) uses the dist dictionary from rdef
-from pkg.resource import rdef
-from pkg.resource.res_import import checkNull
+#r.py (u8) uses the dicts from ddef, adef and recast as d/a_defines
+from pkg.deploy.ddef import r_defines as d_defines
+from pkg.msgapi.adef import r_defines as a_defines
 
 #additional overheads
 import os
@@ -43,18 +48,19 @@ bp = Blueprint('resource', __name__, url_prefix='/resource')
 # Could be semi-permanent
 def radd(tablename):
 
-        if rdef.dist_resources[tablename][rdef.aForm] == None:
+        lkup = d_defines # use the deployment lookup
+        if lkup[tablename].addform == None:
                 return render_template("errors/error.html",
                 error_title="Adding Failure",
                 error_message="This resource cannot be added manually!")
-        resadd_form = rdef.dist_resources[tablename][rdef.aForm]() #creates an ADD FORM
+        resadd_form = lkup[tablename].addform() #creates an ADD FORM
 
-        resadd_form = regenerateForm(resadd_form,None)
+        resadd_form = regenerateForm(resadd_form,lkup,None)
         #resadd_form.process()
 
         if resadd_form.validate_on_submit():
                 d_point = getFormAttrList(resadd_form) #d_point has a dictionary for obj creation
-                res_model = rdef.dist_resources[tablename][rdef.sqlClass]
+                res_model = lkup[tablename].model
                 try:
                         #try to add
                         target_add = res_model(d_point)
@@ -88,11 +94,12 @@ def radd(tablename):
 # This route deals alot with the dist pkg as it is different from the packages.
 # Could be semi-permanent
 def rlist(tablename):
-        mobj = getMatch(tablename)
+        lkup = d_defines # use the deployment lookup
+        mobj = getMatch(lkup,tablename)
         columnHead = mobj[0]
         match = mobj[1]
         prikey_match = mobj[2]
-        display_tablename = rdef.dist_resources[tablename][rdef.sqlClass].rlist_dis
+        display_tablename = lkup[tablename].model.rlist_dis
         return render_template('res/datalist0.html',
         colNum=len(columnHead),matches=match,columnHead=columnHead, tablename=tablename,
         prikeyMatch=prikey_match,
@@ -104,20 +111,20 @@ def rlist(tablename):
 # This route deals alot with the dist pkg as it is different from the packages.
 # Could be semi-permanent
 def rmod(tablename,primaryKey):
-
-        if(rdef.dist_resources[tablename][rdef.eForm] == None):
+        lkup = d_defines #use the deployment lookup
+        if(lkup[tablename].editform == None):
                 #edits disabled
                 return render_template("errors/error.html",
                 error_title="Modify Failure",
                 error_message="This resource cannot be modified!")
-        elif(rdef.dist_resources[tablename][rdef.eForm] == rdef.del_only):
+        elif(lkup[tablename].editform == rstruct.del_only):
                 #delete only
                 pass
         else:
-                rmod_form = rdef.dist_resources[tablename][rdef.eForm]() #generates the edit form
+                rmod_form = lkup[tablename].editform() #generates the edit form
 
         if(request.method=="POST"):
-                res_model = rdef.dist_resources[tablename][rdef.sqlClass]
+                res_model = lkup[tablename].model
                 if(request.form["button"]=="Delete"):
                         #DELETION PROCEDURE
                         target_del =res_model.query.filter( getattr(res_model,res_model.rlist_priKey) == primaryKey ).first()
@@ -136,7 +143,7 @@ def rmod(tablename,primaryKey):
 
                 elif(request.form["button"]=="Modify"):
 
-                        if(rdef.dist_resources[tablename][rdef.eForm] == rdef.del_only):
+                        if(lkup[tablename].editform == rstruct.del_only):
                                 return render_template("errors/error.html",
                                 error_title="Modify Failure",
                                 error_message="This resource can only be deleted!")
@@ -175,10 +182,10 @@ def rmod(tablename,primaryKey):
 ##############################################################################################
 # Auxiliary methods, these methods aid the generelization of resource models/forms
 ##############################################################################################
-def getMatch(tablename):
+def getMatch(rstype,tablename):
         '''obtains matching columns and data of a specific table
         updated on u3 compared to r9. now supports a cleaner model side requirement'''
-        entityClass = rdef.dist_resources[tablename][rdef.sqlClass]
+        entityClass = rstype[tablename].model
         reslist = entityClass.rlist # the rlist element
         rawlist = entityClass.query.all() # all the records
         columnHead = []
@@ -198,7 +205,7 @@ def getMatch(tablename):
                                         refFKey = reslist[key].split('/')[3]
                                         refFKey = refFKey[:refFKey.find(':')]
                                         refLook = reslist[key].split(':')[1]
-                                        refEntClass = rdef.dist_resources[refTable][rdef.sqlClass]
+                                        refEntClass = rstype[refTable].model
                                         if(entry.__getattribute__(rkey) != None):
                                                 coltmp["data"] = refEntClass.query.filter(
                                                         getattr(refEntClass,refFKey) ==
@@ -273,31 +280,31 @@ def getFormAttrList(form_obj):
         as the key and value of the actual data'''
         out = {}
         for a in dir(form_obj):
-                if a.startswith(rdef.rgen_keyword):
-                        out[a[len(rdef.rgen_keyword):]]=form_obj.__getattribute__(a).data
-                elif a.startswith(rdef.rgen_selkey):
-                        out[a[len(rdef.rgen_selkey):]]=form_obj.__getattribute__(a).data
-                elif a.startswith(rdef.rgen_timkey):
-                        out[a[len(rdef.rgen_selkey):]]=form_obj.__getattribute__(a).data
-                elif a.startswith(rdef.rgen_actkey):
-                        form_action = form_obj.__getattribute__(a[len(rdef.rgen_actkey):])
+                if a.startswith(rstruct.rgen_keyword):
+                        out[a[len(rstruct.rgen_keyword):]]=form_obj.__getattribute__(a).data
+                elif a.startswith(rstruct.rgen_selkey):
+                        out[a[len(rstruct.rgen_selkey):]]=form_obj.__getattribute__(a).data
+                elif a.startswith(rstruct.rgen_timkey):
+                        out[a[len(rstruct.rgen_selkey):]]=form_obj.__getattribute__(a).data
+                elif a.startswith(rstruct.rgen_actkey):
+                        form_action = form_obj.__getattribute__(a[len(rstruct.rgen_actkey):])
                         if callable( form_action ):
                                 out.update( form_action( form_obj ) )
 
         return out
 
-def regenerateForm(in_form,target=None):
+def regenerateForm(in_form,lkup,target=None):
         for a in dir(in_form): #for all form attributes
-                if a.startswith(rdef.rgen_keyword) and target != None: #only the ones defined under rgen
-                        model_field = a[len(rdef.rgen_keyword):] #FOR MODIFY ONLY
+                if a.startswith(rstruct.rgen_keyword) and target != None: #only the ones defined under rgen
+                        model_field = a[len(rstruct.rgen_keyword):] #FOR MODIFY ONLY
                         in_form.__getattribute__(a).default = target.__getattribute__(model_field)
-                elif a.startswith(rdef.rgen_selkey):
-                        model_field = a[len(rdef.rgen_selkey):] #GETS THE MODEL FIELD
-                        fkeyres = rdef.dist_resources[in_form.fKeylist[model_field][0]][rdef.sqlClass].query.all()
+                elif a.startswith(rstruct.rgen_selkey):
+                        model_field = a[len(rstruct.rgen_selkey):] #GETS THE MODEL FIELD
+                        fkeyres = lkup[in_form.fKeylist[model_field][0]].model.query.all()
                         in_form.__getattribute__(a).choices = dynamicSelectorHandler(fkeyres,in_form.fKeylist[model_field][1])
                         if(target != None):
                                 in_form.__getattribute__(a).default = target.__getattribute__(model_field)
-                elif a.startswith(rdef.rgen_actkey):
+                elif a.startswith(rstruct.rgen_actkey):
                         pass
         return in_form
 
@@ -311,6 +318,6 @@ def dynamicSelectorHandler(sqlresult,ref_elem):
         for elements in sqlresult:
                 outList.append((str(elements.__getattribute__(elements.rlist_priKey)),elements.__getattribute__(ref_elem)))
 
-        outList.append((rdef.rlin_nullk,'No Link'))
+        outList.append((rstruct.rlin_nullk,'No Link'))
 
         return outList

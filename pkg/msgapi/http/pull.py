@@ -20,12 +20,13 @@ from pkg.system.database import dbms
 from pkg.system.user import models as md
 from pkg.system.user import forms as fm
 from pkg.system.servlog import srvlog,logtofile
-
-from pkg.resource.generic import param3model #SAMPLE ONLY, DO NOT USE FOR ACTUAL DEPLOYMENT
 from pkg.resource.r import getMatch
 
+from pkg.deploy.generic import param3model #SAMPLE ONLY, DO NOT USE FOR ACTUAL DEPLOYMENT
+from pkg.deploy.ddef import r_defines as d_defines
+
 #primary blueprint
-from pkg.api.http import bp #uses the __init__ blueprint
+from pkg.msgapi.http import bp #uses the __init__ blueprint
 
 ##############################################################################################
 # API pull routings
@@ -41,7 +42,7 @@ def tableList(tablename):
     print("Pull request from host ",upload_ip,tablename,'list') #DEBUGGING ONLY
 
     try:
-        match = getMatch(tablename)[1]
+        match = getMatch(d_defines,tablename)[1]
         # #------------FORMATTING
         # out = ''
         # for row in match:

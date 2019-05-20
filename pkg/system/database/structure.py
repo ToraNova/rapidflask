@@ -44,13 +44,13 @@ def create_db(aDBMS,system=False,deploy=False,msgapi=False,token=True):
             sdef.default_add() # adds the default system users (and configuration)
     if( deploy ):
         if( not os.path.isfile( aDBMS.deploy.dbfile)):
-            from pkg.resource import rdef
+            from pkg.deploy import ddef
             aDBMS.deploy.base.metadata.create_all( bind = aDBMS.deploy.engine )
             srvlog["sys"].info("Creating metadata for DEP Database")
-            rdef.default_add() # adds the default system users (and configuration)
+            ddef.default_add() # adds the default system users (and configuration)
     if( msgapi ):
         if( not os.path.isfile( aDBMS.msgapi.dbfile)):
-            from pkg.api import adef
+            from pkg.msgapi import adef
             aDBMS.msgapi.base.metadata.create_all( bind = aDBMS.msgapi.engine )
             srvlog["sys"].info("Creating metadata for API Database")
             adef.default_add() # adds the default system users (and configuration)

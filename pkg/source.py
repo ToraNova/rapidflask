@@ -23,31 +23,33 @@ config = None
 #create and configures the server
 out = Flask(__name__, instance_relative_config=True)
 out.config.from_mapping(
-	SECRET_KEY='torabuilds',
-	DATABASE=const.DB01_NAME,
-	UPLOAD_FOLDER='uploads'
-	#check out out.instance_path
+        SECRET_KEY='torabuilds',
+        DATABASE=const.DB01_NAME,
+        UPLOAD_FOLDER='uploads'
+        #check out out.instance_path
 )
 
 if config is None:
-	out.config.from_pyfile('config.py',silent=True)
+        out.config.from_pyfile('config.py',silent=True)
 else:
-	out.config.from_mapping(config)
+        out.config.from_mapping(config)
 
 # Interface sourcing
 from pkg.interface import home
 from pkg.interface import sysutilio #socket io import
 
-# api sourcing
-from pkg.api.http import push,pull
+# System res sourcing
+from pkg.resource import r
 
 # System sourcing
 from pkg.system import auth,admintools
 from pkg.system.user import sysuser,utype,sysnologin
 
-# System res sourcing
-from pkg.resource import r
-from pkg.resource.generic import standard_file
+# Deploy sourcing
+from pkg.deploy.generic import standard_file
+
+# MSGAPI sourcing
+from pkg.msgapi.http import push,pull
 
 #######################################################################################################
 # Login manager section
@@ -56,23 +58,23 @@ login_manager = LoginManager()
 login_manager.init_app(out)
 @out.login_manager.user_loader
 def load_user(id): #loads a sql object model as "login-ed"
-	target_user = auth.sysuser_getobj(id)
-	return target_user
+        target_user = auth.sysuser_getobj(id)
+        return target_user
 
 @out.login_manager.unauthorized_handler
 def unauthorized_warning():
-	return render_template("errors/unauthorized.html",
-		displat_message="Login required!")
+        return render_template("errors/unauthorized.html",
+                displat_message="Login required!")
 login_manager.login_view = "login"
 login_manager.login_message = "Please login first."
 login_manager.login_message_category = "info"
 
 bplist = [  r.bp, auth.bp, home.bp, admintools.bp, sysutilio.bp,
-	    push.bp, pull.bp, sysuser.bp, utype.bp, sysnologin.bp,
-	    standard_file.bp]
+            push.bp, pull.bp, sysuser.bp, utype.bp, sysnologin.bp,
+            standard_file.bp]
 
 for bp in bplist:
-	out.register_blueprint(bp)
+        out.register_blueprint(bp)
 
 #tear down context is done here.
 @out.teardown_appcontext

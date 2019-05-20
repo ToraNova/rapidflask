@@ -21,9 +21,9 @@ from pkg.system.user import models as md
 from pkg.system.user import forms as fm
 from pkg.system.servlog import srvlog,logtofile
 
-from pkg.resource.generic import param3model #SAMPLE ONLY, DO NOT USE FOR ACTUAL DEPLOYMENT
+from pkg.deploy.generic import param3model #SAMPLE ONLY, DO NOT USE FOR ACTUAL DEPLOYMENT
 
-from pkg.api.http import bp #uses the __init__ blueprint
+from pkg.msgapi.http import bp #uses the __init__ blueprint
 
 ##############################################################################################
 # API push routings

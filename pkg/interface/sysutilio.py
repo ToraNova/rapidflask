@@ -15,7 +15,6 @@ import datetime
 
 from pkg.system.servlog import srvlog
 import pkg.const as const
-import pkg.resource.rdef as res
 import json
 
 bp = Blueprint('sock_sysutil', __name__, url_prefix='') #flask sock bp
