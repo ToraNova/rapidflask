@@ -40,22 +40,22 @@ from pkg.resource.generic import standard_log, standard_file
 ##########################################################
 
 dist_resources = {
-    "Param3":[
+    "param3":[
     param3model.Param3,
     param3model.AddForm,
     param3model.AddForm
     ],
-    "IPCamera_Model":[
+    "ipcamera_models":[
     ipcam_model.IPCameraModel,
     ipcam_model.AddForm,
     ipcam_model.EditForm
     ],
-    "Standard_Log":[
+    "standard_logs":[
     standard_log.StandardLog,
     None,
     del_only
     ],
-    "Standard_File":[
+    "standard_files":[
     standard_file.StandardFile,
     standard_file.AddForm,
     del_only

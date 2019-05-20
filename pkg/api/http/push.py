@@ -7,7 +7,6 @@
 #flask routing imports
 from flask import render_template, redirect, url_for
 from flask import request, abort
-from flask import Blueprint
 
 #flask logins
 from flask_login import login_required
@@ -24,15 +23,18 @@ from pkg.system.servlog import srvlog,logtofile
 
 from pkg.resource.generic import param3model #SAMPLE ONLY, DO NOT USE FOR ACTUAL DEPLOYMENT
 
-#primary blueprint
-bp = Blueprint('push', __name__, url_prefix='/push')
+from pkg.api.http import bp #uses the __init__ blueprint
 
 ##############################################################################################
 # API push routings
 ##############################################################################################
-@bp.route('/generic/param3/add')
+@bp.route('/param3/add')
 #This route allows API callers to add an entry
 def addGP3():
+    '''pushes a variable onto the param3
+    example : http://localhost:8000/api/generic/param3/add?f0=toranova&f1=1299&f2=helloworld
+    '''
+    # TODO: Please generalize this
 
     upload_ip=request.remote_addr
     print("Uploaded from host ",upload_ip,end=': ') #DEBUGGING ONLY
