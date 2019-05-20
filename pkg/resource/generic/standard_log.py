@@ -44,8 +44,9 @@ class StandardLog(r.Base):
     "Ref0":"ref0",
     "Ref1":"ref1",
     "Ref2":"ref2",
-    "Time v0":"timev0",
-    "Time v1":"timev1"
+    "Time v0":"__time__/%b-%d-%Y %H:%M:%S/timev0",
+    "Time v1":"timev1",
+    "Time v2":"timev2"
     } #header:row data
 
     # TODO: DEFINE THE priKey and display text

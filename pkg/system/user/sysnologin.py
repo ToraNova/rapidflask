@@ -20,6 +20,7 @@ from pkg.system.database import dbms
 from pkg.system.user import models as md
 from pkg.system.user import forms as fm
 from pkg.system.servlog import srvlog,logtofile
+from pkg.system.auth import removeTokenFile
 
 bp = Blueprint('sysnologin', __name__, url_prefix='/sysnologin')
 
@@ -40,8 +41,8 @@ def register():
         target_user = md.System_User.query.filter(md.System_User.username == form.username.data).first()
         if(target_user == None):
             target_add = md.System_User(form.username.data,form.password.data,typeid)#create user obj
-            dbms.sy_session.add(target_add)#adds user object onto database.
-            dbms.sy_session.commit()
+            dbms.system.session.add(target_add)#adds user object onto database.
+            dbms.system.session.commit()
             removeTokenFile(const.TOKN_SYS,request.args.get("token")) #remove token file
             srvlog["sys"].info(form.username.data+" registered as new user, type="+usertype) #logging
             return render_template("standard/redirect.html",
@@ -78,8 +79,8 @@ def pwreset():
         		display_message="Catastrophic Error, please contact administrator.")
         else:
             target_user.set_password(form.password.data)#edit user password
-            dbms.sy_session.add(target_user)#adds user object onto database.
-            dbms.sy_session.commit()
+            dbms.system.session.add(target_user)#adds user object onto database.
+            dbms.system.session.commit()
             removeTokenFile(const.TOKN_SYS,request.args.get("token")) #remove token file
             srvlog["sys"].info(username+" updated their password") #logging
             return render_template("standard/redirect.html",

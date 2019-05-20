@@ -77,8 +77,9 @@ for bp in bplist:
 #tear down context is done here.
 @out.teardown_appcontext
 def shutdown_session(exception=None):
-	dbms.db_session.remove()
-	dbms.sy_session.remove()
+    dbms.system.session.remove()
+    dbms.deploy.session.remove()
+    dbms.msgapi.session.remove()
 
 # FLASK SOCKET USE 8/1/2019
 out_nonsock = out

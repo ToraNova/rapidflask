@@ -61,3 +61,8 @@ dist_resources = {
     del_only
     ]
 }
+
+def default_add():
+    '''this is the function to add the object onto the system by 
+    default (every re-initialization)'''
+    pass

@@ -12,7 +12,7 @@ monkey.patch_all()
 
 from pkg.system.servlog import srvlog
 
-from pkg.system.database import dbms
+from pkg.system.database import dbcon
 
 import os.path
 import configparser
@@ -54,14 +54,14 @@ if __name__ == '__main__':
             os.makedirs(os.path.join(const.TOKN_DIR,const.TOKN_SYS))
         if(not os.path.isfile(os.path.join(const.TOKN_DIR,"init.token"))):
             #database not initialized yet, we delete the db and reinit
-            dbms.init_db()#initialization
+            dbcon.init_db(system=True,deploy=True,msgapi=True)#initialization
         else:
             print("[IF]",__name__," : ","Database already initialized...skipping")
             pass
     except  Exception as e:
         print("[ER]",__name__," : ","Exception occured while trying to create database")
         print (str(e))
-        dbms.delete_db(True,True,True) # deletes the db (and the init token)
+        dbcon.delete_db(system=True,deploy=True,msgapi=True) # deletes the db (and the init token)
         srvlog['sys'].error("Database creation exception :"+str(e))
     ##################################################################
 

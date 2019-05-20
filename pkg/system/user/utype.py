@@ -37,8 +37,8 @@ def typeadd():
         target_add = md.System_UserType.query.filter(md.System_UserType.typename == typeadd_form.typename.data).first()
         if(target_add == None):
             target_add = md.System_UserType(typeadd_form.typename.data,typeadd_form.prilevel.data)#create usertype obj
-            dbms.sy_session.add(target_add)#adds usertype object onto database.
-            dbms.sy_session.commit()
+            dbms.system.session.add(target_add)#adds usertype object onto database.
+            dbms.system.session.commit()
             srvlog["sys"].info(typeadd_form.typename.data+" registered as new type, prilevel="+typeadd_form.prilevel.data) #logging
             return render_template("standard/message.html",
                 display_title="Success",
@@ -79,8 +79,8 @@ def typemod(primaryKey):
     if(request.method=="POST"):
         if(request.form["button"]=="Delete"):
             target_del = md.System_UserType.query.filter(md.System_UserType.typename == primaryKey).first()
-            dbms.sy_session.delete(target_del)
-            dbms.sy_session.commit()
+            dbms.system.session.delete(target_del)
+            dbms.system.session.commit()
             srvlog["sys"].info(primaryKey+" usertype deleted from the system") #logging
             return redirect(url_for('systype.typelist'))
 
@@ -95,8 +95,8 @@ def typemod(primaryKey):
         elif(request.form["button"]=="Submit Changes"):
             target_mod = md.System_UserType.query.filter(md.System_UserType.typename == primaryKey).first()
             target_mod.prilevel = request.form.get("prilevel")
-            dbms.sy_session.add(target_mod)
-            dbms.sy_session.commit()
+            dbms.system.session.add(target_mod)
+            dbms.system.session.commit()
             return redirect(url_for('systype.typelist'))
 
         else:

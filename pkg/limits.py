@@ -23,4 +23,6 @@ LOGS_MAX_BYTES = 100000
 TOKEN_LENGTH = 10
 
 MAX_MQTT_TOPIC_SIZE=100
+MAX_MQTT_MSGCT_SIZE=1000
+DEF_MQTT_MSGST_DURA=86400 # default store duration
 ################################################################

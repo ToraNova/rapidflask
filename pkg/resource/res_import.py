@@ -17,7 +17,7 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Float
 
 from pkg.system.database import dbms
-Base = dbms.Base1 #re-export the deployment Base1 as Base
+Base = dbms.deploy.base #re-export the deployment Base1 as Base
 
 from pkg import limits as lim     #lim dependency
 from pkg import const

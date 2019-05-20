@@ -7,8 +7,9 @@
 
 from pkg.resource import res_import as r
 from pkg.system.database import dbms
+Base = dbms.msgapi.base
 
-class MQTTSubs(dbms.Base0):
+class MQTT_Sub(Base):
     # PERMA : DO NOT CHANGE ANYTHING HERE UNLESS NECESSARY
     __tablename__ = "MQTT_Subs" #Try to use plurals here (i.e car's')
     id = r.Column(r.Integer, primary_key=True)
@@ -21,8 +22,11 @@ class MQTTSubs(dbms.Base0):
     ######################################################################################################
     # TODO: DEFINE LIST OF COLUMNS
     # the string topic of the topic to subscribe to
-    topic = r.Column(r.String(r.lim.MAX_MQTT_TOPIC_SIZE, nullable=False) 
+    topic = r.Column(r.String(r.lim.MAX_MQTT_TOPIC_SIZE), nullable=False) 
     description = r.Column(r.String(r.lim.MAX_DESCRIPTION_SIZE), nullable=True, unique=False)
+    stordur = r.Column(r.Integer, nullable=True) #how long to store messages
+    delonproc = r.Column(r.Boolean, nullable=False) #delete the messages after processing?
+    deloncas = r.Column(r.Boolean, nullable=False) #delete all msg if the topics get deleted
 
     # TODO: DEFINE THE RLIST
     # CHANGED ON U6 : RLISTING NOW MERGED WITH RLINKING : see 'RLINKING _ HOW TO USE:'
@@ -31,7 +35,10 @@ class MQTTSubs(dbms.Base0):
     rlist = {
     "Subscription ID":"id",
     "Topic Name":"topic",
-    "Description":"description"
+    "Description":"description",
+    "Store N seconds (None/Null = Forever)":"stordur",
+    "Delete on processed?":"delonproc",
+    "Delete on cascade?":"deloncas"
     } #header:row data
 
     # RLINKING _ HOW TO USE :
@@ -55,10 +62,13 @@ class MQTTSubs(dbms.Base0):
     # TODO: CONSTRUCTOR DEFINES, PLEASE ADD IN ACCORDING TO COLUMNS
     # the key in the insert_list must be the same as the column var name
     def __init__(self,insert_list):
-        self.long = insert_list["topic"]
+        self.topic = insert_list["topic"]
+        self.delonproc = bool(insert_list["delonproc"])
+        self.deloncas = bool(insert_list["deloncas"])
 
         #FOR nullable=True, use a the checkNull method
         self.description = r.checkNull(insert_list,"description")
+        self.stordur = r.checkNull(insert_list,"stordur")
 
     def default_add_action(self):
         # This will be run when the table is added via r-add
@@ -74,12 +84,27 @@ class MQTTSubs(dbms.Base0):
     def default_del_action(self):
         # This will be run when the table is deleted
         # may do some imports here i.e (from pkg.database.fsqlite import db_session)
-        pass
+        # delete all linked on cascade
+        if(self.deloncas):
+            import pkg.system.database.dbms as dbms
+            from pkg.api.mqtt.models import MQTT_Msg
+            links = MQTT_Msg.query.filter( MQTT_Msg.tlink == self.id ).all()
+            for m in links:
+                dbms.sy_session.delete( m )
+            srvlog["oper"].warning("Removed MQTT SubTopic and messages with cascade")
+            dbms.sy_session.commit()
+
     ######################################################################################################
 
 # The add and edit forms are the same
 class AddForm(r.FlaskForm):
     #TODO: List the fields here, FIELDS MUST BE PREFIXED WITH rgen_
     # The names here after the rgen_ prefix must correspond to a var name in the respective model
-    rgen_topic = r.StringField('MQTT Topic',validators=[ r.Lenght(max=r.lim.MAX_MQTT_TOPIC_SIZE) ] )
+    rgen_topic = r.StringField('MQTT Topic',validators=[ r.Length(max=r.lim.MAX_MQTT_TOPIC_SIZE) ] )
     rgen_description = r.TextAreaField('Description',validators=[r.Length(max=r.lim.MAX_DESCRIPTION_SIZE)])
+    rgen_stordur = r.IntegerField('Store at most N seconds (leave empty to store forever)')
+    rgen_delonproc = r.SelectField('Delete messages after process?',choices=[('1','True'),('0','False')])
+    rgen_deloncas = r.SelectField('Delete messages on cascade?',choices=[('1','True'),('0','False')])
+
+
+

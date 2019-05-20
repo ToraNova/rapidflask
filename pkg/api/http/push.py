@@ -56,12 +56,12 @@ def addGP3():
     target_add = param3model.Param3(insert_list)
 
     try:
-        dbms.db_session.add(target_add)
-        dbms.db_session.commit()
+        dbms.deploy.session.add(target_add)
+        dbms.deploy.session.commit()
         srvlog["oper"].info("push/generic/param3 ADD :"+str(upload_bufferArr))
         return '0'
     except Exception as e:
-        dbms.db_session.rollback()
+        dbms.deploy.session.rollback()
         srvlog["oper"].error("push/generic/param3 FAIL :"+str(upload_bufferArr))
         return '1'
 
@@ -96,11 +96,11 @@ def updateGP3():
     target_mod.param2 = upload_bufferArr[3]
 
     try:
-        dbms.db_session.add(target_mod)
-        dbms.db_session.commit()
+        dbms.deploy.session.add(target_mod)
+        dbms.deploy.session.commit()
         srvlog["oper"].info("push/generic/param3 MOD :"+str(upload_bufferArr))
         return '0'
     except Exception as e:
-        dbms.db_session.rollback()
+        dbms.deploy.session.rollback()
         srvlog["oper"].error("push/generic/param3 FAIL :"+str(upload_bufferArr))
         return '1'

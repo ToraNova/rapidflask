@@ -12,8 +12,9 @@
 ################################################################
 
 #Database names
-DB00_NAME = 'sys.db'            # Perma db (system user/configs/generics)
-DB01_NAME = 'deploy.db'         # Used for deployment data (semi perma)
+DB00_NAME = 'system.db'            # Perma db (system user/configs/generics)
+DB01_NAME = 'deploy.db'         # Used for deployment data (Use-case dependent)
+DB02_NAME = 'msgapi.db'            # Used for message storage (API and other usages)
 
 # SHA algorithm used for password generation
 HASH_ALGORITHM_0 = 'pbkdf2:sha512'
