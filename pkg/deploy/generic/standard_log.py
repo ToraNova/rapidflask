@@ -6,7 +6,7 @@
 # ToraNova
 #--------------------------------------------------
 
-from pkg.resource import res_import as r
+from pkg.resrc import res_import as r
 
 class StandardLog(r.Base):
     # PERMA : DO NOT CHANGE ANYTHING HERE UNLESS NECESSARY

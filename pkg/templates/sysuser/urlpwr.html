@@ -22,7 +22,7 @@
         <h2 class="text-primary">Password Reset for {{username}}</h2> <!--Editable Header-->
         <p class="text-danger">{{warning_string}}</p> <!--Error line-->
           {% include 'includes/helpers/_space1br.html' %}
-        <form class="form-group" method="POST" action="{{url_for('sysnologin.pwreset',token=token)}}">
+        <form class="form-group" method="POST" action="{{url_for('system.pwreset',token=token)}}">
             {{ form.hidden_tag() }}
             <dl>
             {% for field in form %}
@@ -35,7 +35,7 @@
             {% endfor %}
             </dl>
           <button class="btn btn-block btn-long btn-info" type="submit">Submit</button>
-          <!Editable Button Text>
+	  <!--Editable Button Text-->
         </form>
       </div> <!-- /container -->
     </div>

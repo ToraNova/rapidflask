@@ -5,7 +5,7 @@
 # ToraNova
 #--------------------------------------------------
 
-from pkg.resource import res_import as r
+from pkg.resrc import res_import as r
 from pkg.system.database import dbms
 Base = dbms.msgapi.base
 

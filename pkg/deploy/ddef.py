@@ -23,7 +23,7 @@ from pkg.deploy.generic import param3model, ipcam_model
 from pkg.deploy.generic import canvas_circle, canvas_line
 from pkg.deploy.generic import standard_log, standard_file
 
-from pkg.resource.rstruct import rsBlock, del_only
+from pkg.resrc.rstruct import rsBlock, del_only
 ##########################################################
 # PLEASE EDIT THE FOLLOWING FOR EACH DEPLOYMENT!
 # The following dictionary will be exported to r.py

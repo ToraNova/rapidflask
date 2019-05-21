@@ -23,7 +23,7 @@ from pkg.system.servlog import srvlog,logtofile
 
 from pkg.deploy.generic import param3model #SAMPLE ONLY, DO NOT USE FOR ACTUAL DEPLOYMENT
 
-from pkg.msgapi.http import bp #uses the __init__ blueprint
+from pkg.msgapi import bp #uses the __init__ blueprint
 
 ##############################################################################################
 # API push routings

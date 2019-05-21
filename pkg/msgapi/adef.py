@@ -21,7 +21,7 @@
 from pkg.msgapi.mqtt.models import MQTT_Sub
 from pkg.msgapi.mqtt.models import MQTT_Msg
 
-from pkg.resource.rstruct import rsBlock, del_only
+from pkg.resrc.rstruct import rsBlock, del_only
 ##########################################################
 # PLEASE EDIT THE FOLLOWING FOR EACH DEPLOYMENT!
 # The following dictionary will be exported to r.py

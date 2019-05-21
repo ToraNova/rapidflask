@@ -87,7 +87,7 @@
 		socket.disconnect();
 
 		// go back to the login page
-		window.location.href = "{{ url_for('home.home',username=current_user.username) }}";
+		window.location.href = "{{ url_for('iface.home') }}";
 		});
 	}
 	</script>

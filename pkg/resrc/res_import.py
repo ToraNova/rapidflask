@@ -36,7 +36,7 @@ from wtforms import TextAreaField
 from wtforms.validators import InputRequired, Email, Length, NumberRange
 ###############################################################################
 
-from pkg.resource.rstruct import rlin_nullk
+from pkg.resrc.rstruct import rlin_nullk
 
 #useful function for checking on null selections
 def checkNull(list,colName):

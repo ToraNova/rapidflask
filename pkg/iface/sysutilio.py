@@ -4,7 +4,6 @@
 # introduced 8/1/2019
 #--------------------------------------------------
 
-from flask import Blueprint
 from flask_socketio import Namespace
 from flask_socketio import send, emit
 from flask_socketio import join_room, leave_room
@@ -17,7 +16,7 @@ from pkg.system.servlog import srvlog
 import pkg.const as const
 import json
 
-bp = Blueprint('sock_sysutil', __name__, url_prefix='') #flask sock bp
+from pkg.iface import bp
 
 #----------------------------------------------------------------------------------------
 # External calls

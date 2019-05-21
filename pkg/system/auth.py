@@ -12,14 +12,13 @@ from flask_login import login_required, login_user, current_user, logout_user
 #flask routing imports
 from flask import render_template, redirect, url_for
 from flask import request, abort
-from flask import Blueprint
 
 # for live logins view
-from pkg.interface.sysutilio import livelog
+from pkg.iface.sysutilio import livelog
 
-#usual imports (copy pasta this)
 import pkg.const as const
 import pkg.limits as limits
+from pkg.system import bp
 from pkg.system import assertw as a
 from pkg.system.database import dbms
 from pkg.system.user import models as md
@@ -27,9 +26,6 @@ from pkg.system.user import forms as fm
 from pkg.system.servlog import srvlog,logtofile
 
 import random,string,os
-
-#primary blueprint
-bp = Blueprint('auth', __name__, url_prefix='')
 
 #######################################################################################################
 # Routing section
@@ -52,7 +48,7 @@ def login():
                 #logs it to the livelog monitor
                 livelog('{} ({}) Logon to server.'.format(target_user.username,target_user.getUserType()),'logins')
 
-                return redirect(url_for("home.home",username=target_user.username))
+                return redirect(url_for("iface.home",username=target_user.username))
             else:
                 #incorrect password
                 return render_template("errors/invalid_login.html",
@@ -68,7 +64,7 @@ def logout():
     #logs it to the livelog monitor
     livelog('{} ({}) Logoff from server.'.format(logout_username,logout_usertype),'logins')
     srvlog["user"].info(logout_username+" logged out the system") #logging
-    return redirect(url_for("auth.login"))
+    return redirect(url_for("system.login"))
 
 @bp.route("/generate/token/<issue>/<param>",methods=['GET','POST'])
 @a.admin_required
@@ -91,7 +87,7 @@ def tokengen(issue,param):
 
     tokenfile = open(os.path.join(const.TOKN_DIR,tokdir,tokenstr),"w") #creates the token file
     tokenfile.close()
-    out = url_for('sysnologin.'+issue)+'?token='+tokenstr
+    out = url_for('system.'+issue)+'?token='+tokenstr
     return render_template("standard/message.html",
     display_title="Token generation complete",
     display_message="Please use the following url (right click, copy link location)",

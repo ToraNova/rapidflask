@@ -27,7 +27,7 @@ from pkg.system.servlog import srvlog,logtofile
 from pkg.system.user.sysuser import tupleGenerator
 
 #additional overheads
-import os
+import os, shutil
 
 bp = Blueprint('admintools', __name__, url_prefix='/admintools')
 
@@ -37,7 +37,7 @@ bp = Blueprint('admintools', __name__, url_prefix='/admintools')
 @bp.route('/nologin',methods=['GET','POST'])
 @a.route_disabled #disable if DISABLE_CRIT_ROUTE from CONST is set to TRUE
 def useradd_nologin():#This function is for initial server initialization only,
-	#NOT RECOMMENDED FOR ACTUAL USE DUE TO SECURITY ISSUE
+        #NOT RECOMMENDED FOR ACTUAL USE DUE TO SECURITY ISSUE
     '''Adds a user into system using admintools, no checking is done
     Use only in initial deployment phase, please switch off the routes
     regarding this one it is done. returns 0 on success and 1 on fail'''
@@ -80,6 +80,10 @@ def resetdb(octal='000'):
         if(sys):
             srvlog["sys"].warning("System Database ({}) reset under admintools".format(dbms.system.dbfile))
         if(dep):
+            # deletes all files in the upload directory as well
+            wipe = os.path.join('pkg','uploads')
+            print("[IF]",__name__," Wiping upload dir: "+wipe)
+            #shutil.rmtree(wipe)
             srvlog["sys"].warning("Deployment Database ({}) reset under admintools".format(dbms.deploy.dbfile))
         if(api):
             srvlog["sys"].warning("MSG API Database ({}) reset under admintools".format(dbms.msgapi.dbfile))

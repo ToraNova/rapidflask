@@ -34,26 +34,24 @@ if config is None:
 else:
         out.config.from_mapping(config)
 
-# Interface sourcing
-from pkg.interface import home
-from pkg.interface import sysutilio #socket io import
-
-# System res sourcing
-from pkg.resource import r
-
 # System sourcing
-from pkg.system import auth,admintools
-from pkg.system.user import sysuser,utype,sysnologin
-
-# Deploy sourcing
-from pkg.deploy.generic import standard_file
-
+import pkg.system as system
+# Interface sourcing
+import pkg.iface as iface
 # MSGAPI sourcing
-from pkg.msgapi.http import push,pull
+import pkg.msgapi as msgapi
+# Resource sourcing
+import pkg.resrc as resrc
+# Deploy Sourcing
+import pkg.deploy as deploy
+
+# Exception (admintools kept separate)
+from pkg.system import admintools
 
 #######################################################################################################
 # Login manager section
 #######################################################################################################
+from pkg.system import auth #auth required for login manager
 login_manager = LoginManager()
 login_manager.init_app(out)
 @out.login_manager.user_loader
@@ -69,9 +67,7 @@ login_manager.login_view = "login"
 login_manager.login_message = "Please login first."
 login_manager.login_message_category = "info"
 
-bplist = [  r.bp, auth.bp, home.bp, admintools.bp, sysutilio.bp,
-            push.bp, pull.bp, sysuser.bp, utype.bp, sysnologin.bp,
-            standard_file.bp]
+bplist = [  system.bp, iface.bp, msgapi.bp, resrc.bp, deploy.bp, admintools.bp]
 
 for bp in bplist:
         out.register_blueprint(bp)
@@ -89,5 +85,7 @@ out = SocketIO(out_nonsock)
 
 # out is rexported for use in emits
 
+# import socketio files here
+from pkg.iface import sysutilio
 sysutil_ns = sysutilio.SystemUtilNamespace('/sysutil')
 out.on_namespace(sysutil_ns)

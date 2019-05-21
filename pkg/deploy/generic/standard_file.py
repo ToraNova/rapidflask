@@ -6,17 +6,15 @@
 # ToraNova
 #--------------------------------------------------
 
-from pkg.resource import res_import as r
+from pkg.resrc import res_import as r
 
 # non-standard usage
 from flask import send_file, Blueprint
 from flask_login import login_required
 
+from pkg.deploy import bp
 
-
-bp = Blueprint('upload', __name__, url_prefix='/'+r.const.STD_FILEDIR)
-
-@bp.route('/retrieve/<urlparam>')
+@bp.route('/uploads/retrieve/<urlparam>')
 @login_required
 def retrieve_uploads(urlparam):
 	targetfile = StandardFile.query.filter( StandardFile.filename == urlparam ).first()
@@ -45,7 +43,7 @@ class StandardFile(r.Base):
     # the values in the rlist must be the same as the column var name
     rlist = {
     "Filename":"filename",
-    "URL":"__url__/upload.retrieve_uploads/filename",
+    "URL":"__url__/deploy.retrieve_uploads/filename",
     "MIME type":"mimetype",
     "Uploaded Time":"__time__/%b %d %Y/uptime",
     "Uploader":"fileown"

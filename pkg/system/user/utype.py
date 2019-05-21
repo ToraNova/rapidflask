@@ -6,7 +6,6 @@
 #flask routing imports
 from flask import render_template, redirect, url_for
 from flask import request, abort
-from flask import Blueprint
 
 #flask security import
 from werkzeug.security import generate_password_hash
@@ -15,20 +14,19 @@ from flask_login import current_user
 #usual imports (copy pasta this)
 import pkg.const as const
 import pkg.limits as limits
+from pkg.system import bp
 from pkg.system import assertw as a
 from pkg.system.database import dbms
 from pkg.system.user import models as md
 from pkg.system.user import forms as fm
 from pkg.system.servlog import srvlog,logtofile
 
-bp = Blueprint('systype', __name__, url_prefix='/sys')
-
 ##############################################################################################
 # system user type add/mod routes
 # USERTYPE ADD
 # u4 - introduced usertype, now dynamically generate choices
 ##############################################################################################
-@bp.route('/typeadd',methods=['GET','POST'])
+@bp.route('/utypeadd',methods=['GET','POST'])
 @a.admin_required
 def typeadd():
     '''adds a system user type onto the system'''
@@ -55,9 +53,9 @@ def typeadd():
 # USER TYPE LIST ROUTE
 # introduced on u4
 ##############################################################################################
-@bp.route('/typelist',methods=['GET','POST'])
+@bp.route('/utypelist',methods=['GET','POST'])
 @a.admin_required
-def typelist():
+def utypelist():
     '''list out system user types'''
     columnHead = ["usertype","privelege level"]
     userlist = md.System_UserType.query.all()
@@ -72,9 +70,9 @@ def typelist():
 # USER TYPE MODIFY ROUTE
 # introduced on u1
 ##############################################################################################
-@bp.route('/typemod/<primaryKey>',methods=['GET','POST'])
+@bp.route('/utypemod/<primaryKey>',methods=['GET','POST'])
 @a.admin_required
-def typemod(primaryKey):
+def utypemod(primaryKey):
     '''modify system user type'''
     if(request.method=="POST"):
         if(request.form["button"]=="Delete"):
@@ -82,7 +80,7 @@ def typemod(primaryKey):
             dbms.system.session.delete(target_del)
             dbms.system.session.commit()
             srvlog["sys"].info(primaryKey+" usertype deleted from the system") #logging
-            return redirect(url_for('systype.typelist'))
+            return redirect(url_for('system.utypelist'))
 
         elif(request.form["button"]=="Modify"):
             target_mod = md.System_UserType.query.filter(md.System_UserType.typename == primaryKey).first()
@@ -97,7 +95,7 @@ def typemod(primaryKey):
             target_mod.prilevel = request.form.get("prilevel")
             dbms.system.session.add(target_mod)
             dbms.system.session.commit()
-            return redirect(url_for('systype.typelist'))
+            return redirect(url_for('system.utypelist'))
 
         else:
             abort(404)
