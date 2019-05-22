@@ -50,7 +50,7 @@
 			<div class="clearfix"></div>
 		</div>
 		<div class="x_content">
-			<form class="form-group" method="POST" action="{{url_for('system.useradd')}}">
+			<form class="form-group" method="POST" action="{{url_for('sysuser.useradd')}}">
 					{{ form.hidden_tag() }}
 					<dl>
 					{% for field in form %}
@@ -95,7 +95,7 @@
 			<div class="clearfix"></div>
 		</div>
 		<div class="x_content">
-			<form class="form-group" method="POST" action="{{url_for('system.tokengen',issue='register',param='form_typeid')}}">
+			<form class="form-group" method="POST" action="{{url_for('auth.tokengen',issue='register',param='form_typeid')}}">
 					<!--The typeid is passed in the form, the param is just a placeholder-->
 					{{ render_field(form.usertype)}}
 

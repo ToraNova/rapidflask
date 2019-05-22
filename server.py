@@ -74,7 +74,6 @@ if __name__ == '__main__':
         # Restrict werkzeug logs to only errors
         log = logging.getLogger('werkzeug')
         log.setLevel(logging.ERROR)
-
     try:
         #mainsrv.run(debug=app_debug,host=main_host, port=main_port, use_reloader = True) #flask run
         mainsrv_sock.run(mainsrv,debug= main_debug,host=main_host, port=main_port, use_reloader = main_reload)

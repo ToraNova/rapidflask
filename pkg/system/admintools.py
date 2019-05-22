@@ -81,9 +81,18 @@ def resetdb(octal='000'):
             srvlog["sys"].warning("System Database ({}) reset under admintools".format(dbms.system.dbfile))
         if(dep):
             # deletes all files in the upload directory as well
-            wipe = os.path.join('pkg','uploads')
-            print("[IF]",__name__," Wiping upload dir: "+wipe)
-            #shutil.rmtree(wipe)
+            try:
+                wipe = os.path.join('pkg',const.STD_FILEDIR)
+                print("[IF]",__name__," Wiping upload dir: "+wipe)
+                shutil.rmtree(wipe)
+            except Exception as e:
+                # rethrow
+                raise e
+            finally:
+                os.mkdir( wipe )
+                gitkeep = open(os.path.join(wipe,".gitkeep"),"w+")
+                gitkeep.close()
+
             srvlog["sys"].warning("Deployment Database ({}) reset under admintools".format(dbms.deploy.dbfile))
         if(api):
             srvlog["sys"].warning("MSG API Database ({}) reset under admintools".format(dbms.msgapi.dbfile))

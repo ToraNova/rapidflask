@@ -7,6 +7,7 @@
 #flask routing imports
 from flask import render_template, redirect, url_for
 from flask import request, abort
+from flask import Blueprint
 
 #flask security import
 from werkzeug.security import generate_password_hash
@@ -14,13 +15,14 @@ from flask_login import current_user
 
 import pkg.const as const
 import pkg.limits as limits
-from pkg.system import bp
 from pkg.system import assertw as a
 from pkg.system.database import dbms
 from pkg.system.user import models as md
 from pkg.system.user import forms as fm
 from pkg.system.servlog import srvlog,logtofile
 
+# primary blueprint
+bp = Blueprint('sysuser', __name__, url_prefix='')
 
 ##############################################################################################
 # system user add/mod routes
@@ -90,7 +92,7 @@ def usermod(primaryKey):
             dbms.system.session.delete(target_del)
             dbms.system.session.commit()
             srvlog["sys"].info(primaryKey+" deleted from the system") #logging
-            return redirect(url_for('system.userlist'))
+            return redirect(url_for('sysuser.userlist'))
 
         elif(request.form["button"]=="Modify"):
             target_mod = md.System_User.query.filter(md.System_User.username == primaryKey).first()
@@ -106,11 +108,11 @@ def usermod(primaryKey):
             target_mod.usertype = request.form.get("usertype")
             dbms.system.session.add(target_mod)
             dbms.system.session.commit()
-            return redirect(url_for('system.userlist'))
+            return redirect(url_for('sysuser.userlist'))
 
         elif(request.form["button"]=="Change Password"):
             userid = md.System_User.query.filter(md.System_User.username == primaryKey).first().id
-            return redirect(url_for('system.tokengen',issue="pwreset", param=userid))
+            return redirect(url_for('auth.tokengen',issue="pwreset", param=userid))
 
         else:
             abort(404)

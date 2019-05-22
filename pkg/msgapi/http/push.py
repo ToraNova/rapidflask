@@ -7,6 +7,7 @@
 #flask routing imports
 from flask import render_template, redirect, url_for
 from flask import request, abort
+from flask import Blueprint
 
 #flask logins
 from flask_login import login_required
@@ -23,7 +24,8 @@ from pkg.system.servlog import srvlog,logtofile
 
 from pkg.deploy.generic import param3model #SAMPLE ONLY, DO NOT USE FOR ACTUAL DEPLOYMENT
 
-from pkg.msgapi import bp #uses the __init__ blueprint
+#primary blueprint
+bp = Blueprint('push', __name__, url_prefix='/api/push')
 
 ##############################################################################################
 # API push routings

@@ -6,6 +6,7 @@
 #flask routing imports
 from flask import render_template, redirect, url_for
 from flask import request, abort
+from flask import Blueprint
 
 #flask security import
 from werkzeug.security import generate_password_hash
@@ -14,12 +15,13 @@ from flask_login import current_user
 #usual imports (copy pasta this)
 import pkg.const as const
 import pkg.limits as limits
-from pkg.system import bp
 from pkg.system import assertw as a
 from pkg.system.database import dbms
 from pkg.system.user import models as md
 from pkg.system.user import forms as fm
 from pkg.system.servlog import srvlog,logtofile
+
+bp = Blueprint("sysutype",__name__,url_prefix='')
 
 ##############################################################################################
 # system user type add/mod routes
@@ -28,7 +30,7 @@ from pkg.system.servlog import srvlog,logtofile
 ##############################################################################################
 @bp.route('/utypeadd',methods=['GET','POST'])
 @a.admin_required
-def typeadd():
+def utypeadd():
     '''adds a system user type onto the system'''
     typeadd_form = fm.System_UserType_AddForm()
     if typeadd_form.validate_on_submit():
@@ -80,7 +82,7 @@ def utypemod(primaryKey):
             dbms.system.session.delete(target_del)
             dbms.system.session.commit()
             srvlog["sys"].info(primaryKey+" usertype deleted from the system") #logging
-            return redirect(url_for('system.utypelist'))
+            return redirect(url_for('sysutype.utypelist'))
 
         elif(request.form["button"]=="Modify"):
             target_mod = md.System_UserType.query.filter(md.System_UserType.typename == primaryKey).first()
@@ -95,7 +97,7 @@ def utypemod(primaryKey):
             target_mod.prilevel = request.form.get("prilevel")
             dbms.system.session.add(target_mod)
             dbms.system.session.commit()
-            return redirect(url_for('system.utypelist'))
+            return redirect(url_for('sysutype.utypelist'))
 
         else:
             abort(404)

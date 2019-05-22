@@ -21,7 +21,7 @@
       <div class="container">
         <h2 class="text-primary">User Login</h2> <!--Editable Header-->
           {% include 'includes/helpers/_space1br.html' %}
-        <form class="form-group" method="POST" action="{{url_for('system.login')}}"
+        <form class="form-group" method="POST" action="{{url_for('auth.login')}}"
         enctype="multipart/form-data">
             {{ form.hidden_tag() }}
             <dl>
@@ -34,7 +34,7 @@
             {% endif %}
             {% endfor %}
             </dl>
-          <button class="btn btn-default" type="submit">Login</button><!Editable Button Text>
+	    <button class="btn btn-default" type="submit">Login</button><!--Editable Button Text-->
         </form>
       </div> <!-- /container -->
     </div>

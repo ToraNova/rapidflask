@@ -7,6 +7,7 @@
 #flask routing imports
 from flask import render_template, redirect, url_for
 from flask import request, abort
+from flask import Blueprint
 
 #flask logins
 from flask_login import login_required
@@ -15,14 +16,14 @@ from flask_login import current_user
 import pkg.const as const
 from pkg.system import assertw as a
 
-from pkg.iface import bp
+bp = Blueprint('home', __name__, url_prefix='')
 
 ##############################################################################################
 # Index routings
 ##############################################################################################
 @bp.route('/')
 def index():
-    return redirect(url_for("system.login"))
+    return redirect(url_for("auth.login"))
 
 @bp.route('/<username>/home',methods=['GET','POST'])
 @login_required

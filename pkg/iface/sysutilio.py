@@ -7,6 +7,7 @@
 from flask_socketio import Namespace
 from flask_socketio import send, emit
 from flask_socketio import join_room, leave_room
+from flask import Blueprint
 
 from flask import render_template, redirect, url_for
 from flask_login import current_user
@@ -16,7 +17,7 @@ from pkg.system.servlog import srvlog
 import pkg.const as const
 import json
 
-from pkg.iface import bp
+bp = Blueprint('sysutilio', __name__, url_prefix='')
 
 #----------------------------------------------------------------------------------------
 # External calls

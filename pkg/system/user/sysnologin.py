@@ -7,6 +7,7 @@
 #flask routing imports
 from flask import render_template, redirect, url_for
 from flask import request, abort
+from flask import Blueprint
 
 #flask security import
 from flask_login import current_user
@@ -14,13 +15,15 @@ from flask_login import current_user
 #usual imports (copy pasta this)
 import pkg.const as const
 import pkg.limits as limits
-from pkg.system import bp
 from pkg.system import assertw as a
 from pkg.system.database import dbms
 from pkg.system.user import models as md
 from pkg.system.user import forms as fm
 from pkg.system.servlog import srvlog,logtofile
 from pkg.system.auth import removeTokenFile
+
+# primary blueprint
+bp = Blueprint('sysnologin', __name__ ,url_prefix='')
 
 ##############################################################################################
 # system user add/mod routes
@@ -46,7 +49,7 @@ def register():
             return render_template("standard/redirect.html",
                 display_header="Registration successful",button_string="Back to login",
                 display_message="You may now log in to the system.",
-                redirect_url=url_for("system.login"))
+                redirect_url=url_for("auth.login"))
 
         else:
             return render_template("sysuser/urlreg.html",
@@ -84,7 +87,7 @@ def pwreset():
             return render_template("standard/redirect.html",
                 display_header="Password successfully updated",button_string="Back to login",
                 display_message="You may now log in to the system.",
-                redirect_url=url_for("system.login"))
+                redirect_url=url_for("auth.login"))
 
     return render_template("sysuser/urlpwr.html",
     username=username,

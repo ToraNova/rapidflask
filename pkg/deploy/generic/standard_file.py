@@ -12,7 +12,7 @@ from pkg.resrc import res_import as r
 from flask import send_file, Blueprint
 from flask_login import login_required
 
-from pkg.deploy import bp
+bp = Blueprint('stdfile', __name__, url_prefix='/'+r.const.STD_FILEDIR)
 
 @bp.route('/uploads/retrieve/<urlparam>')
 @login_required
@@ -43,7 +43,7 @@ class StandardFile(r.Base):
     # the values in the rlist must be the same as the column var name
     rlist = {
     "Filename":"filename",
-    "URL":"__url__/deploy.retrieve_uploads/filename",
+    "URL":"__url__/stdfile.retrieve_uploads/filename",
     "MIME type":"mimetype",
     "Uploaded Time":"__time__/%b %d %Y/uptime",
     "Uploader":"fileown"

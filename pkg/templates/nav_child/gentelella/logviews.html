@@ -8,7 +8,7 @@ routes or links to routes here instead of the _sidebar.html file-->
   <li><a href="{{ url_for('admintools.logview', logtype='sys') }}">System Logs</a></li>
   <li><a href="{{ url_for('admintools.logview', logtype='oper') }}">Operational Logs</a></li>
 
-  <li><a href="{{ url_for('iface.livelogview', logtype='logins') }}">View Live Logins</a></li>
+  <li><a href="{{ url_for('admintools.livelogview', logtype='logins') }}">View Live Logins</a></li>
 
 </ul>
 </li>

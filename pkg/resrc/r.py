@@ -10,6 +10,7 @@
 #flask routing imports
 from flask import render_template, redirect, url_for
 from flask import request, abort
+from flask import Blueprint
 
 #flask security import
 from werkzeug.security import generate_password_hash
@@ -21,7 +22,6 @@ from pkg.system import assertw as a
 from pkg.system.servlog import srvlog,logtofile
 
 # resource imports
-from pkg.resrc import bp
 from pkg.resrc.res_import import checkNull
 import pkg.resrc.rstruct as rstruct
 
@@ -30,9 +30,12 @@ import pkg.resrc.rstruct as rstruct
 from pkg.deploy.ddef import r_defines as d_defines
 from pkg.msgapi.adef import r_defines as a_defines
 
-#additional overheads
+# additional overheads
 import os
 import datetime
+
+# primary blueprint
+bp = Blueprint('resrc', __name__, url_prefix='/resrc')
 
 ##############################################################################################
 # Resource-table # RESOURCES ARE ACTORS/ENTITIES IN THE SYSTEM. TRUCKS, STUDENTS ... etc

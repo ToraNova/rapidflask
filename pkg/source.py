@@ -35,23 +35,24 @@ else:
         out.config.from_mapping(config)
 
 # System sourcing
-import pkg.system as system
-# Interface sourcing
-import pkg.iface as iface
-# MSGAPI sourcing
-import pkg.msgapi as msgapi
-# Resource sourcing
-import pkg.resrc as resrc
-# Deploy Sourcing
-import pkg.deploy as deploy
+from pkg.system import auth, admintools
+from pkg.system.user import sysnologin, sysuser, utype
 
-# Exception (admintools kept separate)
-from pkg.system import admintools
+# Interface sourcing
+from pkg.iface import home, sysutilio
+
+# MSGAPI sourcing
+from pkg.msgapi.http import push, pull
+
+# Resource sourcing
+from pkg.resrc import r
+
+# Deployment additions
+from pkg.deploy.generic import standard_file
 
 #######################################################################################################
 # Login manager section
 #######################################################################################################
-from pkg.system import auth #auth required for login manager
 login_manager = LoginManager()
 login_manager.init_app(out)
 @out.login_manager.user_loader
@@ -67,10 +68,13 @@ login_manager.login_view = "login"
 login_manager.login_message = "Please login first."
 login_manager.login_message_category = "info"
 
-bplist = [  system.bp, iface.bp, msgapi.bp, resrc.bp, deploy.bp, admintools.bp]
+bplist = [  
+        auth.bp, admintools.bp, sysnologin.bp, sysuser.bp, utype.bp,
+        home.bp, sysutilio.bp,  push.bp, pull.bp, r.bp, standard_file.bp]
 
 for bp in bplist:
         out.register_blueprint(bp)
+
 
 #tear down context is done here.
 @out.teardown_appcontext

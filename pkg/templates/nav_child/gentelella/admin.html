@@ -8,14 +8,14 @@ routes or links to routes here instead of the _sidebar.html file-->
   <ul class="nav child_menu">
 
     <!--System USERS_______SEMI_PERMANENT__________-->
-    <li><a href="{{ url_for('system.useradd') }}">Register system user</a></li>
-    <li><a href="{{ url_for('system.userlist') }}">List system users</a></li>
-    <li><a href="{{ url_for('system.utypeadd') }}">Add user type</a></li>
-    <li><a href="{{ url_for('system.utypelist') }}">List user types</a></li>
+    <li><a href="{{ url_for('sysuser.useradd') }}">Register system user</a></li>
+    <li><a href="{{ url_for('sysuser.userlist') }}">List system users</a></li>
+    <li><a href="{{ url_for('sysutype.utypeadd') }}">Add user type</a></li>
+    <li><a href="{{ url_for('sysutype.utypelist') }}">List user types</a></li>
 
   </ul></li>
 
-  <li><a href="{{ url_for('iface.sysclock') }}">System Clock</a></li> <!--Flask socket io use cases-->
+  <li><a href="{{ url_for('sysutilio.sysclock') }}">System Clock</a></li> <!--Flask socket io use cases-->
   <!--/Administrator's Column_______SEMI_PERMANENT__________-->
 
 </ul>

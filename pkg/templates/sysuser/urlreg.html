@@ -23,7 +23,7 @@
         <p class="text-warning">Please key in your details</p> <!--Warning line-->
         <p class="text-danger">{{warning_string}}</p> <!--Error line-->
           {% include 'includes/helpers/_space1br.html' %}
-        <form class="form-group" method="POST" action="{{url_for('system.register',token=token)}}">
+        <form class="form-group" method="POST" action="{{url_for('sysnologin.register',token=token)}}">
             {{ form.hidden_tag() }}
             <dl>
             {% for field in form %}
