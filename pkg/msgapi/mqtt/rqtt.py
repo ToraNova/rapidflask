@@ -15,6 +15,11 @@ from flask import render_template, redirect, url_for
 from flask import request, abort
 from flask import Blueprint
 
+# flask socketio
+from flask_socketio import Namespace
+from flask_socketio import send, emit
+from flask_socketio import join_room, leave_room
+
 #flask logins
 from flask_login import login_required
 from flask_login import current_user
@@ -26,6 +31,29 @@ from pkg.system.database import models as md
 from pkg.system import assertw as a
 from pkg.system.servlog import srvlog,logtofile
 from pkg.resource.generic import param3model #SAMPLE ONLY, DO NOT USE FOR ACTUAL DEPLOYMENT
+
+# primary blueprint
+bp = Blueprint('mqttio', __name__, url_prefix='/api/mqtt')
+
+
+##############################################################################################
+# API pull routings
+##############################################################################################
+@bp.route('/service')
+def servicectl():
+    '''a control panel to enable/disable the mosquitto broker and view the logs'''
+    return render_template('flask_sockio/mosquittoctl.html')
+
+class MQTTNamespace(Namespace):
+    def on_connect(self):
+        pass
+        
+    def on_disconnect(self):
+        pass
+        
+    def on_handle_message(self,message):
+        pass    
+
 
 
 ##############################################################################################

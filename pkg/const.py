@@ -32,3 +32,5 @@ SERVER_NAME = "minimal_server"
 ADMIN_PLAINT_APIKEY = "abc123"
 DISABLE_CRIT_ROUTE = False
 
+# Services
+MQTT_BROKER = "mosquitto"

@@ -37,7 +37,7 @@ def livelog(logstring,logtype='logins'):
         namespace='/sysutil')
         # emit may also contain namespaces to emit to other classes
     except Exception as e:
-        print("Exception has occurred".str(e))
+        print("Exception has occurred",str(e))
         srvlog["oper"].info("Exception ocurred in live logging :"+str(e))
 
 #----------------------------------------------------------------------------------------

@@ -14,7 +14,7 @@ from pkg.system.servlog import srvlog
 
 from pkg.system.database import dbcon
 
-import os.path
+import os, sys
 import configparser
 import logging
 import pkg.const as const
@@ -35,6 +35,7 @@ if __name__ == '__main__':
         srvlog["sys"].error("Parsing port exception "+str(e))
     main_debug = True if rcf.get('flags','debug')=='1' else False
     main_reload = True if rcf.get('flags','reload')=='1' else False
+    broker_autostart = True if rcf.get('service','broker_autostart')=='1' else False
     ##################################################################
 
     # print and log out configuration details
@@ -70,6 +71,19 @@ if __name__ == '__main__':
     mainsrv = out_nonsock
     srvlog["sys"].info("system start") #logging
 
+    sthread=False
+    if( sys.platform == "linux" or sys.platform == "linux2"):
+        if(broker_autostart):
+            from pkg.msgapi.mqtt import BrokerThread
+            print("[IF]",__name__," : ","Starting MQTT broker service on autostart")
+            bt = BrokerThread()
+            bt.start()
+            sthread=True
+        else:
+            print("[IF]",__name__," : ","Skipping MQTT broker service on autostart")
+    else:
+        print("[ER]",__name__," : ","MQTT broker service disabled as platform is not linux")
+
     if(not main_debug):
         # Restrict werkzeug logs to only errors
         log = logging.getLogger('werkzeug')
@@ -84,3 +98,5 @@ if __name__ == '__main__':
     finally:
         print("[IF]",__name__," Server terminated.")
         srvlog["sys"].info("system halt") #logging
+        if(sthread):
+            bt.join()
