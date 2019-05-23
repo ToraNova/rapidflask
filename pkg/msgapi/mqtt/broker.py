@@ -4,6 +4,9 @@
 # control
 # introduced 19/05/2019 (u8)
 #--------------------------------------------------
+
+# TODO: Please read
+# http://www.steves-internet-guide.com/mosquitto-logging/
 import os, threading, time
 from subprocess import Popen, PIPE
 
@@ -44,25 +47,27 @@ class BrokerThread( threading.Thread ):
 
     def run(self):
         if( BrokerThread.broker_started() ):
-            print("Warning. MQTT broker already running, Skipping start")
+            print("[ER]",__name__," : ","Warning. MQTT broker already running, Skipping start")
             srvlog["sys"].warning("Unable to start broker. Mosquitto already up!")
             return
-        mqbroker = Popen([const.MQTT_BROKER],\
-                stdout=PIPE)
-        stdoutfile =os.path.join(const.LOGS_DIR,const.MQTT_BROKER+'.log') 
-        print("[IF]",__name__," : ","MQTT BrokerThread stdout written to",stdoutfile)
-        with open(stdoutfile,'w') as outfile:
-            try:
-                while True:
-                    broker_out = mqbroker.stdout.readline()
-                    if( len(broker_out) <= 0):
-                        print("Outlen <= 0, Aborting")
-                        break
-                    outfile.write( broker_out )
-                    outfile.write( '\n' )
-                    outfile.flush()
-            except Exception as e:
-                srvlog["sys"].error("Exception has occurred on MQTT BrokerThread. "+str(e))
-            finally:
-                mqbroker.terminate()
-                srvlog["sys"].info("MQTT BrokerThread stopped.")
+        try:
+            ofname = os.path.join(const.LOGS_DIR,const.MQTT_BROKER+'.log') 
+            print("[IF]",__name__," : ","MQTT BrokerThread stdout written to",ofname)
+            stdoutfile = open( ofname, 'w')
+            mqbroker = Popen([const.MQTT_BROKER],stdout=PIPE)
+            while True:
+                mbop = mqbroker.stdout.readline()
+                if(len(mbop)<=0):
+                    break
+        except FileNotFoundError:
+            print("[ER]",__name__," : ","Unable to locate mosquitto on system path. PATH set or installed ?")
+            srvlog["sys"].error("Mosquitto not found on system path.")
+        except Exception as e:
+            print("[ER]",__name__," : ","Unknown exception has occurred",str(e))
+            srvlog["sys"].error("Exception has occurred on MQTT BrokerThread:"+str(e))
+        finally:
+            stdoutfile.close()
+            BrokerThread.terminate()
+            print("[IF]",__name__," : ","BrokerThread stopped.")
+            srvlog["sys"].info("MQTT BrokerThread stopped.")
+            
