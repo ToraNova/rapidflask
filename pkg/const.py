@@ -27,8 +27,9 @@ TOKN_SYS = 'sysuser'
 
 # File upload directories
 STD_FILEDIR = 'uploads'
+CFG_FILEDIR = 'configs'
 
-SERVER_NAME = "minimal_server"
+SERVER_NAME = "RapidFlask"
 ADMIN_PLAINT_APIKEY = "abc123"
 DISABLE_CRIT_ROUTE = False
 

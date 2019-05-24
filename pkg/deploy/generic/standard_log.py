@@ -7,6 +7,7 @@
 #--------------------------------------------------
 
 from pkg.resrc import res_import as r
+import datetime
 
 class StandardLog(r.Base):
     # PERMA : DO NOT CHANGE ANYTHING HERE UNLESS NECESSARY
@@ -58,7 +59,7 @@ class StandardLog(r.Base):
     # the key in the insert_list must be the same as the column var name
     def __init__(self,insert_list):
 
-        self.timev0 = r.datetime.datetime.now()
+        self.timev0 = datetime.datetime.now()
         self.timev1 = r.checkNull(insert_list,"timev1")
         self.timev1 = r.checkNull(insert_list,"timev2")
 

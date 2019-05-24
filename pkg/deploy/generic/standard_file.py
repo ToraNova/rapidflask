@@ -9,6 +9,7 @@
 from pkg.resrc import res_import as r
 
 # non-standard usage
+import os
 from flask import send_file, Blueprint
 from flask_login import login_required
 
@@ -18,7 +19,7 @@ bp = Blueprint('stdfile', __name__, url_prefix='/'+r.const.STD_FILEDIR)
 @login_required
 def retrieve_uploads(urlparam):
 	targetfile = StandardFile.query.filter( StandardFile.filename == urlparam ).first()
-	return send_file(r.os.path.join(r.const.STD_FILEDIR,targetfile.filename),mimetype=targetfile.mimetype)
+	return send_file(os.path.join(r.const.STD_FILEDIR,targetfile.filename),mimetype=targetfile.mimetype)
 
 class StandardFile(r.Base):
     # PERMA : DO NOT CHANGE ANYTHING HERE UNLESS NECESSARY
@@ -57,16 +58,15 @@ class StandardFile(r.Base):
     # TODO: CONSTRUCTOR DEFINES, PLEASE ADD IN ACCORDING TO COLUMNS
     # the key in the insert_list must be the same as the column var name
     def __init__(self,insert_list):
-
         self.filename = insert_list["filename"]
         self.mimetype = insert_list["mimetype"]
-        self.uptime = r.datetime.datetime.now()
+        self.uptime = datetime.datetime.now()
         self.fileown = r.checkNull(insert_list,"fileown")
 
     def default_del_action(self):
         # This will be run when the table is deleted
         # may do some imports here i.e (from pkg.database.fsqlite import db_session)
-        r.os.remove(r.os.path.join('pkg',r.const.STD_FILEDIR,self.filename))
+        os.remove(os.path.join('pkg',r.const.STD_FILEDIR,self.filename))
     ######################################################################################################
 
 class AddForm(r.FlaskForm):
@@ -87,6 +87,6 @@ class AddForm(r.FlaskForm):
         out = {}
         print(return_form.rgenact_file.data,return_form.rgen_mimetype.data)
         out['filename'] = r.secure_filename(return_form.rgenact_file.data.filename)
-        return_form.rgenact_file.data.save(r.os.path.join('pkg',r.const.STD_FILEDIR,out['filename']))
+        return_form.rgenact_file.data.save(os.path.join('pkg',r.const.STD_FILEDIR,out['filename']))
         out['fileown'] = r.current_user.username
         return out

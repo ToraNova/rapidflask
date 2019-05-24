@@ -26,11 +26,7 @@ def default_add():
     the database systems re-creates the metadata (schema) for the database
     models'''
 
-    #Perma models
-    from pkg.system.user.models import System_User
-    from pkg.system.user.models import System_UserType
-    from pkg.system.user.models import System_Configuration
-    from pkg.system.database import dbms
+    from pkg.system.database import dbms # it is important to import this ONLY in the function
 
     #add default values of the configuration table
     #default_config_list = [["ScannerID","AR001"],["MainServerIP","127.0.0.1"],["MainServerPort","4000"]] #used for attemoni

@@ -25,7 +25,8 @@ if __name__ == '__main__':
     # Performs config parsing
     ##################################################################
     rcf = configparser.RawConfigParser()
-    rcf.read("rapid.conf")
+    conf_file =os.path.join(const.CFG_FILEDIR,"rapid.conf") 
+    rcf.read( conf_file )
     main_host = rcf.get('conn','hostaddr')
     try:
         main_port = int(rcf.get('conn','port'))
@@ -36,10 +37,11 @@ if __name__ == '__main__':
     main_debug = True if rcf.get('flags','debug')=='1' else False
     main_reload = True if rcf.get('flags','reload')=='1' else False
     broker_autostart = True if rcf.get('service','broker_autostart')=='1' else False
+    print("[IF]",__name__," : ",const.SERVER_NAME,"configured with",conf_file)
     ##################################################################
 
     # print and log out configuration details
-    print("[IF]",__name__," : ","Hosting RapidFlask on",main_host,str(main_port))
+    print("[IF]",__name__," : ","Hosting {} on".format(const.SERVER_NAME),main_host,str(main_port))
     print("[IF]",__name__," : ","Debug/Reload :",main_debug,"/",main_reload)
     srvlog["sys"].info(main_host+":"+str(main_port))
     srvlog["sys"].info("debug/reload : "+
@@ -71,14 +73,11 @@ if __name__ == '__main__':
     mainsrv = out_nonsock
     srvlog["sys"].info("system start") #logging
 
-    sthread=False
     if( sys.platform == "linux" or sys.platform == "linux2"):
         if(broker_autostart):
             from pkg.msgapi.mqtt import BrokerThread
             print("[IF]",__name__," : ","Starting MQTT broker service on autostart")
-            bt = BrokerThread()
-            bt.start()
-            sthread=True
+            BrokerThread.begin()
         else:
             print("[IF]",__name__," : ","Skipping MQTT broker service on autostart")
     else:
@@ -98,5 +97,4 @@ if __name__ == '__main__':
     finally:
         print("[IF]",__name__," Server terminated.")
         srvlog["sys"].info("system halt") #logging
-        if(sthread):
-            bt.join()
+        BrokerThread.terminate()

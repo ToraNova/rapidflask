@@ -51,4 +51,5 @@ r_defines = {
 def default_add():
     '''this is the function to add the object onto the system by 
     default (every re-initialization)'''
+    from pkg.system.database import dbms #it is important to import this ONLY in the function
     pass

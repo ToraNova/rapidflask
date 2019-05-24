@@ -37,6 +37,16 @@ class BrokerThread( threading.Thread ):
             print("Exception as occurred:",str(e))
             return False
 
+    @staticmethod():
+    def begin():
+        if(not BrokerThread.broker_started()):
+            ephemereal = BrokerThread()
+            ephemereal.start()
+        else:
+            print("[ER]",__name__," : ","Warning. MQTT broker already running, Skipping start")
+            srvlog["sys"].warning("Unable to start broker. {} already up!".format(
+                const.MQTT_BROKER))
+
     @staticmethod
     def terminate():
         if(BrokerThread.broker_started()):
@@ -45,23 +55,19 @@ class BrokerThread( threading.Thread ):
             term = Popen(['kill','-s','SIGTERM',pid])
             term.wait()
 
+    @staticmethod
+    def restart():
+        BrokerThread.terminate()
+        BrokerThread.begin()
+
     def run(self):
-        if( BrokerThread.broker_started() ):
-            print("[ER]",__name__," : ","Warning. MQTT broker already running, Skipping start")
-            srvlog["sys"].warning("Unable to start broker. Mosquitto already up!")
-            return
         try:
             ofname = os.path.join(const.LOGS_DIR,const.MQTT_BROKER+'.log') 
-            print("[IF]",__name__," : ","MQTT BrokerThread stdout written to",ofname)
-            stdoutfile = open( ofname, 'w')
-            mqbroker = Popen([const.MQTT_BROKER],stdout=PIPE)
-            while True:
-                mbop = mqbroker.stdout.readline()
-                if(len(mbop)<=0):
-                    break
+            cffile = os.path.join(const.CFG_FILEDIR, const.MQTT_BROKER+'.conf')
+            mqbroker = Popen([const.MQTT_BROKER,'-c',cffile,'-d'])
         except FileNotFoundError:
-            print("[ER]",__name__," : ","Unable to locate mosquitto on system path. PATH set or installed ?")
-            srvlog["sys"].error("Mosquitto not found on system path.")
+            print("[ER]",__name__," : ","Unable to locate {} or it's config file on system path. PATH set or installed ?".format(const.MQTT_BROKER))
+            srvlog["sys"].error("Broker/ConfigFile not found on system path.")
         except Exception as e:
             print("[ER]",__name__," : ","Unknown exception has occurred",str(e))
             srvlog["sys"].error("Exception has occurred on MQTT BrokerThread:"+str(e))
