@@ -24,3 +24,5 @@ from collections import namedtuple
 # the def files define which models and how are they used by the r module
 rsBlock = namedtuple("rsBlock",["model","addform","editform"])
 
+
+

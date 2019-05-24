@@ -6,4 +6,3 @@
 from pkg.msgapi.mqtt.models.mqsub import MQTT_Sub
 from pkg.msgapi.mqtt.models.mqmsg import MQTT_Msg
 from pkg.msgapi.mqtt.models.mqbrk import MQTT_Broker_Configuration
-from pkg.msgapi.mqtt.models.mqusr import MQTT_Broker_User

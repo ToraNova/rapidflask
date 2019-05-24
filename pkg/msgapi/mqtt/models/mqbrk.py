@@ -7,65 +7,21 @@
 #--------------------------------------------------
 
 from pkg.resrc import res_import as r
-from shutil import copyfile,
-import os
+from shutil import copyfile
+import os, configparser
 from pkg.system.database import dbms
 from pkg.msgapi.mqtt import BrokerThread
 Base = dbms.msgapi.base
 
-class MQTT_Broker_User(Base):
-    __tablename__ = "MQTT_Broker_User" #Try to use plurals here (i.e car's')
-    id = r.Column(r.Integer, primary_key=True)
-    def __repr__(self):
-    	return '<%r %r>' % (self.__tablename__,self.id)
-    username = Column(String(r.lim.MAX_USERNAME_SIZE), unique=True)
-    plain_password = Column(String(r.lim.MAX_PASSWORD_SIZE))
-
-    rlist = {
-        "Username":"username",
-        "Password":"password"
-    }
-    rlist_priKey = "id"
-    rlist_dis = "MQTT Broker Configuration" #display for r routes
-
-    @staticmethod
-    def update_auth():
-        authfile = os.path.join(r.const.CFG_FILEDIR,const.MQTT_BROKER+'.auth')
-        if( os.path.isfile( authfile ):
-                os.remove( authfile )
-        users = MQTT_Broker_User.query.all()
-        with open( authfile, 'w') as afile:
-            for u in users:
-                afile.write(c.username)
-                afile.write(':')
-                afile.write(c.plain_password)
-        BrokerThread.restart() # restart the broker
-
-    def __init__(self.insert_list):
-        self.config_name = insert_list["username"]
-        self.config_value = insert_list["plain_password"]
-
-    def default_add_action(self):
-        # updates the config file
-        MQTT_Broker_User.update_auth()
-
-    def default_mod_action(self):
-        # updates the config file
-        MQTT_Broker_User.update_auth()
-
-    def default_del_action(self):
-        # updates the config file
-        MQTT_Broker_User.update_auth()
-
 class MQTT_Broker_Configuration(Base):
     # PERMA : DO NOT CHANGE ANYTHING HERE UNLESS NECESSARY
-    __tablename__ = "MQTT_Broker_Config" #Try to use plurals here (i.e car's')
+    __tablename__ = "MQTT_Broker_Configs" #Try to use plurals here (i.e car's')
     id = r.Column(r.Integer, primary_key=True)
     def __repr__(self):
     	return '<%r %r>' % (self.__tablename__,self.id)
 
-    config_name = Column(String(r.lim.MAX_CONFIG_NAME_SIZE),nullable=False)
-    config_value = Column(String(r.lim.MAX_CONFIG_VALU_SIZE), unique=False,nullable=False)
+    config_name = r.Column(r.String(r.lim.MAX_CONFIG_NAME_SIZE),nullable=False)
+    config_value = r.Column(r.String(r.lim.MAX_CONFIG_VALU_SIZE), unique=False,nullable=False)
 
     rlist = {
     "Configuration Name":"config_name",
@@ -82,17 +38,29 @@ class MQTT_Broker_Configuration(Base):
     @staticmethod
     def update_config():
         mbconf_file = os.path.join(r.const.CFG_FILEDIR,const.MQTT_BROKER+'.conf')
-        if( os.path.isfile( mbconf_file ):
+        if( os.path.isfile( mbconf_file )):
                 os.remove( mbconf_file )
-        copyfile( os.path.join(r.const.CFG_FILEDIR,const.'mosquitto.conf.bak'),
+        copyfile( os.path.join(r.const.CFG_FILEDIR,'mosquitto.conf.bak'),
                 mbconf_file)
         conf = MQTT_Broker_Configuration.query.all()
+        rcf = configparser.RawConfigParser()
+        conf_file =os.path.join(const.CFG_FILEDIR,"rapid.conf") 
+        rcf.read( conf_file )
+        ssl_ca = rcf.get("conn","ssl_ca")
+        ssl_cert = rcf.get("conn","ssl_cert")
+        ssl_pkey = rcf.get("conn","ssl_pkey")
         with open( mbconf_file, 'wa') as cfile:
             cfile.write("log_dest "+os.path.join(const.LOGS_DIR,MQTT_BROKER+'.log'))
             cfile.write("password_file "+os.path.join(const.CFG_FILEDIR+'.auth'))
+            cfile.write("ca_file "+ssl_ca)
+            cfile.write("certfile "+ssl_cert)
+            cfile.write("keyfile "+ssl_pkey)
             for c in conf:
-                if( c.config_name == "log_dest" or c.config_name == "password_file"):
+                if( c.config_name == "log_dest" or c.config_name == "password_file" \
+                        or c.config_name == "cafile" or c.config_name == "certfile" \
+                        or c.config_name == "keyfile"):
                     #log_dest must not be changed, so does the password_file loc
+                    #TLS params should not be edited at all.
                     continue
                 cfile.write(c.config_name)
                 cfile.write(' ')

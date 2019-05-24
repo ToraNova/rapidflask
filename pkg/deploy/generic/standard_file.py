@@ -9,9 +9,9 @@
 from pkg.resrc import res_import as r
 
 # non-standard usage
-import os
+import os, datetime
 from flask import send_file, Blueprint
-from flask_login import login_required
+from flask_login import login_required, current_user
 
 bp = Blueprint('stdfile', __name__, url_prefix='/'+r.const.STD_FILEDIR)
 
@@ -88,5 +88,5 @@ class AddForm(r.FlaskForm):
         print(return_form.rgenact_file.data,return_form.rgen_mimetype.data)
         out['filename'] = r.secure_filename(return_form.rgenact_file.data.filename)
         return_form.rgenact_file.data.save(os.path.join('pkg',r.const.STD_FILEDIR,out['filename']))
-        out['fileown'] = r.current_user.username
+        out['fileown'] = current_user.username
         return out

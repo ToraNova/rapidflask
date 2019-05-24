@@ -20,7 +20,8 @@
 # MQTT
 
 from pkg.msgapi.mqtt.models import mqsub, mqmsg
-from pkg.msgapi.mqtt.models import mqbrk, mqusr
+from pkg.msgapi.mqtt.models import mqbrk
+from pkg.msgapi.models import apiuser
 #from pkg.msgapi.mqtt.models import MQTT_Sub
 #from pkg.msgapi.mqtt.models import MQTT_Msg
 #from pkg.msgapi.mqtt.models import MQTT_Broker_Configuration
@@ -38,9 +39,9 @@ r_defines = {
             mqbrk.AddForm,
             mqbrk.AddForm),
         "mqttbroker_users": rsBlock(
-            mqusr.MQTT_Broker_User,
-            mqusr.AddForm,
-            mqusr.AddForm),
+            apiuser.Msgapi_User,
+            apiuser.AddForm,
+            apiuser.AddForm),
         "mqttclient_sub": rsBlock(
             mqsub.MQTT_Sub,
             mqsub.AddForm,
@@ -64,9 +65,10 @@ def default_add():
            ("max_packet_size","3000"),("port","1883")
             ]
     for configs in default_broker_config_list:
-        dbms.msgapi.session.add(MQTT_Broker_Configuration(configs[0],configs[1]))
+        insert_list = {"config_name":configs[0],"config_value":configs[1]}
+        dbms.msgapi.session.add(mqbrk.MQTT_Broker_Configuration(insert_list))
 
-    default_user = MQTT_Broker_User( {"username":"rqtt0","plain_password":"mqtt_rocks"} )
+    default_user = apiuser.Msgapi_User( {"username":"rqtt0","plain_password":"mqtt_rocks","usertype":"MQTTv0"} )
     dbms.msgapi.session.add( default_user )
     dbms.msgapi.session.commit()
 

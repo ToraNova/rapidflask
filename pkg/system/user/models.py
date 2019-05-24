@@ -35,7 +35,7 @@ class System_User(Base, UserMixin):#This class is permanent in almost all pyFlas
     #System_User is a mandatory class in any pyFlask system
     #This class stores information on the user which will access the system,
     #Examples of instances of this class are admin, user01, human_resource ...
-    __tablename__ = "System_User"
+    __tablename__ = "System_Users"
     id = Column(Integer, primary_key=True)
     username = Column(String(lim.MAX_USERNAME_SIZE),unique=True,nullable=False)
     passhash = Column(String(lim.MAX_PASSWORD_SIZE),unique=False,nullable=False)
@@ -74,7 +74,7 @@ class System_User(Base, UserMixin):#This class is permanent in almost all pyFlas
         return '<%r %r %r>' % (self.__tablename__,self.username,self.adminpri)
 
 class System_UserType(Base):
-    __tablename__ = "System_UserType"
+    __tablename__ = "System_UserTypes"
     id = Column(Integer, primary_key=True)
     prilevel = Column(Integer(),unique=False,nullable=False) #specify a privilege level
     #the privilege level is defined with 0 being the administrator (highest privilege)
@@ -107,7 +107,7 @@ class System_Configuration(Base):#This class is permanent in almost all pyFlask 
     #System_Configuration is a mandatory class in any pyFlask system
     #This class stores configurations of the system,
     #Examples of instances of this class are ipaddr, port, server_id ...
-    __tablename__ = "System_Config"
+    __tablename__ = "System_Configs"
     id = Column(Integer,primary_key=True)
     config_name = Column(String(lim.MAX_CONFIG_NAME_SIZE), unique=True,nullable=False)
     config_value = Column(String(lim.MAX_CONFIG_VALU_SIZE), unique=True,nullable=False)

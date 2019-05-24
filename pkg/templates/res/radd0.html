@@ -47,7 +47,7 @@
 			<div class="clearfix"></div>
 		</div>
 		<div class="x_content">
-			<form class="form-group" method="POST" action="{{url_for('resrc.radd', tablename = tablename)}}"
+			<form class="form-group" method="POST" action="{{url_for('resrc.radd',dbtype=dbtype, tablename = tablename)}}"
 			enctype="multipart/form-data">
 					{{ form.hidden_tag() }}
 					<dl>

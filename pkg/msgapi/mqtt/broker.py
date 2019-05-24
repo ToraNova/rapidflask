@@ -37,7 +37,7 @@ class BrokerThread( threading.Thread ):
             print("Exception as occurred:",str(e))
             return False
 
-    @staticmethod():
+    @staticmethod
     def begin():
         if(not BrokerThread.broker_started()):
             ephemereal = BrokerThread()
@@ -64,7 +64,9 @@ class BrokerThread( threading.Thread ):
         try:
             ofname = os.path.join(const.LOGS_DIR,const.MQTT_BROKER+'.log') 
             cffile = os.path.join(const.CFG_FILEDIR, const.MQTT_BROKER+'.conf')
-            mqbroker = Popen([const.MQTT_BROKER,'-c',cffile,'-d'])
+            print("[IF]",__name__," : ","MQTT Broker Config/Log Files",cffile,ofname)
+            mqbroker = Popen([const.MQTT_BROKER,'-c',cffile,'-v'])
+            mqbroker.wait()
         except FileNotFoundError:
             print("[ER]",__name__," : ","Unable to locate {} or it's config file on system path. PATH set or installed ?".format(const.MQTT_BROKER))
             srvlog["sys"].error("Broker/ConfigFile not found on system path.")
@@ -72,7 +74,6 @@ class BrokerThread( threading.Thread ):
             print("[ER]",__name__," : ","Unknown exception has occurred",str(e))
             srvlog["sys"].error("Exception has occurred on MQTT BrokerThread:"+str(e))
         finally:
-            stdoutfile.close()
             BrokerThread.terminate()
             print("[IF]",__name__," : ","BrokerThread stopped.")
             srvlog["sys"].info("MQTT BrokerThread stopped.")
