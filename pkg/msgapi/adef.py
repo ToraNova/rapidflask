@@ -38,15 +38,15 @@ r_defines = {
             mqbrk.MQTT_Broker_Configuration,
             mqbrk.AddForm,
             mqbrk.AddForm),
-        "mqttbroker_users": rsBlock(
+        "msgapi_users": rsBlock(
             apiuser.Msgapi_User,
             apiuser.AddForm,
             apiuser.AddForm),
-        "mqttclient_sub": rsBlock(
+        "mqttclient_subs": rsBlock(
             mqsub.MQTT_Sub,
             mqsub.AddForm,
             mqsub.AddForm),
-        "mqttclient_msg": rsBlock(
+        "mqttclient_msgs": rsBlock(
             mqmsg.MQTT_Msg,
             None,
             del_only)
