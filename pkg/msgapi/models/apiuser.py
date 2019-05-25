@@ -27,25 +27,31 @@ class Msgapi_User(Base):
     plain_password = r.Column(r.String(r.lim.MAX_PASSWORD_SIZE))
     usertype = r.Column(r.String(r.lim.MAX_USERNAME_SIZE),unique=False)
 
-    rlist = {
-        "Username":"username",
-        "Password":"password"
-    }
+    rlist = r.OrderedDict([
+        ("Username","username"),
+        ("Password","plain_password"),
+        ("API Type","usertype")
+        ])
     rlist_priKey = "id"
     rlist_dis = "Msgapi Users" #display for r routes
 
     @staticmethod
-    def update_auth():
-        authfile = os.path.join(r.const.CFG_FILEDIR,const.MQTT_BROKER+'.auth')
-        if( os.path.isfile( authfile )):
-                os.remove( authfile )
-        users = MQTT_Broker_User.query.all()
-        with open( authfile, 'w') as afile:
-            for u in users:
-                afile.write(c.username)
-                afile.write(':')
-                afile.write(c.plain_password)
-        BrokerThread.restart() # restart the broker
+    def update_auth(apitype):
+        if(apitype == "MQTTv0"):
+            # TODO : use mosquitto_passwd tool
+            authfile = os.path.join(r.const.CFG_FILEDIR,r.const.MQTT_BROKER+'.auth')
+            if( os.path.isfile( authfile )):
+                    os.remove( authfile )
+            users = Msgapi_User.query.filter( Msgapi_User.usertype == apitype).all()
+            with open( authfile, 'w') as afile:
+                for u in users:
+                    afile.write(u.username)
+                    afile.write(':')
+                    afile.write(u.plain_password)
+            BrokerThread.restart() # restart the broker
+        else:
+            pass
+
 
     def __init__(self,insert_list):
         self.username = insert_list["username"]
@@ -54,15 +60,15 @@ class Msgapi_User(Base):
 
     def default_add_action(self):
         # updates the config file
-        MQTT_Broker_User.update_auth()
+        Msgapi_User.update_auth(self.usertype)
 
     def default_mod_action(self):
         # updates the config file
-        MQTT_Broker_User.update_auth()
+        Msgapi_User.update_auth(self.usertype)
 
     def default_del_action(self):
         # updates the config file
-        MQTT_Broker_User.update_auth()
+        Msgapi_User.update_auth(self.usertype)
 
 class AddForm(r.FlaskForm):
     #TODO: List the fields here, FIELDS MUST BE PREFIXED WITH rgen_

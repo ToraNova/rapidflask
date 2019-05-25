@@ -56,7 +56,7 @@ def default_add():
 
     from pkg.system.database import dbms #it is important to import this ONLY in the function
     default_broker_config_list = [
-           ("allow_anonymous","false"),("allow_duplicate_message","false"),
+           ("allow_anonymous","false"),("allow_duplicate_messages","false"),
            ("allow_zero_length_clientid","true"),("auto_id_prefix","rapid"),
            ("connection_messages","true"),
            ("log_type","error"),("log_type","warning"),

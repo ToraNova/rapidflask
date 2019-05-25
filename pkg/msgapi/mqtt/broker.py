@@ -15,6 +15,10 @@ from pkg.system.servlog import srvlog
 
 class BrokerThread( threading.Thread ):
 
+    ofname = os.path.join(const.LOGS_DIR,const.MQTT_BROKER+'.log') 
+    cffile = os.path.join(const.CFG_FILEDIR, const.MQTT_BROKER+'.conf')
+    atfile = os.path.join(const.CFG_FILEDIR, const.MQTT_BROKER+'.auth')
+
     def __init__(self):
         threading.Thread.__init__(self)
 
@@ -39,13 +43,15 @@ class BrokerThread( threading.Thread ):
 
     @staticmethod
     def begin():
-        if(not BrokerThread.broker_started()):
-            ephemereal = BrokerThread()
-            ephemereal.start()
-        else:
-            print("[ER]",__name__," : ","Warning. MQTT broker already running, Skipping start")
-            srvlog["sys"].warning("Unable to start broker. {} already up!".format(
-                const.MQTT_BROKER))
+        if(not os.path.isfile( BrokerThread.cffile )):
+            #recreate config file
+            from pkg.msgapi.mqtt.models import MQTT_Broker_Configuration
+            MQTT_Broker_Configuration.update_config()
+        if(not os.path.isfile( BrokerThread.atfile )):
+            from pkg.msgapi.models import Msgapi_User
+            Msgapi_User.update_auth("MQTTv0")
+        ephemereal = BrokerThread()
+        ephemereal.start()
 
     @staticmethod
     def terminate():
@@ -61,11 +67,17 @@ class BrokerThread( threading.Thread ):
         BrokerThread.begin()
 
     def run(self):
+        time.sleep(3) #wait for previous broker to fully stop first
+        if(BrokerThread.broker_started()):
+            print("[ER]",__name__," : ","Warning. MQTT broker already running, Skipping start")
+            srvlog["sys"].warning("Unable to start broker. {} already up!".format(
+                const.MQTT_BROKER))
+            return
+        else:
+            print("[IF]",__name__," : ","MQTT Broker Config/Log Files",\
+                    self.cffile,self.ofname)
         try:
-            ofname = os.path.join(const.LOGS_DIR,const.MQTT_BROKER+'.log') 
-            cffile = os.path.join(const.CFG_FILEDIR, const.MQTT_BROKER+'.conf')
-            print("[IF]",__name__," : ","MQTT Broker Config/Log Files",cffile,ofname)
-            mqbroker = Popen([const.MQTT_BROKER,'-c',cffile,'-v'])
+            mqbroker = Popen([const.MQTT_BROKER,'-c',self.cffile,'-v'])
             mqbroker.wait()
         except FileNotFoundError:
             print("[ER]",__name__," : ","Unable to locate {} or it's config file on system path. PATH set or installed ?".format(const.MQTT_BROKER))

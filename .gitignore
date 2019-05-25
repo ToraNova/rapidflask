@@ -8,6 +8,10 @@
 # Ignore logs
 /logs/*.log*
 
+# Ignore the mosquitto config (machine dependent)
+/configs/mosquitto.conf
+/configs/mosquitto.auth
+
 # Ignore tokens, and uploaded files
 /tokens/*
 /tokens/sysuser/*

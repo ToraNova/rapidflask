@@ -176,7 +176,7 @@ def rmod(dbtype,tablename,primaryKey):
 
             dbsess.delete(target_del)
             dbsess.commit()
-            return redirect(url_for('resource.rlist',tablename=tablename))
+            return redirect(url_for('resrc.rlist',dbtype=dbtype,tablename=tablename))
 
         elif(request.form["button"]=="Modify"):
             #MODIFY PROCEDURE
@@ -211,7 +211,7 @@ def rmod(dbtype,tablename,primaryKey):
                         raise ValueError(tablename,"default_mod_action",primaryKey,str(e))
                 dbsess.add(target_mod)
                 dbsess.commit()
-                return redirect(url_for('resource.rlist',dbtype=dbtype,tablename=tablename))
+                return redirect(url_for('resrc.rlist',dbtype=dbtype,tablename=tablename))
         else:
             abort(404)
     else:
