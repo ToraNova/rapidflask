@@ -9,6 +9,7 @@
 from pkg.resrc import res_import as r
 from shutil import copyfile
 import os
+from subprocess import Popen
 from pkg.system.database import dbms
 from pkg.msgapi.mqtt import BrokerThread
 Base = dbms.msgapi.base
@@ -25,6 +26,10 @@ class Msgapi_User(Base):
     	return '<%r %r>' % (self.__tablename__,self.id)
     username = r.Column(r.String(r.lim.MAX_USERNAME_SIZE), unique=True)
     plain_password = r.Column(r.String(r.lim.MAX_PASSWORD_SIZE))
+    # TODO: figure out a way to secure this more
+    # justification for plain_password storage here. the reason is
+    # to allow the administrator to easily obtain the password from
+    # the database 
     usertype = r.Column(r.String(r.lim.MAX_USERNAME_SIZE),unique=False)
 
     rlist = r.OrderedDict([
@@ -39,7 +44,7 @@ class Msgapi_User(Base):
     def update_auth(apitype):
         if(apitype == "MQTTv0"):
             # TODO : use mosquitto_passwd tool
-            authfile = os.path.join(r.const.CFG_FILEDIR,r.const.MQTT_BROKER+'.auth')
+            authfile = os.path.join(r.const.CFG_FILEDIR,'mosquitto.auth')
             if( os.path.isfile( authfile )):
                     os.remove( authfile )
             users = Msgapi_User.query.filter( Msgapi_User.usertype == apitype).all()
@@ -48,6 +53,8 @@ class Msgapi_User(Base):
                     afile.write(u.username)
                     afile.write(':')
                     afile.write(u.plain_password)
+            rewrite_pwdfile = Popen(['mosquitto_passwd','-U',authfile])
+            rewrite_pwdfile.wait()
             BrokerThread.restart() # restart the broker
         else:
             pass

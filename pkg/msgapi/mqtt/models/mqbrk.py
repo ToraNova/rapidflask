@@ -11,6 +11,7 @@ from shutil import copyfile
 import os, configparser
 from pkg.system.database import dbms
 from pkg.msgapi.mqtt import BrokerThread
+from pkg.system.servlog import srvlog
 Base = dbms.msgapi.base
 
 class MQTT_Broker_Configuration(Base):
@@ -32,13 +33,15 @@ class MQTT_Broker_Configuration(Base):
     rlist_priKey = "id"
     rlist_dis = "MQTT Broker Configuration" #display for r routes
 
+    reserved_keys = ["log_dest","password_file","cafile","certfile","keyfile"]
+
     def __init__(self,insert_list):
         self.config_name = insert_list["config_name"]
         self.config_value = insert_list["config_value"]
 
     @staticmethod
     def update_config():
-        mbconf_file = os.path.join(r.const.CFG_FILEDIR,r.const.MQTT_BROKER+'.conf')
+        mbconf_file = os.path.join(r.const.CFG_FILEDIR,'mosquitto.conf')
         if( os.path.isfile( mbconf_file )):
                 os.remove( mbconf_file )
         copyfile( os.path.join(r.const.CFG_FILEDIR,'mosquitto.conf.bak'),
@@ -53,25 +56,27 @@ class MQTT_Broker_Configuration(Base):
 
         import __main__
         srvabs = os.path.dirname(os.path.abspath( __main__.__file__ ))
-        with open( mbconf_file, 'w') as cfile:
+        print("[IF]",__name__," : ","Updating Broker Configuration file",mbconf_file)
+        with open( mbconf_file, 'a') as cfile:
             cfile.write("log_dest file "+os.path.join(srvabs,r.const.LOGS_DIR,\
-                    r.const.MQTT_BROKER+'.log')+'\n')
+                    'mosquitto.log.tmp')+'\n')
             cfile.write("password_file "+os.path.join(srvabs,\
-                    r.const.CFG_FILEDIR,r.const.MQTT_BROKER+'.auth')+'\n')
-            cfile.write("cafile "+os.path.join(srvabs,ssl_ca)+'\n')
-            cfile.write("certfile "+os.path.join(srvabs,ssl_cert)+'\n')
-            cfile.write("keyfile "+os.path.join(srvabs,ssl_pkey)+'\n')
+                    r.const.CFG_FILEDIR,'mosquitto.auth')+'\n')
             for c in conf:
-                if( c.config_name == "log_dest" or c.config_name == "password_file" \
-                        or c.config_name == "cafile" or c.config_name == "certfile" \
-                        or c.config_name == "keyfile"):
+                if( c.config_name in MQTT_Broker_Configuration.reserved_keys):
                     #log_dest must not be changed, so does the password_file loc
                     #TLS params should not be edited at all.
+                    continue
+                elif( c.config_name == "use_ssl" and c.config_value in ["true","True",1,"1"]):
+                    cfile.write("cafile "+os.path.join(srvabs,ssl_ca)+'\n')
+                    cfile.write("certfile "+os.path.join(srvabs,ssl_cert)+'\n')
+                    cfile.write("keyfile "+os.path.join(srvabs,ssl_pkey)+'\n')
                     continue
                 cfile.write(c.config_name)
                 cfile.write(' ')
                 cfile.write(c.config_value)
                 cfile.write('\n')
+        srvlog["sys"].info("Broker Configuration file updated "+mbconf_file)
         BrokerThread.restart() # restart the broker
 
 

@@ -32,6 +32,3 @@ CFG_FILEDIR = 'configs'
 SERVER_NAME = "RapidFlask"
 ADMIN_PLAINT_APIKEY = "abc123"
 DISABLE_CRIT_ROUTE = False
-
-# Services
-MQTT_BROKER = "mosquitto"

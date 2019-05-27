@@ -37,6 +37,7 @@ if __name__ == '__main__':
         srvlog["sys"].error("Parsing port exception "+str(e))
     main_debug = True if rcf.get('flags','debug')=='1' else False
     main_reload = True if rcf.get('flags','reload')=='1' else False
+    broker_enable = True if rcf.get('service','broker_enable')=='1' else False
     broker_autostart = True if rcf.get('service','broker_autostart')=='1' else False
     ssl_enable = True if rcf.get('conn','ssl_enable')=='1' else False
     ssl_cert = rcf.get('conn','ssl_cert')
@@ -83,9 +84,8 @@ if __name__ == '__main__':
     srvlog["sys"].info("system start") #logging
 
     if( sys.platform == "linux" or sys.platform == "linux2"):
-        if(broker_autostart):
+        if(broker_enable and broker_autostart):
             from pkg.msgapi.mqtt import BrokerThread
-            print("[IF]",__name__," : ","Starting MQTT broker service on autostart")
             BrokerThread.begin()
         else:
             print("[IF]",__name__," : ","Skipping MQTT broker service on autostart")
