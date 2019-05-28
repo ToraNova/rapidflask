@@ -16,34 +16,25 @@ from pkg.system.database import dbcon
 
 import os, sys, traceback
 import ssl
-import configparser
 import logging
 import pkg.const as const
 
 if __name__ == '__main__':
 
     ##################################################################
-    # Performs config parsing
+    # Performs config parsing (read from const file u8) const file 
+    # performs all this read from the config file
     ##################################################################
-    rcf = configparser.RawConfigParser()
-    conf_file =os.path.join(const.CFG_FILEDIR,"rapid.conf") 
-    rcf.read( conf_file )
-    main_host = rcf.get('conn','hostaddr')
-    try:
-        main_port = int(rcf.get('conn','port'))
-    except Exception as e:
-        print("[ER]",__name__," : ","Exception occured while parsing port number.")
-        print(str(e))
-        srvlog["sys"].error("Parsing port exception "+str(e))
-    main_debug = True if rcf.get('flags','debug')=='1' else False
-    main_reload = True if rcf.get('flags','reload')=='1' else False
-    broker_enable = True if rcf.get('service','broker_enable')=='1' else False
-    broker_autostart = True if rcf.get('service','broker_autostart')=='1' else False
-    ssl_enable = True if rcf.get('conn','ssl_enable')=='1' else False
-    ssl_cert = rcf.get('conn','ssl_cert')
-    ssl_pkey = rcf.get('conn','ssl_pkey')
-    ssl_ca = rcf.get('conn','ssl_ca')
-    print("[IF]",__name__," : ",const.SERVER_NAME,"configured with",conf_file)
+    main_host = const.BIND_ADDR
+    main_port = const.BIND_PORT
+    main_debug = const.EDEBUG
+    main_reload = const.RELOAD
+    broker_enable = const.BROKER_ENABLE
+    broker_autostart = const.BROKER_AUTOSTART
+    ssl_enable = const.SSL_ENABLE
+    ssl_cert = const.SSL_CERT
+    ssl_pkey = const.SSL_PKEY
+    ssl_ca = const.SSL_CA
     ##################################################################
 
     # print and log out configuration details

@@ -46,11 +46,13 @@ def livelog(logstring,logtype='logins'):
 
 @bp.route('/sysclock',methods=['GET','POST'])
 def sysclock():
-    return render_template('flask_sockio/sysclock.html')
+    return render_template('flask_sockio/sysclock.html',
+            socket_io_proto=const.SOCKET_IO_PROTO)
 
 @bp.route('/syschatter/<chatter_room>',methods=['GET','POST'])
 def syschatter(chatter_room):
-    return render_template('flask_sockio/chatter.html',chatter_room=chatter_room)
+    return render_template('flask_sockio/chatter.html',chatter_room=chatter_room,
+            socket_io_proto=const.SOCKET_IO_PROTO)
 
 #SystemUtilNamespace is a socket.io class that handles system utility realtime
 #data, currently implemented methods is the on_sync_time that allows a realtime

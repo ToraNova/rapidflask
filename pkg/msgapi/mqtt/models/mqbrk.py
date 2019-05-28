@@ -8,7 +8,7 @@
 
 from pkg.resrc import res_import as r
 from shutil import copyfile
-import os, configparser
+import os
 from pkg.system.database import dbms
 from pkg.msgapi.mqtt import BrokerThread
 from pkg.system.servlog import srvlog
@@ -47,12 +47,10 @@ class MQTT_Broker_Configuration(Base):
         copyfile( os.path.join(r.const.CFG_FILEDIR,'mosquitto.conf.bak'),
                 mbconf_file)
         conf = MQTT_Broker_Configuration.query.all()
-        rcf = configparser.RawConfigParser()
-        conf_file =os.path.join(r.const.CFG_FILEDIR,"rapid.conf") 
-        rcf.read( conf_file )
-        ssl_ca = rcf.get("conn","ssl_ca")
-        ssl_cert = rcf.get("conn","ssl_cert")
-        ssl_pkey = rcf.get("conn","ssl_pkey")
+
+        ssl_ca = const.SSL_CA
+        ssl_cert = const.SSL_CERT
+        ssl_pkey = const.SSL_PKEY
 
         import __main__
         srvabs = os.path.dirname(os.path.abspath( __main__.__file__ ))

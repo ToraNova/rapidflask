@@ -2,6 +2,14 @@
 # Introduced U7 ported from mqpy.
 # ToraNova 2019
 
+# General settings
+[general]
+servername = RapidFlask
+
+# disable dangerous routes such as db reset, nologins
+# Please set to 1 on deployment !
+disable_crit_route = 0
+
 # Main connection settings
 [conn]
 # main server IP
@@ -32,5 +40,8 @@ reload = 1
 
 # Service settings
 [service]
+# enables the mqtt broker
+broker_enable = 1
 # automatically start the broker upon server start
 broker_autostart = 1
+

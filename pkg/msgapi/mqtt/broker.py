@@ -7,11 +7,33 @@
 
 # TODO: Please read
 # http://www.steves-internet-guide.com/mosquitto-logging/
-import os, threading, time, configparser
+import os, threading, time
 from subprocess import Popen, PIPE
 
 import pkg.const as const
 from pkg.system.servlog import srvlog
+
+class ReaderThread( threading.Thread ):
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self.runflag = False
+
+    def run(self):
+        # start a tail -f on the ofname file on brokerThread
+        tproc = Popen(['tail','-f',BrokerThread.ofname],stdout=PIPE)
+        self.runflag = True
+        while self.runflag:
+
+            rin = tproc.stdout.readline()
+            if(len(rin) <= 0):
+                tproc.terminate()
+                self.runflag = False
+            else:
+                print(rin)
+
+    def kill(self):
+        self.runflag = False
+
 
 class BrokerThread( threading.Thread ):
 
@@ -45,10 +67,7 @@ class BrokerThread( threading.Thread ):
     @staticmethod
     def begin():
 
-        rcf = configparser.RawConfigParser()
-        conf_file =os.path.join(const.CFG_FILEDIR,"rapid.conf") 
-        rcf.read( conf_file )
-        broker_enable = rcf.get("service","broker_enable")
+        broker_enable = const.BROKER_ENABLE
 
         if(not broker_enable):
             print("[ER]",__name__," : ","MQTT Broker disabled in rapidconfig")
@@ -73,8 +92,11 @@ class BrokerThread( threading.Thread ):
         if(BrokerThread.broker_started()):
             getpid = Popen(['pgrep','mosquitto$'],stdout=PIPE)
             pid = getpid.stdout.readline()[:-1] #ignore the last character
-            term = Popen(['kill','-s','SIGTERM',pid])
-            term.wait()
+            if(len(pid) <=0):
+                pass # do nothing
+            else:
+                term = Popen(['kill','-s','SIGTERM',pid])
+                term.wait()
 
     @staticmethod
     def restart():

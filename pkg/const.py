@@ -5,7 +5,15 @@
 # as the name implies, these are not meant to be
 # changed
 # introduced 8/12/2018
+# updated u8 : config file is read here, sourced to
+# rest of the project
 #--------------------------------------------------
+
+################################################################
+# as of u8 - config is read here and sourced as constant values
+# to all other files
+################################################################
+import configparser,os
 
 ################################################################
 # Essential constant vars (consistent through deployments)
@@ -29,6 +37,37 @@ TOKN_SYS = 'sysuser'
 STD_FILEDIR = 'uploads'
 CFG_FILEDIR = 'configs'
 
-SERVER_NAME = "RapidFlask"
-ADMIN_PLAINT_APIKEY = "abc123"
-DISABLE_CRIT_ROUTE = False
+ADMIN_PLAINT_APIKEY = "abc123" #TODO: api keys
+
+# Config file value obtainer
+# Read the config file and store their values here
+rcf = configparser.RawConfigParser()
+conf_file =os.path.join( CFG_FILEDIR,"rapid.conf" ) 
+rcf.read( conf_file )
+BIND_ADDR = rcf.get('conn','hostaddr')
+try:
+    BIND_PORT = int(rcf.get('conn','port'))
+    BIND_PORT_FALLBACK = False
+except Exception as e:
+    print("[ER]",__name__," : ","Exception occured while parsing port number.")
+    print(str(e))
+    BIND_PORT_FALLBACK = True #indicate a fallback is used
+    BIND_PORT = 8000 # fallback default port
+
+SSL_ENABLE = rcf.get('conn','ssl_enable') == '1'
+SSL_CERT = rcf.get('conn','ssl_cert')
+SSL_PKEY = rcf.get('conn','ssl_pkey')
+SSL_CA = rcf.get('conn','ssl_ca')
+
+EDEBUG = rcf.get('flags','debug') == '1'
+RELOAD = rcf.get('flags','reload') == '1'
+
+BROKER_ENABLE = rcf.get('service','broker_enable') == '1'
+BROKER_AUTOSTART = rcf.get('service','broker_autostart') == '1'
+
+DISABLE_CRIT_ROUTE = rcf.get('general','disable_crit_route') == '1'
+SERVER_NAME = rcf.get('general','servername')
+
+SOCKET_IO_PROTO = 'https' if SSL_ENABLE else 'http'
+
+print("[IF]",__name__," : ",SERVER_NAME,"configured with",conf_file)

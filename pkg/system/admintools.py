@@ -131,4 +131,5 @@ def logview(logtype):
 @a.admin_required
 def livelogview(logtype):
     #Allow viewing of live logs
-    return render_template("flask_sockio/livelogs.html",logtype="logins")
+    return render_template("flask_sockio/livelogs.html",logtype="logins",
+            socket_io_proto=const.SOCKET_IO_PROTO)
