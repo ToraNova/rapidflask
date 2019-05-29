@@ -55,17 +55,16 @@
 {% block script %}
 	<script type="text/javascript" src="{{url_for('static', filename='flask_io/socket.io.min.js')}}"></script>
 	<script type="text/javascript" charset="utf-8">
-	var namespace = '/mqtt_broker'
+	var namespace = '/brokerctl'
 	var socket = io.connect('{{socket_io_proto}}://' + document.domain + ':' + location.port + namespace); //persistent
 	socket.on('connect', function() {
-		console.log("mqtt_brokerlogs connected...");
+		console.log("mqtt_brokerlogs connected..."+namespace);
 	});
 
 	socket.on('brokerlogs_cast', function(msg){
-
-		document.getElementById('logview').value = (document.getElementById('logview').value +
+		console.log(msg.logstring)
+		document.getElementById('mosquitto_output').value = (document.getElementById('mosquitto_output').value +
 		new Date().toLocaleString() + ' :: ' + msg.logstring + '\n');
-
 	});
 	</script>
 {% endblock %}

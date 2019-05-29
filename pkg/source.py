@@ -43,6 +43,7 @@ from pkg.iface import home, sysutilio
 
 # MSGAPI sourcing
 from pkg.msgapi.http import push, pull
+from pkg.msgapi.mqtt import rqtt
 
 # Resource sourcing
 from pkg.resrc import r
@@ -69,7 +70,7 @@ login_manager.login_message = "Please login first."
 login_manager.login_message_category = "info"
 
 bplist = [  
-        auth.bp, admintools.bp, sysnologin.bp, sysuser.bp, utype.bp,
+        auth.bp, admintools.bp, sysnologin.bp, sysuser.bp, utype.bp, rqtt.bp,
         home.bp, sysutilio.bp,  push.bp, pull.bp, r.bp, standard_file.bp]
 
 for bp in bplist:
@@ -90,6 +91,7 @@ out = SocketIO(out_nonsock)
 # out is rexported for use in emits
 
 # import socketio files here
-from pkg.iface import sysutilio
 sysutil_ns = sysutilio.SystemUtilNamespace('/sysutil')
+mqttctl_ns = rqtt.MQTTCTLNamespace('/brokerctl')
 out.on_namespace(sysutil_ns)
+out.on_namespace(mqttctl_ns)

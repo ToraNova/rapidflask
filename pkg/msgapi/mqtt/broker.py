@@ -9,27 +9,39 @@
 # http://www.steves-internet-guide.com/mosquitto-logging/
 import os, threading, time
 from subprocess import Popen, PIPE
+from collections import deque
 
 import pkg.const as const
 from pkg.system.servlog import srvlog
 
 class ReaderThread( threading.Thread ):
-    def __init__(self):
+    # MAJOR ! TODO: Clean up zombie tail processes
+    # once socket io dc, the tail process is still running,
+    # find a way to kill it
+    def __init__(self,parent):
         threading.Thread.__init__(self)
+        self.parent = parent
+        self.io_ready = threading.Event() #not used
         self.runflag = False
 
     def run(self):
         # start a tail -f on the ofname file on brokerThread
+        from pkg.msgapi.mqtt.rqtt import brokerlogs
         tproc = Popen(['tail','-f',BrokerThread.ofname],stdout=PIPE)
         self.runflag = True
+        self.msgq = deque()
         while self.runflag:
 
             rin = tproc.stdout.readline()
+            self.io_ready.set()
             if(len(rin) <= 0):
-                tproc.terminate()
+                tproc.kill()
                 self.runflag = False
             else:
-                print(rin)
+                brokerlogs( (rin[:-1]).decode('utf-8') )
+        self.io_ready.clear()
+        tproc.kill()
+        print("Stopped")
 
     def kill(self):
         self.runflag = False
