@@ -22,26 +22,62 @@ class ReaderThread( threading.Thread ):
         threading.Thread.__init__(self)
         self.parent = parent
         self.io_ready = threading.Event() #not used
+        self.io_ready.set()
+        self.io_ready.clear()
         self.runflag = False
+
+    @staticmethod
+    def sigterm():
+        ps = Popen(['ps','aux'],\
+                stdout=PIPE)
+        vgrep = Popen(['grep','-v','grep'],\
+                stdin=ps.stdout, stdout=PIPE)
+        grep = Popen(['grep','tail -f logs/mosquitto.'],
+                stdin=vgrep.stdout,stdout=PIPE)
+        cut = Popen(['cut','-d',' ','-f','2'],
+                stdin=grep.stdout, stdout=PIPE)
+        for line in cut.stdout:
+            k= Popen(['kill','-s','SIGTERM',line[:-1]])
+            k.wait()
+        return True
+
+
+    @staticmethod
+    def isrunning():
+        ps = Popen(['ps','aux'],\
+                stdout=PIPE)
+        vgrep = Popen(['grep','-v','grep'],\
+                stdin=ps.stdout, stdout=PIPE)
+        grep = Popen(['grep','tail -f logs/mosquitto.'],
+                stdin=vgrep.stdout,stdout=PIPE)
+        try:
+            out,err = grep.communicate(timeout=5)
+            if(len(out) <=0):
+                return False #broker probably not running
+            else:
+                return True #broker probably running
+        except Exception as e:
+            print("Exception as occurred:",str(e))
+            return False
 
     def run(self):
         # start a tail -f on the ofname file on brokerThread
+        if( ReaderThread.isrunning() ):
+            print("[IG]",__name__," : ","ReaderThread is running.")
+            return
         from pkg.msgapi.mqtt.rqtt import brokerlogs
         tproc = Popen(['tail','-f',BrokerThread.ofname],stdout=PIPE)
+        self.pid = tproc.pid
         self.runflag = True
         self.msgq = deque()
         while self.runflag:
-
             rin = tproc.stdout.readline()
-            self.io_ready.set()
             if(len(rin) <= 0):
-                tproc.kill()
                 self.runflag = False
             else:
                 brokerlogs( (rin[:-1]).decode('utf-8') )
-        self.io_ready.clear()
-        tproc.kill()
-        print("Stopped")
+        tproc.terminate()
+        return
 
     def kill(self):
         self.runflag = False
@@ -83,21 +119,25 @@ class BrokerThread( threading.Thread ):
 
         if(not broker_enable):
             print("[ER]",__name__," : ","MQTT Broker disabled in rapidconfig")
-            return 1
-        if(not os.path.isfile( BrokerThread.cffile )):
-            #recreate config file
-            from pkg.msgapi.mqtt.models import MQTT_Broker_Configuration
-            MQTT_Broker_Configuration.update_config()
-        if(not os.path.isfile( BrokerThread.atfile )):
-            from pkg.msgapi.models import Msgapi_User
-            Msgapi_User.update_auth("MQTTv0")
-        if(not os.path.isfile( BrokerThread.plname )):
-            tp = open(BrokerThread.plname,'w')
-            tp.write("Mosquitto Broker Persisten Logfile")
-            tp.close()
-        ephemereal = BrokerThread()
-        ephemereal.start()
-        return 0
+            return 'BROKER_ENABLE FALSE'
+        try:
+            if(not os.path.isfile( BrokerThread.cffile )):
+                #recreate config file
+                from pkg.msgapi.mqtt.models import MQTT_Broker_Configuration
+                MQTT_Broker_Configuration.update_config()
+            if(not os.path.isfile( BrokerThread.atfile )):
+                from pkg.msgapi.models import Msgapi_User
+                Msgapi_User.update_auth("MQTTv0")
+            if(not os.path.isfile( BrokerThread.plname )):
+                tp = open(BrokerThread.plname,'w')
+                tp.write("Mosquitto Broker Persisten Logfile")
+                tp.close()
+            ephemereal = BrokerThread()
+            ephemereal.start()
+            return 'SUCCESS'
+        except Exception as e:
+            print("[ER]",__name__," : ","Exception has occurred",str(e))
+            return str(e)
 
     @staticmethod
     def terminate():
@@ -106,9 +146,13 @@ class BrokerThread( threading.Thread ):
             pid = getpid.stdout.readline()[:-1] #ignore the last character
             if(len(pid) <=0):
                 pass # do nothing
+                return 'STOPPED'
             else:
                 term = Popen(['kill','-s','SIGTERM',pid])
                 term.wait()
+                return 'KILLED'
+        else:
+            return 'NOT STARTED'
 
     @staticmethod
     def restart():

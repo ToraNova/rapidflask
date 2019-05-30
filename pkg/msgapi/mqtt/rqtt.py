@@ -31,6 +31,7 @@ from pkg.system import assertw as a
 from pkg.system.servlog import srvlog,logtofile
 
 from pkg.msgapi.mqtt.broker import ReaderThread
+from pkg.msgapi.mqtt.broker import BrokerThread
 
 # primary blueprint
 bp = Blueprint('mqttio', __name__, url_prefix='/api/mqtt')
@@ -49,6 +50,7 @@ def brokerlogs( logstr ):
         #live logins - update7
         socketio.emit('brokerlogs_cast',
         {'logstring':logstr},
+        room="mqttctl",
         namespace='/brokerctl')
         # emit may also contain namespaces to emit to other classes
     except Exception as e:
@@ -70,10 +72,36 @@ class MQTTCTLNamespace(Namespace):
     MQTTCTL - mqtt broker control namespace'''
 
     def on_connect(self):
+        join_room("mqttctl")
         self.rthread = ReaderThread(self)
         self.rthread.start()
         print("[IF]",__name__," : ","MQTTCTL Socket established.")
+        if( BrokerThread.broker_started() ):
+            emit('brokerqstat_cast',{'statstring':'mosquitto OK'})
+        else:
+            emit('brokerqstat_cast',{'statstring':'mosquitto not running'})
 
     def on_disconnect(self):
-        self.rthread.kill()
+        leave_room("mqttctl")
+        ReaderThread.sigterm()
         print("[IF]",__name__," : ","MQTTCTL Socket disconnected.")
+
+    def on_start(self):
+        if( BrokerThread.broker_started() ):
+            emit('brokerqstat_cast',{'statstring':'mosquitto already up!'})
+        else:
+            rc = BrokerThread.begin()
+            emit('brokerqstat_cast',{'statstring':'mosquitto start :'+\
+                rc})
+
+    def on_refresh(self):
+        ReaderThread.sigterm()
+        print("[IF]",__name__," : ","Refreshing ReaderThread")
+        self.rthread = ReaderThread(self)
+        self.rthread.start()
+
+    def on_stop(self):
+        rc = BrokerThread.terminate()
+        emit('brokerqstat_cast',{'statstring':'mosquitto stop :'+\
+            rc})
+
