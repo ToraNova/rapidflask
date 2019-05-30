@@ -48,9 +48,9 @@ class MQTT_Broker_Configuration(Base):
                 mbconf_file)
         conf = MQTT_Broker_Configuration.query.all()
 
-        ssl_ca = const.SSL_CA
-        ssl_cert = const.SSL_CERT
-        ssl_pkey = const.SSL_PKEY
+        ssl_ca = r.const.SSL_CA
+        ssl_cert = r.const.SSL_CERT
+        ssl_pkey = r.const.SSL_PKEY
 
         import __main__
         srvabs = os.path.dirname(os.path.abspath( __main__.__file__ ))

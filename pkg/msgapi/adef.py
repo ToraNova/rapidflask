@@ -63,7 +63,7 @@ def default_add():
            ("log_type","error"),("log_type","warning"),
            ("log_type","unsubscribe"),("log_type","subscribe"),
            ("log_type","notice"),("log_type","information"),
-           ("max_packet_size","3000"),("port","1883")
+           ("port","1883")
             ]
     for configs in default_broker_config_list:
         insert_list = {"config_name":configs[0],"config_value":configs[1]}
