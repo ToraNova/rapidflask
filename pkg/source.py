@@ -92,6 +92,6 @@ out = SocketIO(out_nonsock)
 
 # import socketio files here
 sysutil_ns = sysutilio.SystemUtilNamespace('/sysutil')
-mqttctl_ns = rqtt.MQTTCTLNamespace('/brokerctl')
+mqttctl_ns = rqtt.MQTTCTLNamespace('/mqttctl')
 out.on_namespace(sysutil_ns)
 out.on_namespace(mqttctl_ns)

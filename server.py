@@ -19,35 +19,23 @@ import ssl
 import logging
 import pkg.const as const
 
+
+                
 if __name__ == '__main__':
 
     ##################################################################
-    # Performs config parsing (read from const file u8) const file 
-    # performs all this read from the config file
-    ##################################################################
-    main_host = const.BIND_ADDR
-    main_port = const.BIND_PORT
-    main_debug = const.EDEBUG
-    main_reload = const.RELOAD
-    broker_enable = const.BROKER_ENABLE
-    broker_autostart = const.BROKER_AUTOSTART
-    ssl_enable = const.SSL_ENABLE
-    ssl_cert = const.SSL_CERT
-    ssl_pkey = const.SSL_PKEY
-    ssl_ca = const.SSL_CA
-    ##################################################################
-
     # print and log out configuration details
-    print("[IF]",__name__," : ","Hosting {} on".format(const.SERVER_NAME),main_host,str(main_port))
-    if(ssl_enable):
+    ##################################################################
+    print("[IF]",__name__," : ","Hosting {} on".format(const.SERVER_NAME),const.BIND_ADDR,str(const.BIND_PORT))
+    if(const.SSL_ENABLE):
         print("[IF]",__name__," : ","Hosting over TLS, HTTPS")
     else:
         print("[IF]",__name__," : ","Warning. Hosting over insecure HTTP")
-    print("[IF]",__name__," : ","Debug/Reload :",main_debug,"/",main_reload)
-    srvlog["sys"].info(main_host+":"+str(main_port))
+    print("[IF]",__name__," : ","Debug/Reload :",const.EDEBUG,"/",const.RELOAD)
+    srvlog["sys"].info(const.BIND_ADDR+":"+str(const.BIND_PORT))
     srvlog["sys"].info("debug/reload : "+
-            "yes/" if main_debug else "no/"+
-            "yes" if main_reload else "no")
+            "yes/" if const.EDEBUG else "no/"+
+            "yes" if const.RELOAD else "no")
 
     ##################################################################
     #First run issues (create database)
@@ -74,8 +62,11 @@ if __name__ == '__main__':
     mainsrv = out_nonsock
     srvlog["sys"].info("system start") #logging
 
+    ##################################################################
+    # MQTT BROKER START CHECK
+    ##################################################################
     if( sys.platform == "linux" or sys.platform == "linux2"):
-        if(broker_enable and broker_autostart):
+        if(const.BROKER_ENABLE and const.BROKER_AUTOSTART):
             from pkg.msgapi.mqtt import BrokerThread
             BrokerThread.begin()
         else:
@@ -83,25 +74,67 @@ if __name__ == '__main__':
     else:
         print("[ER]",__name__," : ","MQTT broker service disabled as platform is not linux")
 
-    if(not main_debug):
+    if(not const.EDEBUG):
         # Restrict werkzeug logs to only errors
         log = logging.getLogger('werkzeug')
         log.setLevel(logging.ERROR)
-    try:
-        #mainsrv.run(debug=app_debug,host=main_host, port=main_port, use_reloader = True) #flask run
 
-        if(ssl_enable):
+    try:
+    ##################################################################
+    # LOCAL RQTT CLIENT START CHECK
+    ##################################################################
+        if( const.LOCAL_RQTT_ENABLE ):
+            # enable the local rqtt threads
+            from pkg.msgapi.mqtt.client import RapidClientThread
+            global_rqttclient = RapidClientThread() # THIS IS USED GLOBALLY.
+            # from __main__ import global_rqttclient to use it
+            if( const.LOCAL_RQTT_AUTOSTART ):
+                # autostart it
+                if( const.LOCAL_RQTT_EXTBROKE ):
+                    # connect to external broker (or specified broker based on config)
+                    global_rqttclient.load_config( const.LOCAL_RQTT_USERNAME,\
+                            const.LOCAL_RQTT_PASSWORD, const.LOCAL_RQTT_ADDR,\
+                            const.LOCAL_RQTT_PORT ) 
+                elif( const.BROKER_ENABLE ):
+                    # local broker enabled, connect to it instead
+                    from pkg.msgapi.mqtt.models import MQTT_Broker_Configuration
+                    portn = MQTT_Broker_Configuration.query.filter(
+                            MQTT_Broker_Configuration.config_name == "port").one()
+                    try:
+                        iportn = int(portn.config_value)
+                    except Exception as e:
+                        iportn = 1883
+                        print("[EX]",__name__," : ","Exception has occured while parsing port",str(e),portn.config_value)
+                    global_rqttclient.load_config( const.LOCAL_RQTT_USERNAME,\
+                            const.LOCAL_RQTT_PASSWORD, '127.0.0.1',\
+                            iportn)
+                # start the broker
+                global_rqttclient.start()
+        else:
+            # rqtt disabled
+            global_rqttclient = None
+
+    ##################################################################
+    # MAIN SERVER START
+    ##################################################################
+        if(const.SSL_ENABLE):
+            #mainsrv.run(debug=app_debug,host=const.BIND_ADDR, port=const.BIND_PORT, use_reloader = True) #flask run
             srvlog["sys"].info("Starting server over SSL/TLS HTTPS")
             # FLASK HOSTING
-            #mainsrv.run( debug = main_debug, host = main_host, port = main_port, use_reloader= main_reload, ssl_context=(ssl_cert,ssl_pkey))
+            #mainsrv.run( debug = const.EDEBUG, host = const.BIND_ADDR, port = const.BIND_PORT, use_reloader= const.RELOAD, ssl_context=(const.SSL_CERT,const.SSL_PKEY))
 
             # FLASK_SOCKETIO HOSTING
-            mainsrv_sock.run(mainsrv,debug= main_debug,host=main_host, port=main_port, use_reloader = main_reload, \
-                    certfile = ssl_cert, keyfile = ssl_pkey, ca_certs = ssl_ca)
+            mainsrv_sock.run(mainsrv,debug= const.EDEBUG,host=const.BIND_ADDR, port=const.BIND_PORT, use_reloader = const.RELOAD, \
+                    certfile = const.SSL_CERT, keyfile = const.SSL_PKEY, ca_certs = const.SSL_CA)
             # TODO: SSL version / cert require ? Check these 2 settings out
         else:
             srvlog["sys"].info("Starting server over HTTP")
-            mainsrv_sock.run(mainsrv,debug= main_debug,host=main_host, port=main_port, use_reloader = main_reload)
+            mainsrv_sock.run(mainsrv,debug= const.EDEBUG,host=const.BIND_ADDR, port=const.BIND_PORT, use_reloader = const.RELOAD)
+    ##################################################################
+
+    ##################################################################
+    # HOUSE KEEPING
+    ##################################################################
     except Exception as e:
         print("[ER]",__name__," : ","Exception :",str(e))
         traceback.print_exc()

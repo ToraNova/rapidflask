@@ -53,27 +53,48 @@ class MQTTCTLNamespace(Namespace):
     MQTTCTL - mqtt broker control namespace'''
 
     def on_rqttstart(self):
-        lu = Msgapi_User.query.filter( Msgapi.username == 'localuser' ).only()
-        if(lu is not None):
-            portn = MQTT_Broker_Configuration.query.filter(
-                    MQTT_Broker_Configuration.config_name == "port").only()
-            try:
-                iportn = int( portn.config_value )
-                cthread = RapidClientThread( lu.username, lu.plain_password, iportn)
-                cthread.start()
-            except Exception as e:
-                print("[EX]",__name__," : ","Port number error on mosquitto broker configs",portn)
-                emit('brokerqstat_cast',{'statstring':'mosquitto broker port error!'+\
-                        portn.config_value})
+        # access the main's global rqtt rapidclient
+        if( const.LOCAL_RQTT_ENABLE ):
+            from __main__ import global_rqttclient
+            if( global_rqttclient.runflag ):
+                emit('mqttqstat_cast',{'statstring':'localrqtt already running.'})
+                return
+            lu = Msgapi_User.query.filter( Msgapi.username == 'localuser' ).one()
+            if(lu is not None):
+                # lu available, load from it
+                username = lu.username
+                password = lu.plain_password
+            else:
+                # lu not available, load from config instead
+                username = const.LOCAL_RQTT_USERNAME
+                password = const.LOCAL_RQTT_PASSWORD
+
+            if(const.BROKER_ENABLE and not const.LOCAL_RQTT_EXTBROKE):
+                portn = MQTT_Broker_Configuration.query.filter(
+                        MQTT_Broker_Configuration.config_name == "port").one()
+                addrn = "127.0.0.1" #localhost loopback
+
+            else:
+                portn = const.LOCAL_RQTT_PORT
+                addrn = const.LOCAL_RQTT_ADDR
+            # reload config
+            global_rqttclient.load_config( lu.username, lu.plain_password,\
+                    addrn, portn)
+            # start the rqtt client
+            global_rqttclient.start()
         else:
-            print("[ER]",__name__," : ","localuser for MQTT RapidClient does not exist!")
-            srvlog["oper"].error("localuser for MQTT RapidClient does not exist!")
-            emit('brokerqstat_cast',{'statstring':'localuser does not exist!'})
+            emit('mqttqstat_cast',{'statstring':'localrqtt disabled in config.'})
 
     def on_rqttstop(self):
-        pass
-
-
+        # access the main's global rqtt rapidclient
+        if( const.LOCAL_RQTT_ENABLE ):
+            from __main__ import global_rqttclient
+            if( not global_rqttclient.runflag ):
+                emit('mqttqstat_cast',{'statstring':'local rqtt already not running.'})
+                return
+            global_rqttclient.terminate()
+        else:
+            emit('mqttqstat_cast',{'statstring':'localrqtt disabled in config.'})
 
     def on_connect(self):
         join_room("mqttctl")
@@ -81,9 +102,9 @@ class MQTTCTLNamespace(Namespace):
         self.rthread.start()
         print("[IF]",__name__," : ","MQTTCTL Socket established.")
         if( BrokerThread.broker_started() ):
-            emit('brokerqstat_cast',{'statstring':'mosquitto OK'})
+            emit('mqttqstat_cast',{'statstring':'mosquitto OK'})
         else:
-            emit('brokerqstat_cast',{'statstring':'mosquitto not running'})
+            emit('mqttqstat_cast',{'statstring':'mosquitto not running'})
 
     def on_disconnect(self):
         leave_room("mqttctl")
@@ -92,10 +113,10 @@ class MQTTCTLNamespace(Namespace):
 
     def on_start(self):
         if( BrokerThread.broker_started() ):
-            emit('brokerqstat_cast',{'statstring':'mosquitto already up!'})
+            emit('mqttqstat_cast',{'statstring':'mosquitto already up!'})
         else:
             rc = BrokerThread.begin()
-            emit('brokerqstat_cast',{'statstring':'mosquitto start :'+\
+            emit('mqttqstat_cast',{'statstring':'mosquitto start :'+\
                 rc})
 
     def on_refresh(self):
@@ -106,6 +127,6 @@ class MQTTCTLNamespace(Namespace):
 
     def on_stop(self):
         rc = BrokerThread.terminate()
-        emit('brokerqstat_cast',{'statstring':'mosquitto stop :'+\
+        emit('mqttqstat_cast',{'statstring':'mosquitto stop :'+\
             rc})
 

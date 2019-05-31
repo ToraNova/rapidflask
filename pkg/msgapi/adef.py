@@ -55,6 +55,10 @@ r_defines = {
 def default_add():
 
     from pkg.system.database import dbms #it is important to import this ONLY in the function
+    sub0 = mqsub.MQTT_Sub(\
+            {'topic':'ping/server','description':'For Ping purposes on the server MQTT client','stordur':60,'delonproc':True,'deloncas':True})
+    dbms.msgapi.session.add(sub0)
+
     default_broker_config_list = [
             ("use_ssl","true"),
            ("allow_anonymous","false"),("allow_duplicate_messages","false"),
@@ -69,9 +73,11 @@ def default_add():
         insert_list = {"config_name":configs[0],"config_value":configs[1]}
         dbms.msgapi.session.add(mqbrk.MQTT_Broker_Configuration(insert_list))
 
-    local_user = apiuser.Msgapi_User( {"username":"localuser","plain_password":"mqtt_rocks","usertype":"MQTTv0"} )
+    local_user = apiuser.Msgapi_User(\
+            {"username":"localuser","plain_password":"mqtt_rocks","usertype":"MQTTv0"} )
     dbms.msgapi.session.add( local_user )
-    default_user = apiuser.Msgapi_User( {"username":"rqtt0","plain_password":"mqtt_rocks","usertype":"MQTTv0"} )
+    default_user = apiuser.Msgapi_User(\
+            {"username":"rqtt0","plain_password":"mqtt_rocks","usertype":"MQTTv0"} )
     dbms.msgapi.session.add( default_user )
     dbms.msgapi.session.commit()
 

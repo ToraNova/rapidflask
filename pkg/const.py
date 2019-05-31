@@ -47,11 +47,8 @@ rcf.read( conf_file )
 BIND_ADDR = rcf.get('conn','hostaddr')
 try:
     BIND_PORT = int(rcf.get('conn','port'))
-    BIND_PORT_FALLBACK = False
 except Exception as e:
-    print("[ER]",__name__," : ","Exception occured while parsing port number.")
-    print(str(e))
-    BIND_PORT_FALLBACK = True #indicate a fallback is used
+    print("[ER]",__name__," : ","Exception occured while parsing port number.",str(e))
     BIND_PORT = 8000 # fallback default port
 
 SSL_ENABLE = rcf.get('conn','ssl_enable') == '1'
@@ -64,6 +61,18 @@ RELOAD = rcf.get('flags','reload') == '1'
 
 BROKER_ENABLE = rcf.get('service','broker_enable') == '1'
 BROKER_AUTOSTART = rcf.get('service','broker_autostart') == '1'
+
+LOCAL_RQTT_ENABLE = rcf.get('local_rqtt','local_rqtt_enable') == '1'
+LOCAL_RQTT_AUTOSTART = rcf.get('local_rqtt','local_rqtt_autostart') == '1'
+LOCAL_RQTT_ADDR = rcf.get('local_rqtt','local_rqtt_addr')
+try:
+    LOCAL_RQTT_PORT = int(rcf.get('local_rqtt','local_rqtt_port'))
+except Exception as e:
+    print("[ER]",__name__," : ","Exception occured while parsing port number.",str(e))
+    LOCAL_RQTT_PORT = 1883 # fallback default port
+LOCAL_RQTT_USERNAME = rcf.get('local_rqtt','local_rqtt_username')
+LOCAL_RQTT_PASSWORD = rcf.get('local_rqtt','local_rqtt_password')
+LOCAL_RQTT_EXTBROKE = rcf.get('local_rqtt','local_rqtt_extbroker') == '1'
 
 DISABLE_CRIT_ROUTE = rcf.get('general','disable_crit_route') == '1'
 SERVER_NAME = rcf.get('general','servername')
