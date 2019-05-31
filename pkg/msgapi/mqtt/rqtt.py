@@ -6,8 +6,6 @@
 # introduced 19/05/2019 (u8)
 #--------------------------------------------------
 
-# requires MQTT
-import paho.mqtt.client as mqtt
 import time
 
 #flask routing imports
@@ -32,30 +30,13 @@ from pkg.system.servlog import srvlog,logtofile
 
 from pkg.msgapi.mqtt.broker import ReaderThread
 from pkg.msgapi.mqtt.broker import BrokerThread
+from pkg.msgapi.mqtt.client import RapidClientThread
+from pkg.msgapi.mqtt.models import MQTT_Sub, MQTT_Msg,\
+                            MQTT_Broker_Configuration
+from pkg.msgapi.models import Msgapi_User
 
 # primary blueprint
 bp = Blueprint('mqttio', __name__, url_prefix='/api/mqtt')
-
-#----------------------------------------------------------------------------------------
-# External calls
-# introduced u7
-# The livelog functions allows other functions which are not registered with
-# socketio to emit a message.
-#----------------------------------------------------------------------------------------
-def brokerlogs( logstr ):
-    
-    from pkg.source import out as socketio # use carefully to prevent circular imports
-
-    try:
-        #live logins - update7
-        socketio.emit('brokerlogs_cast',
-        {'logstring':logstr},
-        room="mqttctl",
-        namespace='/brokerctl')
-        # emit may also contain namespaces to emit to other classes
-    except Exception as e:
-        print("Exception has occurred",str(e))
-        srvlog["sys"].info("Exception ocurred in broker logging :"+str(e))
 
 ##############################################################################################
 # API pull routings
@@ -70,6 +51,29 @@ class MQTTCTLNamespace(Namespace):
     '''This class is currently used to display broker logs 
     as like a pseudo terminal on the web application
     MQTTCTL - mqtt broker control namespace'''
+
+    def on_rqttstart(self):
+        lu = Msgapi_User.query.filter( Msgapi.username == 'localuser' ).only()
+        if(lu is not None):
+            portn = MQTT_Broker_Configuration.query.filter(
+                    MQTT_Broker_Configuration.config_name == "port").only()
+            try:
+                iportn = int( portn.config_value )
+                cthread = RapidClientThread( lu.username, lu.plain_password, iportn)
+                cthread.start()
+            except Exception as e:
+                print("[EX]",__name__," : ","Port number error on mosquitto broker configs",portn)
+                emit('brokerqstat_cast',{'statstring':'mosquitto broker port error!'+\
+                        portn.config_value})
+        else:
+            print("[ER]",__name__," : ","localuser for MQTT RapidClient does not exist!")
+            srvlog["oper"].error("localuser for MQTT RapidClient does not exist!")
+            emit('brokerqstat_cast',{'statstring':'localuser does not exist!'})
+
+    def on_rqttstop(self):
+        pass
+
+
 
     def on_connect(self):
         join_room("mqttctl")

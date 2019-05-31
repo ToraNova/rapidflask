@@ -69,6 +69,8 @@ def default_add():
         insert_list = {"config_name":configs[0],"config_value":configs[1]}
         dbms.msgapi.session.add(mqbrk.MQTT_Broker_Configuration(insert_list))
 
+    local_user = apiuser.Msgapi_User( {"username":"localuser","plain_password":"mqtt_rocks","usertype":"MQTTv0"} )
+    dbms.msgapi.session.add( local_user )
     default_user = apiuser.Msgapi_User( {"username":"rqtt0","plain_password":"mqtt_rocks","usertype":"MQTTv0"} )
     dbms.msgapi.session.add( default_user )
     dbms.msgapi.session.commit()

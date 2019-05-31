@@ -33,7 +33,7 @@ class MQTT_Broker_Configuration(Base):
     rlist_priKey = "id"
     rlist_dis = "MQTT Broker Configuration" #display for r routes
 
-    reserved_keys = ["log_dest","password_file","cafile","certfile","keyfile"]
+    reserved_keys = ["log_dest","password_file","cafile","certfile","keyfile","use_ssl"]
 
     def __init__(self,insert_list):
         self.config_name = insert_list["config_name"]
@@ -44,6 +44,7 @@ class MQTT_Broker_Configuration(Base):
         mbconf_file = os.path.join(r.const.CFG_FILEDIR,'mosquitto.conf')
         if( os.path.isfile( mbconf_file )):
                 os.remove( mbconf_file )
+                print("[WR]",__name__," : ","Removing old mosquitto.conf")
         copyfile( os.path.join(r.const.CFG_FILEDIR,'mosquitto.conf.bak'),
                 mbconf_file)
         conf = MQTT_Broker_Configuration.query.all()
@@ -64,16 +65,15 @@ class MQTT_Broker_Configuration(Base):
                 if( c.config_name in MQTT_Broker_Configuration.reserved_keys):
                     #log_dest must not be changed, so does the password_file loc
                     #TLS params should not be edited at all.
-                    continue
-                elif( c.config_name == "use_ssl" and c.config_value in ["true","True",1,"1"]):
-                    cfile.write("cafile "+os.path.join(srvabs,ssl_ca)+'\n')
-                    cfile.write("certfile "+os.path.join(srvabs,ssl_cert)+'\n')
-                    cfile.write("keyfile "+os.path.join(srvabs,ssl_pkey)+'\n')
-                    continue
-                cfile.write(c.config_name)
-                cfile.write(' ')
-                cfile.write(c.config_value)
-                cfile.write('\n')
+                    if(c.config_name == "use_ssl" and c.config_value in ['true','True',1,'1']):
+                        cfile.write("cafile "+os.path.join(srvabs,ssl_ca)+'\n')
+                        cfile.write("certfile "+os.path.join(srvabs,ssl_cert)+'\n')
+                        cfile.write("keyfile "+os.path.join(srvabs,ssl_pkey)+'\n')
+                else:
+                    cfile.write(c.config_name)
+                    cfile.write(' ')
+                    cfile.write(c.config_value)
+                    cfile.write('\n')
         srvlog["sys"].info("Broker Configuration file updated "+mbconf_file)
         BrokerThread.restart() # restart the broker
 

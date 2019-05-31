@@ -15,7 +15,7 @@ from flask import request, abort
 from flask import Blueprint
 
 # for live logins view
-from pkg.iface.sysutilio import livelog
+from pkg.iface import sockemit
 
 import pkg.const as const
 import pkg.limits as limits
@@ -49,7 +49,12 @@ def login():
                 login_user(target_user)#login_manager logins
 
                 #logs it to the livelog monitor
-                livelog('{} ({}) Logon to server.'.format(target_user.username,target_user.getUserType()),'logins')
+                sockemit("/sysutil","livelog_cast",\
+                        {
+                            'logtype':'logins',
+                            'logstring':'{} ({}) Logon to server.'.format(target_user.username,\
+                                target_user.getUserType())
+                        })
 
                 return redirect(url_for("home.home",username=target_user.username))
             else:

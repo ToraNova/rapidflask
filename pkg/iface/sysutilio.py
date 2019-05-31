@@ -20,27 +20,6 @@ import json
 bp = Blueprint('sysutilio', __name__, url_prefix='')
 
 #----------------------------------------------------------------------------------------
-# External calls
-# introduced u7
-# The livelog functions allows other functions which are not registered with
-# socketio to emit a message.
-#----------------------------------------------------------------------------------------
-def livelog(logstring,logtype='logins'):
-    
-    from pkg.source import out as socketio # use carefully to prevent circular imports
-
-    try:
-        #live logins - update7
-        socketio.emit('livelog_cast',
-        {'logtype':logtype,
-        'logstring':logstring},
-        namespace='/sysutil')
-        # emit may also contain namespaces to emit to other classes
-    except Exception as e:
-        print("Exception has occurred",str(e))
-        srvlog["oper"].info("Exception ocurred in live logging :"+str(e))
-
-#----------------------------------------------------------------------------------------
 # ROUTES
 #----------------------------------------------------------------------------------------
 

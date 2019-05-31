@@ -13,6 +13,7 @@ from collections import deque
 
 import pkg.const as const
 from pkg.system.servlog import srvlog
+from pkg.iface import sockemit
 
 class ReaderThread( threading.Thread ):
     # MAJOR ! TODO: Clean up zombie tail processes
@@ -28,16 +29,10 @@ class ReaderThread( threading.Thread ):
 
     @staticmethod
     def sigterm():
-        ps = Popen(['ps','aux'],\
+        ps = Popen(['pkill','-f','tail -f logs/mosquitto.'],\
                 stdout=PIPE)
-        vgrep = Popen(['grep','-v','grep'],\
-                stdin=ps.stdout, stdout=PIPE)
-        grep = Popen(['grep','tail -f logs/mosquitto.'],
-                stdin=vgrep.stdout,stdout=PIPE)
-        cut = Popen(['cut','-d',' ','-f','2'],
-                stdin=grep.stdout, stdout=PIPE)
-        for line in cut.stdout:
-            k= Popen(['kill','-s','SIGTERM',line[:-1]])
+        for line in ps.stdout:
+            k = Popen(['kill','-s','SIGTERM',line[:-1]])
             k.wait()
         return True
 
@@ -65,7 +60,6 @@ class ReaderThread( threading.Thread ):
         if( ReaderThread.isrunning() ):
             print("[IG]",__name__," : ","ReaderThread is running.")
             return
-        from pkg.msgapi.mqtt.rqtt import brokerlogs
         tproc = Popen(['tail','-f',BrokerThread.ofname],stdout=PIPE)
         self.pid = tproc.pid
         self.runflag = True
@@ -75,7 +69,11 @@ class ReaderThread( threading.Thread ):
             if(len(rin) <= 0):
                 self.runflag = False
             else:
-                brokerlogs( (rin[:-1]).decode('utf-8') )
+                sockemit("/brokerctl","brokerlog_cast",\
+                        {
+                            'logstring':(rin[:-1]).decode('utf-8')
+                        }, 
+                        eroom='mqttctl')
         tproc.terminate()
         return
 

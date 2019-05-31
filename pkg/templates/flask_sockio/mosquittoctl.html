@@ -103,7 +103,7 @@
 		socket.emit('refresh');
 	}
 
-	socket.on('brokerlogs_cast', function(msg){
+	socket.on('brokerlog_cast', function(msg){
 		console.log(msg.logstring)
 		document.getElementById('mosquitto_output').value = (document.getElementById('mosquitto_output').value +
 		new Date().toLocaleString() + ' :: ' + msg.logstring + '\n');
