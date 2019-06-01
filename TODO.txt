@@ -1,0 +1,2 @@
+Issue of rc=5 when ssl cert and username valid is due to password files
+ONE USER PER PASSWORD FILE IT SEEMS !
