@@ -76,8 +76,8 @@ def default_add():
     local_user = apiuser.Msgapi_User(\
             {"username":"localuser","plain_password":"mqtt_rocks","usertype":"MQTTv0"} )
     dbms.msgapi.session.add( local_user )
-    #default_user = apiuser.Msgapi_User(\
-    #        {"username":"rqtt0","plain_password":"mqtt_rocks","usertype":"MQTTv0"} )
-    #dbms.msgapi.session.add( default_user )
+    default_user = apiuser.Msgapi_User(\
+            {"username":"rqtt0","plain_password":"mqtt_rocks","usertype":"MQTTv0"} )
+    dbms.msgapi.session.add( default_user )
     dbms.msgapi.session.commit()
 

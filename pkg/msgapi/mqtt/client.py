@@ -86,6 +86,7 @@ class RapidClientThread( threading.Thread ):
         self.pub_ready.set()
 
     def run(self):
+        print("??")
         self.runflag = True
 
         ssl_en = MQTT_Broker_Configuration.query.filter(\

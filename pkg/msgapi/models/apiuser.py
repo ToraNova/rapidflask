@@ -53,6 +53,7 @@ class Msgapi_User(Base):
                     afile.write(u.username)
                     afile.write(':')
                     afile.write(u.plain_password)
+                    afile.write('\n')
             rewrite_pwdfile = Popen(['mosquitto_passwd','-U',authfile])
             rewrite_pwdfile.wait()
             BrokerThread.restart() # restart the broker
