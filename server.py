@@ -33,9 +33,7 @@ if __name__ == '__main__':
         print("[IF]",__name__," : ","Warning. Hosting over insecure HTTP")
     print("[IF]",__name__," : ","Debug/Reload :",const.EDEBUG,"/",const.RELOAD)
     srvlog["sys"].info(const.BIND_ADDR+":"+str(const.BIND_PORT))
-    srvlog["sys"].info("debug/reload : "+
-            "yes/" if const.EDEBUG else "no/"+
-            "yes" if const.RELOAD else "no")
+    srvlog["sys"].info("debug/reload : "+("yes/" if const.EDEBUG else "no/")+("yes" if const.RELOAD else "no"))
 
     ##################################################################
     #First run issues (create database)
@@ -121,11 +119,11 @@ if __name__ == '__main__':
             #mainsrv.run(debug=app_debug,host=const.BIND_ADDR, port=const.BIND_PORT, use_reloader = True) #flask run
             srvlog["sys"].info("Starting server over SSL/TLS HTTPS")
             # FLASK HOSTING
-            #mainsrv.run( debug = const.EDEBUG, host = const.BIND_ADDR, port = const.BIND_PORT, use_reloader= const.RELOAD, ssl_context=(const.SSL_CERT,const.SSL_PKEY))
+            #mainsrv.run( debug = const.EDEBUG, host = const.BIND_ADDR, port = const.BIND_PORT, use_reloader= const.RELOAD, ssl_context=(const.SSL_CERT,const.SSL_SKEY))
 
             # FLASK_SOCKETIO HOSTING
             mainsrv_sock.run(mainsrv,debug= const.EDEBUG,host=const.BIND_ADDR, port=const.BIND_PORT, use_reloader = const.RELOAD, \
-                    certfile = const.SSL_CERT, keyfile = const.SSL_PKEY, ca_certs = const.SSL_CA)
+                    certfile = const.SSL_CERT, keyfile = const.SSL_SKEY, ca_certs = const.SSL_CA)
             # TODO: SSL version / cert require ? Check these 2 settings out
         else:
             srvlog["sys"].info("Starting server over HTTP")

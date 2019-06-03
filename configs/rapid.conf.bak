@@ -22,10 +22,10 @@ port = 8000
 ssl_enable = 1
 
 # Please specify the certfile relative to the main run script(server.py
-ssl_cert = certs/alice.cert
-ssl_pkey = certs/alice.pkey
+ssl_cert = certs/alice_cert.pem
+ssl_pkey = certs/alice_skey.pem
 # Certificate Authority (TTP)
-ssl_ca = certs/AA.cert
+ssl_ca = certs/aa_cert.pem
 
 # debugging flags, reloader flags
 # Flags are either 1 or 0. it will be false if otherwise

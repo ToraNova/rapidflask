@@ -60,6 +60,8 @@ class ReaderThread( threading.Thread ):
         if( ReaderThread.isrunning() ):
             print("[IG]",__name__," : ","ReaderThread is running.")
             return
+        else:
+            print("[IF]",__name__," : ","Starting ReaderThread")
         tproc = Popen(['tail','-f',BrokerThread.ofname],stdout=PIPE)
         self.pid = tproc.pid
         self.runflag = True
@@ -69,7 +71,7 @@ class ReaderThread( threading.Thread ):
             if(len(rin) <= 0):
                 self.runflag = False
             else:
-                sockemit("/brokerctl","brokerlog_cast",\
+                sockemit("/mqttctl","brokerlog_cast",\
                         {
                             'logstring':(rin[:-1]).decode('utf-8')
                         }, 
@@ -170,7 +172,7 @@ class BrokerThread( threading.Thread ):
         try:
             if( os.path.isfile( self.ofname ) ):
                 os.remove( self.ofname ) #refresh logs
-            mqbroker = Popen(['mosquitto','-c',self.cffile,'-v'])
+            mqbroker = Popen(['mosquitto','-c',self.cffile])
             mqbroker.wait()
             with open( self.plname, 'a') as catfile:
                 with open( self.ofname ) as tmpfile:

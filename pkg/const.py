@@ -53,7 +53,7 @@ except Exception as e:
 
 SSL_ENABLE = rcf.get('conn','ssl_enable') == '1'
 SSL_CERT = rcf.get('conn','ssl_cert')
-SSL_PKEY = rcf.get('conn','ssl_pkey')
+SSL_SKEY = rcf.get('conn','ssl_skey')
 SSL_CA = rcf.get('conn','ssl_ca')
 
 EDEBUG = rcf.get('flags','debug') == '1'

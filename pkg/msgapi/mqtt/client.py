@@ -86,7 +86,6 @@ class RapidClientThread( threading.Thread ):
         self.pub_ready.set()
 
     def run(self):
-        print("??")
         self.runflag = True
 
         ssl_en = MQTT_Broker_Configuration.query.filter(\
@@ -94,10 +93,11 @@ class RapidClientThread( threading.Thread ):
 
         self.client.connflag = False
         self.client.username_pw_set(username=self.uname, password=self.passwd) #set auth
-        if( ssl_en.config_value in ['True','true',1,'1'] ):
-            # TODO fix ssl error here
-            self.client.tls_set( ca_certs = const.SSL_CA, cert_reqs = ssl.CERT_REQUIRED,\
-                    tls_version=ssl.PROTOCOL_TLS)
+        if( not const.LOCAL_RQTT_EXTBROKE ):
+            if(  ssl_en.config_value in ['True','true',1,'1'] ):
+                # TODO fix ssl error here
+                self.client.tls_set( ca_certs = const.SSL_CA, cert_reqs = ssl.CERT_REQUIRED,\
+                        tls_version=ssl.PROTOCOL_TLS)
         self.client.on_connect = on_connect
         self.client.on_disconnect = on_disconnect
         self.client.on_message = on_message

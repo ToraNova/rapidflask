@@ -51,7 +51,7 @@ class MQTT_Broker_Configuration(Base):
 
         ssl_ca = r.const.SSL_CA
         ssl_cert = r.const.SSL_CERT
-        ssl_pkey = r.const.SSL_PKEY
+        ssl_skey = r.const.SSL_SKEY
 
         import __main__
         srvabs = os.path.dirname(os.path.abspath( __main__.__file__ ))
@@ -68,7 +68,7 @@ class MQTT_Broker_Configuration(Base):
                     if(c.config_name == "use_ssl" and c.config_value in ['true','True',1,'1']):
                         cfile.write("cafile "+os.path.join(srvabs,ssl_ca)+'\n')
                         cfile.write("certfile "+os.path.join(srvabs,ssl_cert)+'\n')
-                        cfile.write("keyfile "+os.path.join(srvabs,ssl_pkey)+'\n')
+                        cfile.write("keyfile "+os.path.join(srvabs,ssl_skey)+'\n')
                 else:
                     cfile.write(c.config_name)
                     cfile.write(' ')
