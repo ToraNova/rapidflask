@@ -52,50 +52,6 @@ class MQTTCTLNamespace(Namespace):
     as like a pseudo terminal on the web application
     MQTTCTL - mqtt broker control namespace'''
 
-    def on_rqttstart(self):
-        # access the main's global rqtt rapidclient
-        if( const.LOCAL_RQTT_ENABLE ):
-            from __main__ import global_rqttclient
-            if( global_rqttclient.runflag ):
-                emit('mqttqstat_cast',{'statstring':'localrqtt already running.'})
-                return
-            lu = Msgapi_User.query.filter( Msgapi.username == 'localuser' ).one()
-            if(lu is not None):
-                # lu available, load from it
-                username = lu.username
-                password = lu.plain_password
-            else:
-                # lu not available, load from config instead
-                username = const.LOCAL_RQTT_USERNAME
-                password = const.LOCAL_RQTT_PASSWORD
-
-            if(const.BROKER_ENABLE and not const.LOCAL_RQTT_EXTBROKE):
-                portn = MQTT_Broker_Configuration.query.filter(
-                        MQTT_Broker_Configuration.config_name == "port").one()
-                addrn = "127.0.0.1" #localhost loopback
-
-            else:
-                portn = const.LOCAL_RQTT_PORT
-                addrn = const.LOCAL_RQTT_ADDR
-            # reload config
-            global_rqttclient.load_config( lu.username, lu.plain_password,\
-                    addrn, portn)
-            # start the rqtt client
-            global_rqttclient.start()
-        else:
-            emit('mqttqstat_cast',{'statstring':'localrqtt disabled in config.'})
-
-    def on_rqttstop(self):
-        # access the main's global rqtt rapidclient
-        if( const.LOCAL_RQTT_ENABLE ):
-            from __main__ import global_rqttclient
-            if( not global_rqttclient.runflag ):
-                emit('mqttqstat_cast',{'statstring':'local rqtt already not running.'})
-                return
-            global_rqttclient.terminate()
-        else:
-            emit('mqttqstat_cast',{'statstring':'localrqtt disabled in config.'})
-
     def on_connect(self):
         join_room("mqttctl")
         self.rthread = ReaderThread(self)
@@ -111,13 +67,89 @@ class MQTTCTLNamespace(Namespace):
         ReaderThread.sigterm()
         print("[IF]",__name__," : ","MQTTCTL Socket disconnected.")
 
-    def on_start(self):
-        if( BrokerThread.broker_started() ):
-            emit('mqttqstat_cast',{'statstring':'mosquitto already up!'})
+    def on_clistat(self):
+        # sends back the status of the client
+        if( const.LOCAL_RQTT_ENABLE ):
+            from __main__ import global_rqttclient
+            repstatpack = {}
+            # creates a dict that stores the information to be casted on screen
+            repstatpack["client_up"] = global_rqttclient.runflag
+            repstatpack["client_cn"] = global_rqttclient.client.connflag
+            repstatpack["client_rc"] = global_rqttclient.client.connrc
+            repstatpack["lastmsg"] = global_rqttclient.client.lastmsg
+            repstatpack["topics"] = global_rqttclient.client.sublist
+            repstatpack["metacomment"] = "All OK."
+            repstatpack["s"] = 0
+            emit("repstat",repstatpack)
         else:
-            rc = BrokerThread.begin()
-            emit('mqttqstat_cast',{'statstring':'mosquitto start :'+\
+            repstatpack["metacomment"] = "Local RQTT Disabled"
+            repstatpack["s"] = 1
+            emit('repstat',repstatpack)
+
+    def on_start(self, msg):
+        tar = msg.get("target")
+        if(tar == "broker"):
+            if( BrokerThread.broker_started() ):
+                emit('mqttqstat_cast',{'statstring':'mosquitto already up!'})
+            else:
+                rc = BrokerThread.begin()
+                emit('mqttqstat_cast',{'statstring':'mosquitto start :'+\
+                    rc})
+        elif(tar == "client"):
+            # access the main's global rqtt rapidclient
+            if( const.LOCAL_RQTT_ENABLE ):
+                from __main__ import global_rqttclient
+                if( global_rqttclient.runflag ):
+                    emit('mqttqstat_cast',{'statstring':'localrqtt already running.'})
+                    return
+                lu = Msgapi_User.query.filter( Msgapi.username == 'localuser' ).one()
+                if(lu is not None):
+                    # lu available, load from it
+                    username = lu.username
+                    password = lu.plain_password
+                else:
+                    # lu not available, load from config instead
+                    username = const.LOCAL_RQTT_USERNAME
+                    password = const.LOCAL_RQTT_PASSWORD
+
+                if(const.BROKER_ENABLE and not const.LOCAL_RQTT_EXTBROKE):
+                    portn = MQTT_Broker_Configuration.query.filter(
+                            MQTT_Broker_Configuration.config_name == "port").one()
+                    addrn = "127.0.0.1" #localhost loopback
+
+                else:
+                    portn = const.LOCAL_RQTT_PORT
+                    addrn = const.LOCAL_RQTT_ADDR
+                # reload config
+                global_rqttclient.load_config( lu.username, lu.plain_password,\
+                        addrn, portn)
+                # start the rqtt client
+                global_rqttclient.start()
+            else:
+                emit('mqttqstat_cast',{'statstring':'localrqtt disabled in config.'})
+        else:
+            emit('mqttqstat_cast',{'statstring':'unknown start target :'+\
+                tar})
+
+    def on_stop(self, msg):
+        tar = msg.get("target")
+        if(tar == "broker"):
+            rc = BrokerThread.terminate()
+            emit('mqttqstat_cast',{'statstring':'mosquitto stop :'+\
                 rc})
+        elif(tar=="client"):
+            # access the main's global rqtt rapidclient
+            if( const.LOCAL_RQTT_ENABLE ):
+                from __main__ import global_rqttclient
+                if( not global_rqttclient.runflag ):
+                    emit('mqttqstat_cast',{'statstring':'local rqtt already not running.'})
+                    return
+                global_rqttclient.terminate()
+            else:
+                emit('mqttqstat_cast',{'statstring':'localrqtt disabled in config.'})
+        else:
+            emit('mqttqstat_cast',{'statstring':'unknown stop target :'+\
+                tar})
 
     def on_refresh(self):
         ReaderThread.sigterm()
@@ -125,8 +157,4 @@ class MQTTCTLNamespace(Namespace):
         self.rthread = ReaderThread(self)
         self.rthread.start()
 
-    def on_stop(self):
-        rc = BrokerThread.terminate()
-        emit('mqttqstat_cast',{'statstring':'mosquitto stop :'+\
-            rc})
 

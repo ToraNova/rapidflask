@@ -9,7 +9,6 @@
 # http://www.steves-internet-guide.com/mosquitto-logging/
 import os, threading, time
 from subprocess import Popen, PIPE
-from collections import deque
 
 import pkg.const as const
 from pkg.system.servlog import srvlog
@@ -65,7 +64,6 @@ class ReaderThread( threading.Thread ):
         tproc = Popen(['tail','-f',BrokerThread.ofname],stdout=PIPE)
         self.pid = tproc.pid
         self.runflag = True
-        self.msgq = deque()
         while self.runflag:
             rin = tproc.stdout.readline()
             if(len(rin) <= 0):

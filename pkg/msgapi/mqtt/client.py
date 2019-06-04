@@ -37,6 +37,7 @@ class RapidClientThread( threading.Thread ):
     def reset_client(self):
         self.client = mqtt.Client("LOCAL:RapidClient") #client creation
         self.client.sublist = []
+        self.client.lastmsg = "No last message yet"
 
     def load_config(self, uname, passwd, addr, portn ):
         '''allows uname, passwd and portn to be loaded and
@@ -145,6 +146,7 @@ class RapidClientThread( threading.Thread ):
 
 #defining callback behavior upon message receive
 def on_message(client, userdata, msg):
+    client.lastmsg = "[{}]:{}".format(msg.topic, msg.payload)
     print("Msg from topic",msg.topic," : ",msg.payload)
 
 def on_connect(client, userdata, flags, rc):

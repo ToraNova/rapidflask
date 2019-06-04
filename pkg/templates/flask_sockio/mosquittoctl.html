@@ -42,8 +42,10 @@
 					style="max-height:500px;min-height:500px; resize: none"></textarea>
 
 				</div>
+
 				<div class="col-md-3 col-sm-3 col-xs-3">
-					<div id="localrqtt_sidepanel">
+					<h3> Local MQTT Client Status </h3>
+					<div id="localrqtt_sidepanel" class="pull-right">
 						<!--use append to add things here-->
 
 
@@ -54,10 +56,14 @@
 			{% include 'includes/helpers/_space1br.html' %}
 			<div class="row">
 				<div class="col-md-8 col-sm-8 col-xs-8">
-					<button class="btn btn-success" onclick="brokerstart();">Start Broker Service</button>
-					<button class="btn btn-danger" onclick="brokerstop();">Stop Broker Service</button>
+					<button class="btn btn-success" onclick="start('broker');">Start Broker Service</button>
+					<button class="btn btn-danger" onclick="stop('broker');">Stop Broker Service</button>
 					<button class="btn btn-warning" onclick="cleardisp();">Clear Display</button>
 					<button class="btn btn-normal" onclick="refreshdisp();">Refresh Display</button>
+				</div>
+				<div class="col-md-4 col-sm-4 col-xs-4 pull-right">
+					<button class="btn btn-success" onclick="start('client');">Start Local Client</button>
+					<button class="btn btn-danger" onclick="stop('client');">Stop Local Client</button>
 				</div>
 				<!--
 				<div class="col-md-3 col-sm-3 col-xs-3">
@@ -85,31 +91,50 @@
 {% block script %}
 	<script type="text/javascript" src="{{url_for('static', filename='flask_io/socket.io.min.js')}}"></script>
 	<script type="text/javascript" charset="utf-8">
-	var namespace = '/mqttctl'
+	var namespace = '/mqttctl';
 	var socket = io.connect('{{socket_io_proto}}://' + document.domain + ':' + location.port + namespace); //persistent
+	var periodic = setInterval( clistat, 3000 );
 	socket.on('connect', function() {
 		console.log("mqtt_brokerlogs connected..."+namespace);
 	});
 
-	function brokerstart(){
+	function clistat(){
+		//refresh the client status bar
+		socket.emit('clistat');
+	}
+
+	function start(target){
+		//start the client/broker
 		document.getElementById('mqtt_stat').innerHTML="starting broker.";
-		socket.emit('start');
+		socket.emit('start',{"target":target});
 		setTimeout( refreshdisp, 3000);
 	}
 
-	function brokerstop(){
-		document.getElementById('mqtt_stat').innerHTML="stopping broker.";
-		socket.emit('stop');
+	function stop(target){
+		//stop the client/broker
+		document.getElementById('mqtt_stat').innerHTML="stopping target.";
+		socket.emit('stop', {"target":target} );
 		//setTimeout( refreshdisp, 3000);
 	}
 
-	function cleardisp(){
-		document.getElementById('mosquitto_output').value = '';
-	}
-
 	function refreshdisp(){
+		//refresh the main display for broker
 		socket.emit('refresh');
 	}
+
+
+	socket.on('repstat', function(msg){
+		removeAllChild("localrqtt_sidepanel"); //remove all element
+		if(msg.s == 1){
+			$("#localrqtt_sidepanel")
+			.append("<div style='background-color:#11aa11;color:#000000;padding:3px'>Client Status : "+msg.metacomment+"</div>");
+
+		}else{
+			$("#localrqtt_sidepanel")
+			.append("<div style='background-color:#aa1111;color:#000000;padding:3px'>Client Status : "+msg.metacomment+"</div>");
+
+		}
+	});
 
 	socket.on('brokerlog_cast', function(msg){
 		console.log(msg.logstring)
@@ -118,7 +143,7 @@
 	});
 
 	socket.on('mqttqstat_cast', function(msg){
-		console.log(msg.statstring)
+		console.log(msg.statstring);
 		document.getElementById('mqtt_stat').innerHTML = msg.statstring;
 	});
 	</script>
