@@ -94,3 +94,4 @@ update8  31/05/19---05:26pm
 [  now db split into sys/deploy and msgapi
 [+ msgapi and deploy share the Rlisting mechanics now
 [+ embedded mqtt client on board the server
+[+ improved dynamic ui to start/stop BOTH the client and server

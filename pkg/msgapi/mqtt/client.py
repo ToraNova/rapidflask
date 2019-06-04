@@ -38,6 +38,7 @@ class RapidClientThread( threading.Thread ):
         self.client = mqtt.Client() #client creation
         self.client.sublist = []
         self.client.lastmsg = "No last message yet"
+        self.client.connrc = 'NA'
 
     def load_config(self, uname, passwd, addr, portn ):
         '''allows uname, passwd and portn to be loaded and
@@ -86,14 +87,14 @@ class RapidClientThread( threading.Thread ):
         self.runflag = False
         self.pub_ready.set()
 
+    def rerun(self):
+        self.runflag = True
+
     def run(self):
         self.runflag = True
 
         ssl_en = MQTT_Broker_Configuration.query.filter(\
                 MQTT_Broker_Configuration.config_name == "use_ssl").one()
-
-        self.client.connflag = False
-        self.client.username_pw_set(username=self.uname, password=self.passwd) #set auth
         if( not const.LOCAL_RQTT_EXTBROKE ):
             if(  ssl_en.config_value in ['True','true',1,'1'] ):
                 # TODO fix ssl error here
@@ -102,46 +103,61 @@ class RapidClientThread( threading.Thread ):
         self.client.on_connect = on_connect
         self.client.on_disconnect = on_disconnect
         self.client.on_message = on_message
-        while self.runflag: #try until stop running
-            try:
-                time.sleep(3)
-                self.client.connect(self.addr, self.portn, 60) #connect
-                break
-            except Exception as e:
-                print("[EX]",__name__," : ",\
-                        "Exception occurred while trying to connect to broker",str(e))
-                srvlog["oper"].error(\
-                        "Exception occurred while trying to connect to broker on {}:{}.".format(self.addr,self.portn)+str(e))
-                time.sleep(3)
-        sockemit("/mqttctl","mqttqstat_cast",\
-                {'statstring':"LOCAL:RapidClient starting"}, \
-                eroom='mqttctl')
-
-        self.client.loop_start()
-        while not self.client.connflag:
-            #wait until client is connected
-            time.sleep(3)
-            if( not self.runflag ):
-                #exit immediately
-                return
-
-        while self.runflag:
-            self.pub_ready.wait() #block and wait for msg
-            if(self.pub_topic is None and self.pub_msg is None):
-                break
-            else:
-                self.client.publish( self.pub_topic, self.pub_msg )
-                self.pub_topic.clear() #clears the flag
-            if( not self.client.connflag ):
-                while not self.client.connflag:
+        while True:
+            # Inception-like self contained mega loopz
+            self.client.connflag = False
+            self.client.username_pw_set(username=self.uname, password=self.passwd) #set auth
+            print("RERUN")
+            while self.runflag: #try until stop running
+                try:
                     time.sleep(3)
-                    sockemit("/mqttctl","mqttqstat_cast",\
-                            {'statstring':"LOCAL:RapidClient connection failed. retrying"}, 
-                            eroom='mqttctl')
+                    self.client.connect(self.addr, self.portn, 60) #connect
+                    break
+                except Exception as e:
+                    print("[EX]",__name__," : ",\
+                        "Exception occurred while trying to connect to broker",str(e))
+                    srvlog["oper"].error(\
+                        "Exception occurred while trying to connect to broker on {}:{}."\
+                        .format(self.addr,self.portn)+str(e))
+                    time.sleep(3)
+            sockemit("/mqttctl","mqttqstat_cast",\
+                    {'statstring':"LOCAL:RapidClient starting"}, \
+                    eroom='mqttctl')
 
-        sockemit("/mqttctl","mqttqstat_cast",\
-                {'statstring':"LOCAL:RapidClient stopped"}, 
-                eroom='mqttctl')
+            self.client.loop_start()
+            while not self.client.connflag:
+                #wait until client is connected
+                time.sleep(3)
+                if( not self.runflag ):
+                    #exit immediately
+                    return
+
+            while self.runflag:
+                self.pub_ready.wait() #block and wait for msg
+                if(self.pub_topic is None and self.pub_msg is None):
+                    break
+                else:
+                    self.client.publish( self.pub_topic, self.pub_msg )
+                self.pub_topic.clear()
+                if( not self.client.connflag ):
+                    while not self.client.connflag:
+                        time.sleep(3)
+                        sockemit("/mqttctl","mqttqstat_cast",\
+                                {'statstring':"LOCAL:RapidClient connection failed. retrying"}, 
+                                eroom='mqttctl')
+            for ind,s in enumerate(self.client.sublist):
+                self.client.unsubscribe(s)
+                del self.client.sublist[ind]
+            self.client.loop_stop()
+            self.client.disconnect()
+            self.client.connrc = "NA"
+            self.client.connflag = False
+            sockemit("/mqttctl","mqttqstat_cast",\
+                    {'statstring':"LOCAL:RapidClient stopped"}, 
+                    eroom='mqttctl')
+            while not self.runflag:
+                # wait until run again
+                time.sleep(10)
 
 
 #defining callback behavior upon message receive

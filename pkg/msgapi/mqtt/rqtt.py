@@ -78,7 +78,7 @@ class MQTTCTLNamespace(Namespace):
             repstatpack["client_rc"] = global_rqttclient.client.connrc
             repstatpack["lastmsg"] = global_rqttclient.client.lastmsg
             repstatpack["topics"] = global_rqttclient.client.sublist
-            repstatpack["metacomment"] = "All OK."
+            repstatpack["metacomment"] = "Local RQTT Enabled"
             repstatpack["s"] = 0
             emit("repstat",repstatpack)
         else:
@@ -102,7 +102,7 @@ class MQTTCTLNamespace(Namespace):
                 if( global_rqttclient.runflag ):
                     emit('mqttqstat_cast',{'statstring':'localrqtt already running.'})
                     return
-                lu = Msgapi_User.query.filter( Msgapi.username == 'localuser' ).one()
+                lu = Msgapi_User.query.filter( Msgapi_User.username == 'localuser' ).one()
                 if(lu is not None):
                     # lu available, load from it
                     username = lu.username
@@ -115,6 +115,15 @@ class MQTTCTLNamespace(Namespace):
                 if(const.BROKER_ENABLE and not const.LOCAL_RQTT_EXTBROKE):
                     portn = MQTT_Broker_Configuration.query.filter(
                             MQTT_Broker_Configuration.config_name == "port").one()
+                    try:
+                        iportn = int(portn.config_value)
+                        portn = iportn
+                    except Exception as e:
+                        print("[EX]",__name__," : ","Exception has occurred while parsing config for\
+                                Local RQTT Client",portn.config_name,portn.config_value)
+                        srvlog["oper"].error("Exception occurred parsing {}:{}".format(\
+                                portn.config_name, portn.config_value))
+                        portn = const.LOCAL_RQTT_PORT #fallback
                     addrn = "127.0.0.1" #localhost loopback
 
                 else:
@@ -124,7 +133,7 @@ class MQTTCTLNamespace(Namespace):
                 global_rqttclient.load_config( lu.username, lu.plain_password,\
                         addrn, portn)
                 # start the rqtt client
-                global_rqttclient.start()
+                global_rqttclient.rerun()
             else:
                 emit('mqttqstat_cast',{'statstring':'localrqtt disabled in config.'})
         else:
