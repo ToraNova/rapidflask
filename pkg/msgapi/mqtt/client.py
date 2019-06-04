@@ -35,7 +35,7 @@ class RapidClientThread( threading.Thread ):
         self.reset_client()
 
     def reset_client(self):
-        self.client = mqtt.Client("LOCAL:RapidClient") #client creation
+        self.client = mqtt.Client() #client creation
         self.client.sublist = []
         self.client.lastmsg = "No last message yet"
 

@@ -23,7 +23,7 @@ ssl_enable = 1
 
 # Please specify the certfile relative to the main run script(server.py
 ssl_cert = certs/alice_cert.pem
-ssl_pkey = certs/alice_skey.pem
+ssl_skey = certs/alice_skey.pem
 # Certificate Authority (TTP)
 ssl_ca = certs/aa_cert.pem
 
@@ -36,6 +36,7 @@ debug = 1
 # enable reloader, this automatically reloads the program
 # when change is detected (causes werkzeug to spawn a child proc
 # doing everything twice)
+# This affects the local rapid MQTT client
 reload = 1
 
 # Service settings
