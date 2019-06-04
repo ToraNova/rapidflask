@@ -35,7 +35,7 @@
 			<br/>
 			<!--Content-->
 			<div class="row">
-			<div class="col-md-4 col-sm-4 col-xs-4">
+			<div class="col-md-5 col-sm-5 col-xs-5">
 
 				<label for="logview" id="logview_label">Live {{logtype}}</label>
 				<textarea id='logview' class='col-md-12' rows="30" cols="80" wrap="soft"
@@ -57,7 +57,7 @@
 	<script type="text/javascript" charset="utf-8">
 	var namespace = '/sysutil'
 	var logtype = '{{logtype}}' //obtained this from flask's render_template
-	var socket = io.connect('http://' + document.domain + ':' + location.port + namespace); //persistent
+	var socket = io.connect('{{socket_io_proto}}://' + document.domain + ':' + location.port + namespace); //persistent
 	socket.on('connect', function() {
 		console.log("sysloginlive_test connected...");
 	});

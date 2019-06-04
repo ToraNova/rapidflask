@@ -58,7 +58,7 @@
 	<script type="text/javascript" charset="utf-8">
 	var namespace = '/sysutil'
 	var socketio_room = '{{ chatter_room }}' //obtained this from flask's render_template
-	var socket = io.connect('http://' + document.domain + ':' + location.port + namespace); //persistent
+	var socket = io.connect('{{socket_io_proto}}://' + document.domain + ':' + location.port + namespace); //persistent
 	socket.on('connect', function() {
 		console.log("sysutilio connected...");
 		socket.emit('joinedchatter',{chatter_room:socketio_room});

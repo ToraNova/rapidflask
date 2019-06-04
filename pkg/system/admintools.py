@@ -16,17 +16,18 @@ from flask_login import current_user
 
 #usual imports (copy pasta this)
 import pkg.const as const
-from pkg.system.database import dbms
-from pkg.system.database import models as md
-from pkg.system.database import forms as fm
-from pkg.system.database import forms as fm
+import pkg.limits as limits
 from pkg.system import assertw as a
+from pkg.system.database import dbms
+from pkg.system.database import dbcon
+from pkg.system.user import models as md
+from pkg.system.user import forms as fm
 from pkg.system.servlog import srvlog,logtofile
 
 from pkg.system.user.sysuser import tupleGenerator
 
 #additional overheads
-import os
+import os, shutil
 
 bp = Blueprint('admintools', __name__, url_prefix='/admintools')
 
@@ -36,7 +37,7 @@ bp = Blueprint('admintools', __name__, url_prefix='/admintools')
 @bp.route('/nologin',methods=['GET','POST'])
 @a.route_disabled #disable if DISABLE_CRIT_ROUTE from CONST is set to TRUE
 def useradd_nologin():#This function is for initial server initialization only,
-	#NOT RECOMMENDED FOR ACTUAL USE DUE TO SECURITY ISSUE
+        #NOT RECOMMENDED FOR ACTUAL USE DUE TO SECURITY ISSUE
     '''Adds a user into system using admintools, no checking is done
     Use only in initial deployment phase, please switch off the routes
     regarding this one it is done. returns 0 on success and 1 on fail'''
@@ -46,51 +47,64 @@ def useradd_nologin():#This function is for initial server initialization only,
         try:
             target_add = md.System_User(
                 useradd_form.username.data,useradd_form.password.data,useradd_form.usertype.data)#create user obj
-            dbms.sy_session.add(target_add)#adds user object onto database.
-            dbms.sy_session.commit()
+            dbms.system.session.add(target_add)#adds user object onto database.
+            dbms.system.session.commit()
             srvlog["sys"].warning(useradd_form.username.data+ " registered under admintools/nologin ! type="+useradd_form.usertype.data) #logging
             return "admintools : ok" #TODO return a webpage
         except Exception as e:
-            dbms.sy_session.rollback() #rollback errors
+            dbms.system.session.rollback() #rollback errors
             print("[ER]",__name__," Exception has occurred:",str(e))
             srvlog["sys"].warning("Sysuseradd/nologin with exception "+str(e)) #logging
             return "admintools : failed"
     return render_template('admintools/sysuseradd.html',form=useradd_form)
 
-@bp.route('/totalreset')
-@a.route_disabled #disable if DISABLE_CRIT_ROUTE from const is set to True
-@a.admin_required
-def totalreset():
-    #NOT RECOMMENDED FOR ACTUAL USE DUE TO SECURITY ISSUE
-    '''resets the the database system (both sys and deployment)
-    and recreate with items only in default adds
-    DO NOT USE DURING DEPLOYMENT'''
-    try:
-        dbms.init_db()
-        print("[IF]",__name__," Total Database reset.")
-        srvlog["sys"].warning("Database total reset under admintools/totalreset") #logging
-        return "admintools : ok"
-    except Exception as e:
-        print("[ER]",__name__," Exception has occurred:",str(e))
-        srvlog["sys"].warning("Database total reset with exception "+str(e)) #logging
-        return "admintools : fail"
-
-@bp.route('/resetdb')
+@bp.route('/resetdb/<octal>')
 @a.route_disabled #disable if DISABLE_CRIT_ROUTE from CONST is set to TRUE
 @a.admin_required
-def resetdb():
+def resetdb(octal='000'):
     #NOT RECOMMENDED FOR ACTUAL USE DUE TO SECURITY ISSUE
-    '''resets the deploy database with some default adds defined
+    '''resets the system/deploy/api database with some default adds defined
     DO NOT USE DURING DEPLOYMENT'''
+    # parse the octal
+    if( len(octal) < 3 ):
+        return render_template("errors/error.html",
+            error_title="Database Reset Failed",
+            error_message="Invalid Octal Reset Code")
+    else:
+        sys = True if octal[0] == '1' else False
+        dep = True if octal[1] == '1' else False
+        api = True if octal[2] == '1' else False
     try:
-        dbms.reset_db()
-        print("[IF]",__name__," Database reset.")
-        srvlog["sys"].warning("Deployment resource (deploy.db) reset under admintools/resetdb") #logging
-        return "admintools : ok"
+        dbcon.reset_db(system=sys,deploy=dep,msgapi=api) # Call the reset functionality
+        print("[IF]",__name__," Database reset called with octal "+octal)
+        if(sys):
+            srvlog["sys"].warning("System Database ({}) reset under admintools".format(dbms.system.dbfile))
+        if(dep):
+            # deletes all files in the upload directory as well
+            try:
+                wipe = os.path.join('pkg',const.STD_FILEDIR)
+                print("[IF]",__name__," Wiping upload dir: "+wipe)
+                shutil.rmtree(wipe)
+            except Exception as e:
+                # rethrow
+                raise e
+            finally:
+                os.mkdir( wipe )
+                gitkeep = open(os.path.join(wipe,".gitkeep"),"w+")
+                gitkeep.close()
+
+            srvlog["sys"].warning("Deployment Database ({}) reset under admintools".format(dbms.deploy.dbfile))
+        if(api):
+            srvlog["sys"].warning("MSG API Database ({}) reset under admintools".format(dbms.msgapi.dbfile))
+        return render_template("standard/message.html",
+            display_title="Admintools (DB Reset)",
+            display_message="OK - "+octal)
     except Exception as e:
         print("[ER]",__name__," Exception has occurred:",str(e))
-        srvlog["sys"].warning("Deployment resource (deploy.db) reset with exception "+str(e)) #logging
-        return "admintools : fail"
+        srvlog["sys"].warning("Database reset "+octal+" with exception "+str(e)) #logging
+        return render_template("errors/error.html",
+            error_title="Admintools (DB Reset)",
+            error_message="Failed:"+str(e))
 
 ##############################################################################################
 # Logging routes (display server logs)
@@ -117,4 +131,5 @@ def logview(logtype):
 @a.admin_required
 def livelogview(logtype):
     #Allow viewing of live logs
-    return render_template("flask_sockio/livelogs.html",logtype="logins")
+    return render_template("flask_sockio/livelogs.html",logtype="logins",
+            socket_io_proto=const.SOCKET_IO_PROTO)

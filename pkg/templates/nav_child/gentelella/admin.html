@@ -4,19 +4,35 @@ routes or links to routes here instead of the _sidebar.html file-->
 <li><a><i class="fa fa-anchor"></i>Admin<span class="fa fa-chevron-down"></span></a>
 <ul class="nav child_menu">
 
-  <li><a><i class="fa fa-user"></i>System Users<span class="fa fa-chevron-down"></span></a>
-  <ul class="nav child_menu">
+<li><a><i class="fa fa-user"></i>System Users<span class="fa fa-chevron-down"></span></a>
+<ul class="nav child_menu">
 
-    <!--System USERS_______SEMI_PERMANENT__________-->
-    <li><a href="{{ url_for('sysuser.useradd') }}">Register system user</a></li>
-    <li><a href="{{ url_for('sysuser.userlist') }}">List system users</a></li>
-    <li><a href="{{ url_for('systype.typeadd') }}">Add user type</a></li>
-    <li><a href="{{ url_for('systype.typelist') }}">List user types</a></li>
+	<!--System USERS_______SEMI_PERMANENT__________-->
+	<li><a href="{{ url_for('sysuser.useradd') }}">Register System User</a></li>
+	<li><a href="{{ url_for('sysuser.userlist') }}">List System Users</a></li>
+	<li><a href="{{ url_for('sysutype.utypeadd') }}">Add User Type</a></li>
+	<li><a href="{{ url_for('sysutype.utypelist') }}">List User Types</a></li>
 
-  </ul></li>
+</ul></li>
 
-  <li><a href="{{ url_for('sock_sysutil.sysclock') }}">System Clock</a></li> <!--Flask socket io use cases-->
+	<li><a href="{{ url_for('sysutilio.sysclock') }}">System Clock</a></li> <!--Flask socket io use cases-->
   <!--/Administrator's Column_______SEMI_PERMANENT__________-->
+
+<li><a><i class="fa fa-bolt"></i>API Control<span class="fa fa-chevron-down"></span></a>
+<ul class="nav child_menu">
+
+	<!--MsgAPI Uses-->
+	<li><a href="{{ url_for('resrc.radd',dbtype='msgapi',tablename='msgapi_users') }}">Add New MsgAPI Users</a></li>
+	<li><a href="{{ url_for('resrc.rlist',dbtype='msgapi',tablename='msgapi_users') }}">List MsgAPI Users</a></li>
+	<li><a href="{{ url_for('resrc.radd',dbtype='msgapi',tablename='mqttbroker_configs') }}">Add New Broker Configs</a></li>
+	<li><a href="{{ url_for('resrc.rlist',dbtype='msgapi',tablename='mqttbroker_configs') }}">List MQTT Broker Configs</a></li>
+	<li><a href="{{ url_for('resrc.radd',dbtype='msgapi',tablename='mqttclient_subs') }}">Add New RapidClient Subs</a></li>
+	<li><a href="{{ url_for('resrc.rlist',dbtype='msgapi',tablename='mqttclient_subs') }}">List RapidClient Subs</a></li>
+
+	<li><a href="{{ url_for('mqttio.servicectl') }}">Broker Control</a></li>
+
+
+</ul></li>
 
 </ul>
 </li>

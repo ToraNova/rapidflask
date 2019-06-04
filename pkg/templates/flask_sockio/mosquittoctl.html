@@ -1,0 +1,199 @@
+{% extends 'support/gentelella.html' %}
+
+<!--Import line from a pre-defined formhelpers in the include dir-->
+{% from "includes/helpers/_formhelpers.html" import render_field %}
+
+{% block head %}
+<!-- iCheck -->
+<link href="{{url_for('static', filename='vendors/iCheck/skins/flat/green.css')}}" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+<div class="page-title">
+	<div class="title_left">
+		<h3> <small></small></h3>
+		<!-- No title on left -->
+	</div>
+
+	<div class="title_right">
+		<h3> <small></small></h3>
+		<!-- No title on right -->
+	</div>
+</div>
+
+<div class="clearfix"></div>
+
+<div class="row">
+	<div class="col-md-12 col-sm-12 col-xs-12">
+		<div class="x_panel">
+		<div class="x_title">
+			<h2>MQTT Broker Service (Eclipse-Mosquitto)<small></small></h2>
+			<div class="clearfix"></div>
+		</div>
+		<div class="x_content">
+
+			<br/>
+			<!--Content-->
+			<div class="row">
+				<div class="col-md-8 col-sm-8 col-xs-8">
+					<h3> MQTT Broker Service Output</h3>
+					<!--<label for="mosquitto_output" id="oview_label">Broker Output</label>-->
+					<textarea id='mosquitto_output' class='col-md-12 col-sm-12 col-xs-12' rows="30" cols="120" wrap="soft"
+					style="max-height:500px;min-height:500px; resize: none"></textarea>
+
+				</div>
+
+				<div class="col-md-4 col-sm-4 col-xs-4">
+					<h3 > Local MQTT Client Status </h3>
+					<div id="localrqtt_sidepanel" class="pull-right">
+						<!--use append to add things here-->
+
+
+					</div>
+
+				</div>
+			</div>
+			{% include 'includes/helpers/_space1br.html' %}
+			<div class="row">
+				<div class="col-md-8 col-sm-8 col-xs-8">
+					<button class="btn btn-success" onclick="start('broker');">Start Broker Service</button>
+					<button class="btn btn-danger" onclick="stop('broker');">Stop Broker Service</button>
+					<button class="btn btn-warning" onclick="cleardisp();">Clear Display</button>
+					<button class="btn btn-normal" onclick="refreshdisp();">Refresh Display</button>
+				</div>
+				<div class="col-md-4 col-sm-4 col-xs-4">
+					<button class="btn btn-danger" onclick="stop('client');">Stop Local Client</button>
+					<button class="btn btn-success" onclick="start('client');">Start Local Client</button>
+				</div>
+				<!--
+				<div class="col-md-3 col-sm-3 col-xs-3">
+					<input  name="button" value="Stop Broker Service" class="btn btn-danger"></input>
+				</div>
+				<div class="col-md-3 col-sm-3 col-xs-3">
+					<input name="button" value="Start Broker Service" class="btn btn-success"></input>
+				</div>
+				-->
+			</div>
+			{% include 'includes/helpers/_space1br.html' %}
+			<div class="row">
+				<pre id="mqtt_stat"></pre> 
+			</div>
+
+		</div>
+
+		</div>
+	</div>
+	</div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+	<script type="text/javascript" src="{{url_for('static', filename='flask_io/socket.io.min.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static', filename='custom/shared.js')}}"></script>
+	<script type="text/javascript" charset="utf-8">
+
+	var namespace = '/mqttctl';
+	var socket = io.connect('{{socket_io_proto}}://' + document.domain + ':' + location.port + namespace); //persistent
+	var periodic = setInterval( clistat, 3000 );
+	socket.on('connect', function() {
+		console.log("mqtt_brokerlogs connected..."+namespace);
+	});
+
+	function clistat(){
+		//refresh the client status bar
+		socket.emit('clistat');
+	}
+
+	function clrstat(){
+		document.getElementById('mqtt_stat').innerHTML='...'
+	}
+
+	function start(target){
+		//start the client/broker
+		document.getElementById('mqtt_stat').innerHTML="starting "+target;
+		socket.emit('start',{"target":target});
+		setTimeout( refreshdisp, 3000);
+		setTimeout( clrstat, 10000);
+	}
+
+	function stop(target){
+		//stop the client/broker
+		document.getElementById('mqtt_stat').innerHTML="stopping "+target;
+		socket.emit('stop', {"target":target} );
+		//setTimeout( refreshdisp, 3000);
+		setTimeout( clrstat, 10000);
+	}
+
+	function refreshdisp(){
+		//refresh the main display for broker
+		socket.emit('refresh');
+	}
+
+	function cleardisp(){
+		//clear the main display
+		document.getElementById('mosquitto_output').value = ""
+	}
+
+	socket.on('repstat', function(msg){
+		removeAllChild("localrqtt_sidepanel"); //remove all element
+		if(msg.s == 0){
+
+			if( msg.client_up ){
+			$("#localrqtt_sidepanel")
+			.append("<div class='col-md-10 col-sm-10 col-xs-10'"+
+			"style='background-color:#11bb11;color:#000000;padding:5px'>"+
+			"Thread Status : "+msg.metacomment+", Running</div>");
+			}else{
+			$("#localrqtt_sidepanel")
+			.append("<div class='col-md-10 col-sm-10 col-xs-10'"+
+			"style='background-color:#bbaa11;color:#000000;padding:5px'>"+
+			"Thread Status : "+msg.metacomment+", Stopped</div>");
+			}
+
+			if( msg.client_cn ){
+			$("#localrqtt_sidepanel")
+			.append("<div class='col-md-10 col-sm-10 col-xs-10'"+
+			"style='background-color:#11bb11;color:#000000;padding:5px'>"+
+			"Client Status : Connected with RC "+msg.client_rc+"</div>");
+			}else{
+			$("#localrqtt_sidepanel")
+			.append("<div class='col-md-10 col-sm-10 col-xs-10'"+
+			"style='background-color:#bb1111;color:#000000;padding:5px'>"+
+			"Client Status : Not Connected with RC "+msg.client_rc+"</div>");
+			}
+
+			$("#localrqtt_sidepanel")
+			.append("<div class='col-md-10 col-sm-10 col-xs-10'"+
+			"style='padding:5px'>"+
+			"Last MSG : "+msg.lastmsg+"</div>");
+
+			$("#localrqtt_sidepanel")
+			.append("<textarea id='rqtt_sublist' class='col-md-10 col-sm-10 col-xs-10'"+
+			"rows='20' cols='40' wrap='soft' style='max-height:100px;min-height:100px;resize:none'>"+
+			"</textarea>");
+			
+			msg.topics.forEach(function proc(element,index){
+				document.getElementById('rqtt_sublist').value = (document.getElementById('rqtt_sublist').value +
+				element + '\n');
+			});
+
+		}else{
+			$("#localrqtt_sidepanel")
+			.append("<div style='background-color:#bb1111;color:#000000;padding:5px'>Thread Status : "+msg.metacomment+"</div>");
+
+		}
+	});
+
+	socket.on('brokerlog_cast', function(msg){
+		console.log(msg.logstring)
+		document.getElementById('mosquitto_output').value = (document.getElementById('mosquitto_output').value +
+		new Date().toLocaleString() + ' :: ' + msg.logstring + '\n');
+	});
+
+	socket.on('mqttqstat_cast', function(msg){
+		console.log(msg.statstring);
+		document.getElementById('mqtt_stat').innerHTML = msg.statstring;
+	});
+	</script>
+{% endblock %}

@@ -14,14 +14,15 @@ from werkzeug.security import generate_password_hash
 from flask_login import current_user
 
 import pkg.const as const
-from pkg.system.database import dbms
-from pkg.system.database import models as md
-from pkg.system.database import forms as fm
+import pkg.limits as limits
 from pkg.system import assertw as a
-from pkg.system.auth import removeTokenFile
+from pkg.system.database import dbms
+from pkg.system.user import models as md
+from pkg.system.user import forms as fm
 from pkg.system.servlog import srvlog,logtofile
 
-bp = Blueprint('sysuser', __name__, url_prefix='/sys')
+# primary blueprint
+bp = Blueprint('sysuser', __name__, url_prefix='')
 
 ##############################################################################################
 # system user add/mod routes
@@ -42,8 +43,8 @@ def useradd():
         if(target_user == None):
             target_add = md.System_User(
                 useradd_form.username.data,useradd_form.password.data,useradd_form.usertype.data)#create user obj
-            dbms.sy_session.add(target_add)#adds user object onto database.
-            dbms.sy_session.commit()
+            dbms.system.session.add(target_add)#adds user object onto database.
+            dbms.system.session.commit()
             srvlog["sys"].info(useradd_form.username.data+" registered as new user, type="+useradd_form.usertype.data) #logging
             return render_template("standard/message.html",
                 display_title="Success",
@@ -88,8 +89,8 @@ def usermod(primaryKey):
     if(request.method=="POST"):
         if(request.form["button"]=="Delete"):
             target_del = md.System_User.query.filter(md.System_User.username == primaryKey).first()
-            dbms.sy_session.delete(target_del)
-            dbms.sy_session.commit()
+            dbms.system.session.delete(target_del)
+            dbms.system.session.commit()
             srvlog["sys"].info(primaryKey+" deleted from the system") #logging
             return redirect(url_for('sysuser.userlist'))
 
@@ -105,8 +106,8 @@ def usermod(primaryKey):
         elif(request.form["button"]=="Submit Changes"):
             target_mod = md.System_User.query.filter(md.System_User.username == primaryKey).first()
             target_mod.usertype = request.form.get("usertype")
-            dbms.sy_session.add(target_mod)
-            dbms.sy_session.commit()
+            dbms.system.session.add(target_mod)
+            dbms.system.session.commit()
             return redirect(url_for('sysuser.userlist'))
 
         elif(request.form["button"]=="Change Password"):

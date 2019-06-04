@@ -15,20 +15,19 @@ from flask import request, abort
 from flask import Blueprint
 
 # for live logins view
-from pkg.interface.sysutilio import livelog
+from pkg.iface import sockemit
 
-#usual imports (copy pasta this)
 import pkg.const as const
-from pkg.system.database import dbms
-from pkg.system.database import models as md
-from pkg.system.database import forms as fm
+import pkg.limits as limits
 from pkg.system import assertw as a
+from pkg.system.database import dbms
+from pkg.system.user import models as md
+from pkg.system.user import forms as fm
 from pkg.system.servlog import srvlog,logtofile
-from pkg import limits
 
 import random,string,os
 
-#primary blueprint
+# primary blueprint
 bp = Blueprint('auth', __name__, url_prefix='')
 
 #######################################################################################################
@@ -50,7 +49,12 @@ def login():
                 login_user(target_user)#login_manager logins
 
                 #logs it to the livelog monitor
-                livelog('{} ({}) Logon to server.'.format(target_user.username,target_user.getUserType()),'logins')
+                sockemit("/sysutil","livelog_cast",\
+                        {
+                            'logtype':'logins',
+                            'logstring':'{} ({}) Logon to server.'.format(target_user.username,\
+                                target_user.getUserType())
+                        })
 
                 return redirect(url_for("home.home",username=target_user.username))
             else:
@@ -83,8 +87,13 @@ def tokengen(issue,param):
 
     while(True):
     #generate until unique
+        rngstr = [ random.choice( string.ascii_uppercase + string.digits + string.ascii_lowercase ) \
+                for i in range(limits.TOKEN_LENGTH) ]
         tokenstr = (uuid+'%'
-            +''.join(random.choices(string.ascii_uppercase + string.digits, k=limits.TOKEN_LENGTH)))
+            +''.join(rngstr))
+        # The following works for python3.6x only
+        #tokenstr = (uuid+'%'
+        #    +''.join(random.choices(string.ascii_uppercase + string.digits, k=limits.TOKEN_LENGTH)))
         if(not os.path.isfile(os.path.join(const.TOKN_DIR,tokdir,tokenstr))):
             #non existent
             break

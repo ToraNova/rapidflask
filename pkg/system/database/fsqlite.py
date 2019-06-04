@@ -4,77 +4,42 @@
 # it initializes the required models for the database engine
 # introduced 8/12/2018
 #--------------------------------------------------
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from pkg.system.servlog import srvlog,logtofile
 import pkg.const as const
-import os
+
+# Necessary imports on local package
+from pkg.system.database.structure import DBstruct, DBMS, create_db, remove_db
 
 #configuration necessities
 #fixed prefix on database filename : 'sqlite:///<filename>'
 #3 slashes are necessary
 
-#sy_session is the system engine
-engine_sys = create_engine('sqlite:///'+const.DB00_NAME,convert_unicode=True)
-sy_session = scoped_session(sessionmaker(autocommit=False,autoflush=False,bind=engine_sys)) 
-#use Base0 to declare new models that are permanent with the system
-Base0 = declarative_base()
-Base0.query = sy_session.query_property()
+# TODO: must return a db struct type that consist of base,session and the dbfile
+# Please implement this for all db systems
+def constrEngine(dbfile):
+    engine = create_engine('sqlite:///'+dbfile,convert_unicode=True)
+    session = scoped_session(sessionmaker(autocommit=False,autoflush=False,bind=engine))
+    base = declarative_base()
+    base.query = session.query_property()
+    return DBstruct(engine, base, session, dbfile )
 
-#db_session is the deploy engine
-engine_dep = create_engine('sqlite:///'+const.DB01_NAME,convert_unicode=True)
-db_session = scoped_session(sessionmaker(autocommit=False,autoflush=False,bind=engine_dep)) 
-#use Base1 to declare new models that are permanent with the system
-Base1 = declarative_base()
-Base1.query = db_session.query_property()
+# the dbms object is the most important element, please declare and fill it correctly
+dbms = DBMS( 
+        constrEngine( const.DB00_NAME ),
+        constrEngine( const.DB01_NAME ),
+        constrEngine( const.DB02_NAME )
+        )
 
-def init_db():
+def init_db(system=False,deploy=False,msgapi=False):
     #call this during first init (full reset)
-    delete_db(True,True,True)
-    update_sys()
-    update_meta()
+    create_db(dbms, system,deploy,msgapi )
 
-    from pkg.system.database.defaults import default_add
-    default_add()
-    tokenfile = open(os.path.join(const.TOKN_DIR,"init.token"),"w+")
-    tokenfile.close()
-    return
+def reset_db(system=False,deploy=False,msgapi=False):
+    remove_db(dbms, system,deploy,msgapi )
+    create_db(dbms, system,deploy,msgapi )
 
-def delete_db(sys=False,deploy=False,token=False):
-    # deletes both dbs
-    if(os.path.isfile( os.path.join(const.TOKN_DIR,"init.token")) and token):
-        os.remove( os.path.join(const.TOKN_DIR,"init.token"))
-    if(os.path.isfile(const.DB00_NAME) and sys):
-        srvlog["sys"].warning("Deleting "+const.DB00_NAME)
-        os.remove(const.DB00_NAME)
-        sy_session.remove()
-    if(os.path.isfile(const.DB01_NAME) and deploy):
-        srvlog["oper"].warning("Deleting "+const.DB01_NAME)
-        os.remove(const.DB01_NAME)
-        db_session.remove()
-
-def reset_db():
-    delete_db( deploy=True ) 
-    #reset the meta db (for deployment database only)
-    update_meta()
-    return
-
-def update_sys():
-    #-----------------------PERMA MODELS-------------------------------------
-    from pkg.system.database.models import System_User #perma
-    from pkg.system.database.models import System_Configuration #perma
-    from pkg.system.database.models import System_UserType #perma
-    #------------------------------------------------------------------------
-
-    Base0.metadata.create_all(bind=engine_sys)
-
-def update_meta():
-    #this is called when we want to change our db
-    #NOTE please add imports of new models here
-    #as of u6 - r, just import rdef here
-    #-----------------------Non PERMA----------------------------------------
-    from pkg.resource import rdef
-    #------------------------------------------------------------------------
-
-    Base1.metadata.create_all(bind=engine_dep)
+def delete_db(system=False,deploy=False,msgapi=False):
+    remove_db(dbms, system,deploy,msgapi )

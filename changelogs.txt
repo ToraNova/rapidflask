@@ -87,3 +87,11 @@ update7   22/04/19---10:59am
 [+ introduced realtime login logs (learning how to use emit correctly)
 [  emits now can be used outside of namespaced
 [  source.py now source based rather than a functional one.
+
+update8  31/05/19---05:26pm
+[+ incorporated the MQTT broker onto the system
+[+ major revamp on the database structure
+[  now db split into sys/deploy and msgapi
+[+ msgapi and deploy share the Rlisting mechanics now
+[+ embedded mqtt client on board the server
+[+ improved dynamic ui to start/stop BOTH the client and server

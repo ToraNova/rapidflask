@@ -1,0 +1,62 @@
+# This is the primary configuration file for rapidflask
+# Introduced U7 ported from mqpy.
+# ToraNova 2019
+
+# General settings
+[general]
+servername = RapidFlask
+
+# disable dangerous routes such as db reset, nologins
+# Please set to 1 on deployment !
+disable_crit_route = 0
+
+# Main connection settings
+[conn]
+# main server IP
+hostaddr = 0.0.0.0
+
+# serving port number
+port = 8000
+
+# TLS settings
+ssl_enable = 1
+
+# Please specify the certfile relative to the main run script(server.py
+ssl_cert = certs/alice_cert.pem
+ssl_skey = certs/alice_skey.pem
+# Certificate Authority (TTP)
+ssl_ca = certs/aa_cert.pem
+
+# debugging flags, reloader flags
+# Flags are either 1 or 0. it will be false if otherwise
+[flags]
+# debugging mode, setting it to 1 increases verbosity
+debug = 1
+
+# enable reloader, this automatically reloads the program
+# when change is detected (causes werkzeug to spawn a child proc
+# doing everything twice)
+# This affects the local rapid MQTT client
+reload = 1
+
+# Service settings
+[service]
+# enables the mqtt broker
+broker_enable = 1
+# automatically start the broker upon server start
+broker_autostart = 1
+
+[local_rqtt]
+# enable the local client (paho mqtt client)
+local_rqtt_enable = 1
+# autostart the local mqtt client
+local_rqtt_autostart = 1
+# local mqtt client target broker address
+local_rqtt_addr = 127.0.0.1
+# local mqtt client target broker port
+local_rqtt_port = 1883
+# local rqtt username and password (I KNOW IT IS IN PLAINTEXT AND IS BAD)
+local_rqtt_username = localuser
+local_rqtt_password = mqtt_rocks
+# specify if the local rqtt should connect to an external broker instead
+local_rqtt_extbroker = 0

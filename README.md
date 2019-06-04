@@ -1,7 +1,7 @@
 # RapidFlask - Rapid Flask Server General Deployment
 RapidFlask is a general purpose flask server that can be used for rapid deployment. It comes with basic user models,
 logging and some access control mechanism that are pretty much required in many scenarios. RapidFlask is meant to be
-a both front/back end system that allows quick API deployment either with HTTP REST APIs or MQTT protocols. The project uses **Python3**
+a both front/back end system that allows quick API deployment either with HTTP REST APIs or MQTT protocols. The project uses **Python3.5x**
 and supports **SQLITE3** for it's database.
 
 ## Requirements (Installable with pip3)
@@ -14,6 +14,7 @@ and supports **SQLITE3** for it's database.
 	pip3 install flask_admin
 	pip3 install flask_socketio
 	pip3 install paho-mqtt
+	pip3 install gevent
 
 ## No longer required (required by past deployments)
 
@@ -24,6 +25,7 @@ and supports **SQLITE3** for it's database.
 
 1. Incremental updates are by updates written like uxx where xx is the update number.
 2. Currently the project is on __u8__
+3. Please replace the certificates in the certs/ directory upon deployment !
 
 ### [License](LICENSE)
 
