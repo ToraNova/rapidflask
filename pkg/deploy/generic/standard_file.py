@@ -42,13 +42,13 @@ class StandardFile(r.Base):
     # TODO: DEFINE THE RLIST
     #The following is for r-listing (resource listing)
     # the values in the rlist must be the same as the column var name
-    rlist = {
-    "Filename":"filename",
-    "URL":"__url__/stdfile.retrieve_uploads/filename",
-    "MIME type":"mimetype",
-    "Uploaded Time":"__time__/%b %d %Y/uptime",
-    "Uploader":"fileown"
-    } #header:row data
+    rlist = r.OrderedDict([
+    ("Filename","filename"),
+    ("URL","__url__/stdfile.retrieve_uploads/filename"),
+    ("MIME type","mimetype"),
+    ("Uploaded Time","__time__/%b %d %Y/uptime"),
+    ("Uploader","fileown")
+    ]) #header,row data
 
     # TODO: DEFINE THE priKey and display text
     #this primary key is used for rlisting/adding and mod.

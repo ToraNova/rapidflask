@@ -9,7 +9,7 @@
 # requires MQTT
 import paho.mqtt.client as mqtt
 import time, threading, os
-import ssl
+import ssl, traceback
 
 #flask logins
 from flask_login import login_required
@@ -107,7 +107,6 @@ class RapidClientThread( threading.Thread ):
             # Inception-like self contained mega loopz
             self.client.connflag = False
             self.client.username_pw_set(username=self.uname, password=self.passwd) #set auth
-            print("RERUN")
             while self.runflag: #try until stop running
                 try:
                     time.sleep(3)
@@ -163,7 +162,42 @@ class RapidClientThread( threading.Thread ):
 #defining callback behavior upon message receive
 def on_message(client, userdata, msg):
     client.lastmsg = "[{}]:{}".format(msg.topic, msg.payload)
-    print("Msg from topic",msg.topic," : ",msg.payload)
+    strpayload = msg.payload.decode('utf-8')
+    mtopic = MQTT_Sub.query.filter( MQTT_Sub.topic == msg.topic ).first()
+    if( mtopic is None ):
+        # Topic is not registered. but how did we receive it ?
+        # Error must have occurred
+        srvlog["oper"].error(msg.topic+" is not registered but message received.")
+        insert = {
+                "topic":msg.topic,
+                "msg":strpayload
+                }
+        utopm = MQTT_Msg( insert )
+    else:
+        # Topic found. add and link
+        srvlog["oper"].info(msg.topic+":"+strpayload+" pushed to mqtt msgstack")
+        insert = {
+                "tlink":mtopic.id,
+                "topic":msg.topic,
+                "msg":strpayload
+                }
+        try:
+            utopm = MQTT_Msg( insert )
+        except Exception as e:
+            print(str(e),traceback.format_exc())
+    try:
+        # add and commit
+        dbms.msgapi.session.add( utopm )
+        dbms.msgapi.session.commit()
+        print("[MQ]",__name__," : ","Pushed [{}]{} onto MQTT msgstack".format(\
+                msg.topic,strpayload))
+    except Exception as e:
+        # ROllback any changes
+        print("[EX]",__name__," : ","Exception has occurred while pushing to mqtt msgstack",\
+                str(e))
+        srvlog["oper"].error("Exception has occurred on_message mqtt msgstack :"+str(e))
+        dbms.msgapi.session.rollback()
+
 
 def on_connect(client, userdata, flags, rc):
     srvlog["oper"].info("LOCAL:RapidClient connected with rc:"+str(rc))

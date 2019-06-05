@@ -28,12 +28,12 @@ class Param3(r.Base):
     # TODO: DEFINE THE RLIST
     #The following is for r-listing (resource listing)
     # the values in the rlist must be the same as the column var name
-    rlist = {
-    "Entity ID":"id",
-    "Param0":"param0",
-    "Param1":"param1",
-    "Param2":"param2"
-    } #header:row data
+    rlist = r.OrderedDict([
+    ("Entity ID","id"),
+    ("Param0","param0"),
+    ("Param1","param1"),
+    ("Param2","param2")
+    ]) #header,row data
 
     # TODO: DEFINE THE priKey and display text
     #this primary key is used for rlisting/adding and mod.

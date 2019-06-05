@@ -51,6 +51,7 @@
 
 					</div>
 
+
 				</div>
 			</div>
 			{% include 'includes/helpers/_space1br.html' %}
@@ -98,11 +99,16 @@
 	var periodic = setInterval( clistat, 3000 );
 	socket.on('connect', function() {
 		console.log("mqtt_brokerlogs connected..."+namespace);
+		clistat();
 	});
 
 	function clistat(){
 		//refresh the client status bar
 		socket.emit('clistat');
+	}
+
+	function msgpub(){
+		//TODO: Message publishing functionality
 	}
 
 	function clrstat(){

@@ -22,7 +22,7 @@ class MQTT_Sub(Base):
     ######################################################################################################
     # TODO: DEFINE LIST OF COLUMNS
     # the string topic of the topic to subscribe to
-    topic = r.Column(r.String(r.lim.MAX_MQTT_TOPIC_SIZE), nullable=False) 
+    topic = r.Column(r.String(r.lim.MAX_MQTT_TOPIC_SIZE), nullable=False, unique=True) 
     description = r.Column(r.String(r.lim.MAX_DESCRIPTION_SIZE), nullable=True, unique=False)
     stordur = r.Column(r.Integer, nullable=True) #how long to store messages
     delonproc = r.Column(r.Boolean, nullable=False) #delete the messages after processing?
@@ -32,14 +32,14 @@ class MQTT_Sub(Base):
     # CHANGED ON U6 : RLISTING NOW MERGED WITH RLINKING : see 'RLINKING _ HOW TO USE:'
     # The following is for r-listing (as of u6, rlinking as well) (resource listing)
     # the values in the rlist must be the same as the column var name
-    rlist = {
-    "Subscription ID":"id",
-    "Topic Name":"topic",
-    "Description":"description",
-    "Store N seconds (None/Null = Forever)":"stordur",
-    "Delete on processed?":"delonproc",
-    "Delete on cascade?":"deloncas"
-    } #header:row data
+    rlist = r.OrderedDict([
+    ("Subscription ID","id"),
+    ("Topic Name","topic"),
+    ("Description","description"),
+    ("Store N seconds (None/Null = Forever)","stordur"),
+    ("Delete on processed?","delonproc"),
+    ("Delete on cascade?","deloncas")
+    ]) #header,row data
 
     # RLINKING _ HOW TO USE :
     # using the __link__ keyword, seperate the arguments with /

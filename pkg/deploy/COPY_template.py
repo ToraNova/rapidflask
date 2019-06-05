@@ -32,13 +32,13 @@ class TODO_SAMPLE(r.Base):
     # CHANGED ON U6 : RLISTING NOW MERGED WITH RLINKING : see 'RLINKING _ HOW TO USE:'
     # The following is for r-listing (as of u6, rlinking as well) (resource listing)
     # the values in the rlist must be the same as the column var name
-    rlist = {
-    "Geopoint ID":"id",
-    "Longitude":"long",
-    "Latitude":"lati",
-    "Linked Entity":"__link__/route_id/Georoute/id:name", # __link__ is a reserved keyword
-    "Timestamp":"time"
-    } #header:row data
+    rlist = r.OrderedDict([
+    ("Geopoint ID","id"),
+    ("Longitude","long"),
+    ("Latitude","lati"),
+    ("Linked Entity","__link__/route_id/Georoute/id:name"), # __link__ is a reserved keyword
+    ("Timestamp","__time__/%b-%d-%Y %H:%M:%S/time")
+    ]) #header,row data
 
     # RLINKING _ HOW TO USE :
     # using the __link__ keyword, seperate the arguments with /

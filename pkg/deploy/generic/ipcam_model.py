@@ -33,14 +33,14 @@ class IPCameraModel(r.Base):
     # TODO: DEFINE THE RLIST
     #The following is for r-listing (resource listing)
     # the values in the rlist must be the same as the column var name
-    rlist = {
-    "Model Name":"model_name",
-    "FFMPEG":"ffmpeg_url",
-    "JPEG":"jpgcap_url",
-    "Description":"description",# __link__ is a reserved keyword
-    "Access username (default)":"def_uname",
-    "Access password (default)":"def_upass"
-    } #header:row data
+    rlist = r.OrderedDict([
+    ("Model Name","model_name"),
+    ("FFMPEG","ffmpeg_url"),
+    ("JPEG","jpgcap_url"),
+    ("Description","description"),# __link__ is a reserved keyword
+    ("Access username (default)","def_uname"),
+    ("Access password (default)","def_upass")
+    ]) #header,row data
     # use the __link__/ and __ route_id to 'link' route_id onto something
     # the linkage is defined under the rlink dictionary down there
     # see 'RLINK'

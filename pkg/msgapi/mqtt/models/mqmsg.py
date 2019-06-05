@@ -35,14 +35,14 @@ class MQTT_Msg(Base):
     # CHANGED ON U6 : RLISTING NOW MERGED WITH RLINKING : see 'RLINKING _ HOW TO USE:'
     # The following is for r-listing (as of u6, rlinking as well) (resource listing)
     # the values in the rlist must be the same as the column var name
-    rlist = {
-    "Topic":"topic",
-    "Linked (description)":"__link__/tlink/MQTT_Sub/id:description",
-    "Content":"msg",
-    "Received":"__time__/%b-%d-%Y %H:%M:%S/timev1",
-    "Delete on":"__time__/%b-%d-%Y %H:%M:%S/timed0",
-    "Processed?":"pflag0"
-    } #header:row data
+    rlist = r.OrderedDict([
+    ("Topic","topic"),
+    ("Linked (description)","__link__/tlink/MQTT_Sub/id:description"),
+    ("Content","msg"),
+    ("Received","__time__/%b-%d-%Y %H:%M:%S/timev0"),
+    ("Delete on","__time__/%b-%d-%Y %H:%M:%S/timed0"),
+    ("Processed?","pflag0")
+    ]) #header,row data
 
     # RLINKING _ HOW TO USE :
     # using the __link__ keyword, seperate the arguments with /
@@ -71,7 +71,8 @@ class MQTT_Msg(Base):
         @param msg - the msg content'''
         from pkg.msgapi.mqtt.models import MQTT_Sub
         from pkg.system.servlog import srvlog
-        import timedelta, datetime
+        import datetime
+        from datetime import timedelta
         # find links
         self.tlink = r.checkNull( insert_list, "tlink")
         self.topic = insert_list["topic"]

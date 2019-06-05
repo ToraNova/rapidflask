@@ -36,15 +36,15 @@ class CanvasLine(r.Base):
     # TODO: DEFINE THE RLIST
     #The following is for r-listing (resource listing)
     # the values in the rlist must be the same as the column var name
-    rlist = {
-    "startx":"startx",
-    "starty":"starty",
-    "endx":"endx",
-    "endy":"endy",
-    "width":"width",
-    "defcolor":"color",
-    "trgcolor":"tcolor"# __link__ is a reserved keyword
-    } #header:row data
+    rlist = r.OrderedDict([
+    ("startx","startx"),
+    ("starty","starty"),
+    ("endx","endx"),
+    ("endy","endy"),
+    ("width","width"),
+    ("defcolor","color"),
+    ("trgcolor","tcolor")# __link__ is a reserved keyword
+    ]) #header,row data
     # use the __link__/ and __ route_id to 'link' route_id onto something
     # the linkage is defined under the rlink dictionary down there
     # see 'RLINK'
