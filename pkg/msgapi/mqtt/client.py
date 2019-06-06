@@ -156,7 +156,7 @@ class RapidClientThread( threading.Thread ):
                     eroom='mqttctl')
             while not self.runflag:
                 # wait until run again
-                time.sleep(10)
+                time.sleep(const.THREAD_DORMANT_WTIME)
 
 
 #defining callback behavior upon message receive

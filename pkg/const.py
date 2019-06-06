@@ -37,6 +37,10 @@ TOKN_SYS = 'sysuser'
 STD_FILEDIR = 'uploads'
 CFG_FILEDIR = 'configs'
 
+# THREAD params
+# How long is the sleep time for killed threads
+THREAD_DORMANT_WTIME = 10
+
 ADMIN_PLAINT_APIKEY = "abc123" #TODO: api keys
 
 # Config file value obtainer
