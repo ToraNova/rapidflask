@@ -1,2 +1,3 @@
-fix reconnection problem. on_connect keep triggering even rc=0
-cert error ? on ubuntu-1804 SEC_ERROR_REUSED_ISSUER_AND_SERIAL
+1. Introduce message processing routine (try to make it generalized)
+2. Introduce HTTP API keys (linked with user)
+3. DOCKER IT
