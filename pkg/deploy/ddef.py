@@ -52,4 +52,25 @@ def default_add():
     '''this is the function to add the object onto the system by 
     default (every re-initialization)'''
     from pkg.system.database import dbms #it is important to import this ONLY in the function
-    pass
+
+    samples = [
+            ("34624","abt3",None),
+            ("22332","ttwz","0"),
+            ("10002","msmw","1"),
+            ("10033","mww0","0"),
+            ("29933","wwaz","2"),
+            ("22233","z01P",None),
+            ("03030","ppq-",None),
+            ("20152","tiff",None),
+            ("03432","peim","9"),
+            ("12345","tdmc","2"),
+            ("12334","zzzz","0"),
+            ("22310","zzm2",None),
+            ("22891",None,None),
+            ("03021",None,"-1")
+            ]
+
+    for s in samples:
+        insert_list = {"param0":s[0],"param1":s[1],"param2":s[2]}
+        dbms.deploy.session.add( param3model.Param3( insert_list ) )
+    dbms.deploy.session.commit()
