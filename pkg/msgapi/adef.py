@@ -71,13 +71,16 @@ def default_add():
             ]
     for configs in default_broker_config_list:
         insert_list = {"config_name":configs[0],"config_value":configs[1]}
-        dbms.msgapi.session.add(mqbrk.MQTT_Broker_Configuration(insert_list))
+        dbms.msgapi.session.add(mqbrk.MQTT_Broker_Configuration( insert_list ) )
 
-    local_user = apiuser.Msgapi_User(\
-            {"username":"localuser","plain_password":"mqtt_rocks","usertype":"MQTTv0"} )
-    dbms.msgapi.session.add( local_user )
-    default_user = apiuser.Msgapi_User(\
-            {"username":"rqtt0","plain_password":"mqtt_rocks","usertype":"MQTTv0"} )
-    dbms.msgapi.session.add( default_user )
+    default_api_userlist = [
+            ('localuser','mqtt_rocks','MQTTv0'),
+            ('rqtt0','mqtt_rocks','MQTTv0'),
+            ('http0','tcdmbedpeimdsswhileih5wamspd','HTTPv0')
+            ]
+    for au in default_api_userlist:
+        insert_list = {"username": au[0], "access_key":au[1], "usertype":au[2]}
+        dbms.msgapi.session.add( apiuser.Msgapi_User( insert_list ) )
+
     dbms.msgapi.session.commit()
 

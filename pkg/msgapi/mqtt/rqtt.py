@@ -106,7 +106,7 @@ class MQTTCTLNamespace(Namespace):
                 if(lu is not None):
                     # lu available, load from it
                     username = lu.username
-                    password = lu.plain_password
+                    password = lu.access_key
                 else:
                     # lu not available, load from config instead
                     username = const.LOCAL_RQTT_USERNAME
@@ -130,7 +130,7 @@ class MQTTCTLNamespace(Namespace):
                     portn = const.LOCAL_RQTT_PORT
                     addrn = const.LOCAL_RQTT_ADDR
                 # reload config
-                global_rqttclient.load_config( lu.username, lu.plain_password,\
+                global_rqttclient.load_config( lu.username, lu.access_key,\
                         addrn, portn)
                 # start the rqtt client
                 global_rqttclient.rerun()

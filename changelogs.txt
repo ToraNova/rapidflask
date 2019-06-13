@@ -95,3 +95,6 @@ update8  31/05/19---05:26pm
 [+ msgapi and deploy share the Rlisting mechanics now
 [+ embedded mqtt client on board the server
 [+ improved dynamic ui to start/stop BOTH the client and server
+[+ apikey tied to msgapi users
+[+ added mailing system (WIP)
+[$ Generalized mail server (perhaps a SMTP ?)

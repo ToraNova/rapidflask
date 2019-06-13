@@ -23,8 +23,10 @@ from pkg.system.database import dbcon
 from pkg.system.user import models as md
 from pkg.system.user import forms as fm
 from pkg.system.servlog import srvlog,logtofile
-
 from pkg.system.user.sysuser import tupleGenerator
+
+# Flask mail
+from flask_mail import Message
 
 #additional overheads
 import os, shutil
@@ -78,7 +80,8 @@ def resetdb(octal='000'):
         dbcon.reset_db(system=sys,deploy=dep,msgapi=api) # Call the reset functionality
         print("[IF]",__name__," Database reset called with octal "+octal)
         if(sys):
-            srvlog["sys"].warning("System Database ({}) reset under admintools".format(dbms.system.dbfile))
+            srvlog["sys"].warning("System Database ({}) reset under admintools".format(\
+                    dbms.system.dbfile))
         if(dep):
             # deletes all files in the upload directory as well
             try:
@@ -93,9 +96,11 @@ def resetdb(octal='000'):
                 gitkeep = open(os.path.join(wipe,".gitkeep"),"w+")
                 gitkeep.close()
 
-            srvlog["sys"].warning("Deployment Database ({}) reset under admintools".format(dbms.deploy.dbfile))
+            srvlog["sys"].warning("Deployment Database ({}) reset under admintools".format(\
+                    dbms.deploy.dbfile))
         if(api):
-            srvlog["sys"].warning("MSG API Database ({}) reset under admintools".format(dbms.msgapi.dbfile))
+            srvlog["sys"].warning("MSG API Database ({}) reset under admintools".format(\
+                    dbms.msgapi.dbfile))
         return render_template("standard/message.html",
             display_title="Admintools (DB Reset)",
             display_message="OK - "+octal)
@@ -133,3 +138,27 @@ def livelogview(logtype):
     #Allow viewing of live logs
     return render_template("flask_sockio/livelogs.html",logtype="logins",
             socket_io_proto=const.SOCKET_IO_PROTO)
+
+
+##############################################################################################
+# Use to send email to the admin
+# Introduced update8
+##############################################################################################
+@bp.route('/hello')
+@a.route_disabled
+def hello_admin():
+    '''sends a hello email to the the user "admin",
+    this is for debugging purposes at the moment u8'''
+    msg = Message(\
+            subject="Hello!",\
+            body="This is an automated email sent by my flask server ! Wormmz",
+            sender="submarinechai@gmail.com",\
+            recipients=[\
+                "chia.jason.col@gmail.com",\
+                "chaiyeeting96@gmail.com"
+                ])
+    from pkg.source import smail
+    smail.send( msg )
+    return render_template("standard/message.html",
+        display_title="Admintools (Test mail)",
+        display_message="OK")

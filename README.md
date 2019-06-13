@@ -12,6 +12,7 @@ and supports **SQLITE3** for it's database.
 	pip3 install flask_bootstrap
 	pip3 install flask_login
 	pip3 install flask_admin
+	pip3 install flask_mail
 	pip3 install flask_socketio
 	pip3 install paho-mqtt
 	pip3 install gevent

@@ -70,7 +70,12 @@ def logout():
     logout_usertype = current_user.getUserType()
     logout_user()
     #logs it to the livelog monitor
-    livelog('{} ({}) Logoff from server.'.format(logout_username,logout_usertype),'logins')
+    sockemit("/sysutil","livelog_cast",\
+            {
+                'logtype':'logins',
+                'logstring':'{} ({}) Logoff from server.'.format(logout_username,\
+                        logout_usertype)
+            })
     srvlog["user"].info(logout_username+" logged out the system") #logging
     return redirect(url_for("auth.login"))
 

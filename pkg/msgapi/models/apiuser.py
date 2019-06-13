@@ -25,16 +25,16 @@ class Msgapi_User(Base):
     def __repr__(self):
     	return '<%r %r>' % (self.__tablename__,self.id)
     username = r.Column(r.String(r.lim.MAX_USERNAME_SIZE), unique=True)
-    plain_password = r.Column(r.String(r.lim.MAX_PASSWORD_SIZE))
+    access_key = r.Column(r.String(r.lim.MAX_PASSWORD_SIZE))
     # TODO: figure out a way to secure this more
-    # justification for plain_password storage here. the reason is
+    # justification for access_key storage here. the reason is
     # to allow the administrator to easily obtain the password from
     # the database 
     usertype = r.Column(r.String(r.lim.MAX_USERNAME_SIZE),unique=False)
 
     rlist = r.OrderedDict([
         ("Username","username"),
-        ("Password","plain_password"),
+        ("Access Key","access_key"),
         ("API Type","usertype")
         ])
     rlist_priKey = "id"
@@ -52,7 +52,7 @@ class Msgapi_User(Base):
                 for u in users:
                     afile.write(u.username)
                     afile.write(':')
-                    afile.write(u.plain_password)
+                    afile.write(u.access_key)
                     afile.write('\n') #this line bugged the config file.
             rewrite_pwdfile = Popen(['mosquitto_passwd','-U',authfile])
             rewrite_pwdfile.wait()
@@ -63,7 +63,7 @@ class Msgapi_User(Base):
 
     def __init__(self,insert_list):
         self.username = insert_list["username"]
-        self.plain_password = insert_list["plain_password"]
+        self.access_key = insert_list["access_key"]
         self.usertype = insert_list["usertype"]
 
     def default_add_action(self):
@@ -82,5 +82,5 @@ class AddForm(r.FlaskForm):
     #TODO: List the fields here, FIELDS MUST BE PREFIXED WITH rgen_
     # The names here after the rgen_ prefix must correspond to a var name in the respective model
     rgen_username = r.StringField('MQTT UserName',validators=[ r.Length(max=r.lim.MAX_USERNAME_SIZE) ] )
-    rgen_plain_password = r.StringField('MQTT UserPass(Plaintext)',validators=[ r.Length(max=r.lim.MAX_PASSWORD_SIZE) ] )
+    rgen_access_key = r.StringField('MQTT UserPass(Plaintext)',validators=[ r.Length(max=r.lim.MAX_PASSWORD_SIZE) ] )
     rgen_usertype = r.SelectField('API Type',choices=apitypes)

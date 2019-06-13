@@ -41,11 +41,16 @@ def useradd():
     if useradd_form.validate_on_submit():
         target_user = md.System_User.query.filter(md.System_User.username == useradd_form.username.data).first()
         if(target_user == None):
-            target_add = md.System_User(
-                useradd_form.username.data,useradd_form.password.data,useradd_form.usertype.data)#create user obj
+            target_add = md.System_User(\
+                useradd_form.username.data,\
+                useradd_form.password.data,\
+                useradd_form.usertype.data,\
+                useradd_form.emailadr.data)#create user obj
+
             dbms.system.session.add(target_add)#adds user object onto database.
             dbms.system.session.commit()
-            srvlog["sys"].info(useradd_form.username.data+" registered as new user, type="+useradd_form.usertype.data) #logging
+            srvlog["sys"].info(useradd_form.username.data+\
+                    " registered as new user, type="+useradd_form.usertype.data) #logging
             return render_template("standard/message.html",
                 display_title="Success",
                 display_message="Added "+target_add.username+" into the system.")
@@ -67,11 +72,15 @@ def useradd():
 @a.admin_required
 def userlist():
     '''list out system users'''
-    columnHead = ["username","usertype","privilege level","created on"]
+    columnHead = ["Username","Email Address","User Type","Privilege Level","Created On"]
     userlist = md.System_User.query.all()
     match = []
     for users in userlist:
-        temp = [users.username,users.getUserType(),users.getPriLevel(),users.creadate.strftime('%Y-%m-%d %H:%M:%S')]
+        temp = [users.username,\
+                users.emailadr,\
+                users.getUserType(),\
+                users.getPriLevel(),\
+                users.creadate.strftime('%Y-%m-%d %H:%M:%S')]
         match.append(temp)
     return render_template('sysuser/userlist.html',
         colNum=len(columnHead),matches=match,columnHead=columnHead)

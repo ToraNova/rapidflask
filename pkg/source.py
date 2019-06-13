@@ -11,7 +11,6 @@ from flask import Flask
 from flask import Blueprint
 from flask_login import LoginManager
 from flask import render_template
-from flask_socketio import SocketIO
 
 import pkg.const as const
 from pkg.system.database import dbms
@@ -23,9 +22,15 @@ config = None
 #create and configures the server
 out = Flask(__name__, instance_relative_config=True)
 out.config.from_mapping(
-        SECRET_KEY='torabuilds',
-        DATABASE=const.DB01_NAME,
-        UPLOAD_FOLDER='uploads'
+        SECRET_KEY = 'torabuilds',
+        DATABASE = const.DB01_NAME,
+        UPLOAD_FOLDER = 'uploads',
+        MAIL_SERVER = 'smtp.gmail.com',
+        MAIL_PORT = 587,
+        MAIL_USE_TLS = True,
+        MAIL_USE_SSL = False,
+        MAIL_USERNAME = 'submarinechai@gmail.com',
+        MAIL_PASSWORD = 'thisisinplaintext99'
         #check out out.instance_path
 )
 
@@ -86,7 +91,17 @@ def shutdown_session(exception=None):
 
 # FLASK SOCKET USE 8/1/2019
 out_nonsock = out
+#######################################
+# Mails
+from flask_mail import Mail
+smail = Mail()
+smail.init_app( out_nonsock )
+#######################################
+# Socket io
+from flask_socketio import SocketIO
 out = SocketIO(out_nonsock)
+#######################################
+
 
 # out is rexported for use in emits
 

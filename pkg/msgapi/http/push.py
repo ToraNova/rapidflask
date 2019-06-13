@@ -31,10 +31,13 @@ bp = Blueprint('push', __name__, url_prefix='/api/push')
 # API push routings
 ##############################################################################################
 @bp.route('/param3/add')
+@a.AKEY_checker
 #This route allows API callers to add an entry
 def addGP3():
     '''pushes a variable onto the param3
-    example : http://localhost:8000/api/generic/param3/add?f0=toranova&f1=1299&f2=helloworld
+    example : 
+    http://localhost:8000/api/push/param3/add?f0=toranova&f1=1299&f2=helloworld&akey=tcdmbedpeimdsswhileih5wamspd
+    https://localhost:8000/api/push/param3/add?f0=toranova&f1=1299&f2=helloworld&akey=tcdmbedpeimdsswhileih5wamspd
     '''
     # TODO: Please generalize this
 
@@ -70,6 +73,7 @@ def addGP3():
         return '1'
 
 @bp.route('/generic/param3/update')
+@a.AKEY_checker
 #This route allows API users to update an entry
 def updateGP3():
 

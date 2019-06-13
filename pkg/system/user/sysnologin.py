@@ -41,7 +41,11 @@ def register():
     if form.validate_on_submit():
         target_user = md.System_User.query.filter(md.System_User.username == form.username.data).first()
         if(target_user == None):
-            target_add = md.System_User(form.username.data,form.password.data,typeid)#create user obj
+            target_add = md.System_User(\
+                    form.username.data,\
+                    form.password.data,\
+                    typeid,\
+                    form.emailadr.data)#create user obj
             dbms.system.session.add(target_add)#adds user object onto database.
             dbms.system.session.commit()
             removeTokenFile(const.TOKN_SYS,request.args.get("token")) #remove token file

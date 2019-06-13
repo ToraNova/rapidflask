@@ -10,6 +10,7 @@
 ################################################################
 MAX_USERNAME_SIZE = 40
 MIN_USERNAME_SIZE = 4
+MAX_EMAIL_SIZE = 20
 MAX_PASSWORD_SIZE = 80 		#sha256 outputs 80 char
 MIN_PASSWORD_SIZE = 5
 MAX_NAME_SIZE = 50 		#Legal Name

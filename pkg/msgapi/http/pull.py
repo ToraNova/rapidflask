@@ -34,9 +34,12 @@ bp = Blueprint('pull', __name__, url_prefix='/api/pull')
 ##############################################################################################
 @bp.route('/<tablename>/list')
 #This route allows API callers to add an entry
+@a.AKEY_checker
 def tableList(tablename):
     '''retrieves a list of objects of the table, no filter at the moment
-    example : http://localhost:8000/api/param3/list
+    example : 
+    http://localhost:8000/api/pull/param3/list?akey=tcdmbedpeimdsswhileih5wamspd
+    https://localhost:8000/api/pull/param3/list?akey=tcdmbedpeimdsswhileih5wamspd
     ''' 
 
     upload_ip=request.remote_addr

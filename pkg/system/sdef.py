@@ -37,14 +37,16 @@ def default_add():
     #adding default user - admin
     default_username = "admin"
     default_password = "1996-June-26" #placeholder
-    default_user = System_User(default_username,default_password,1)
+    default_email = "chia_jason96@live.com"
+    default_user = System_User(default_username,default_password,1,default_email)
     default_user.passhash = 'pbkdf2:sha512:50000$Bpl7mvp6$d16d6dfff5047c77e14334c3562cc8cecf1e6d4a88cf13a990541317405231d204d6577ddc3a459cd5a5b4f3a6302adbc628ef26a1e0a47d9140a28ea47ee326'
 
     dbms.system.session.add(default_user)
 
     default_username = "user0"
-    default_password = "1996-June-26" #placeholder
-    default_user = System_User(default_username,default_password,2)
+    default_password = "1984-October-02" #placeholder
+    default_email = "example@email.com"
+    default_user = System_User(default_username,default_password,2,default_email)
     default_user.passhash = 'pbkdf2:sha512:50000$Bpl7mvp6$d16d6dfff5047c77e14334c3562cc8cecf1e6d4a88cf13a990541317405231d204d6577ddc3a459cd5a5b4f3a6302adbc628ef26a1e0a47d9140a28ea47ee326'
 
     dbms.system.session.add(default_user)

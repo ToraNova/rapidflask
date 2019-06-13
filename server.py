@@ -26,14 +26,16 @@ if __name__ == '__main__':
     ##################################################################
     # print and log out configuration details
     ##################################################################
-    print("[IF]",__name__," : ","Hosting {} on".format(const.SERVER_NAME),const.BIND_ADDR,str(const.BIND_PORT))
+    print("[IF]",__name__," : ",\
+            "Hosting {} on".format(const.SERVER_NAME),const.BIND_ADDR,str(const.BIND_PORT))
     if(const.SSL_ENABLE):
         print("[IF]",__name__," : ","Hosting over TLS, HTTPS")
     else:
         print("[IF]",__name__," : ","Warning. Hosting over insecure HTTP")
     print("[IF]",__name__," : ","Debug/Reload :",const.EDEBUG,"/",const.RELOAD)
     srvlog["sys"].info(const.BIND_ADDR+":"+str(const.BIND_PORT))
-    srvlog["sys"].info("debug/reload : "+("yes/" if const.EDEBUG else "no/")+("yes" if const.RELOAD else "no"))
+    srvlog["sys"].info("debug/reload : "+\
+            ("yes/" if const.EDEBUG else "no/")+("yes" if const.RELOAD else "no"))
 
     ##################################################################
     #First run issues (create database)
@@ -102,7 +104,8 @@ if __name__ == '__main__':
                         iportn = int(portn.config_value)
                     except Exception as e:
                         iportn = 1883
-                        print("[EX]",__name__," : ","Exception has occured while parsing port",str(e),portn.config_value)
+                        print("[EX]",__name__," : ",\
+                                "Exception has occured while parsing port",str(e),portn.config_value)
                     global_rqttclient.load_config( const.LOCAL_RQTT_USERNAME,\
                             const.LOCAL_RQTT_PASSWORD, '127.0.0.1',\
                             iportn)
@@ -116,18 +119,32 @@ if __name__ == '__main__':
     # MAIN SERVER START
     ##################################################################
         if(const.SSL_ENABLE):
-            #mainsrv.run(debug=app_debug,host=const.BIND_ADDR, port=const.BIND_PORT, use_reloader = True) #flask run
             srvlog["sys"].info("Starting server over SSL/TLS HTTPS")
+            '''
+            #mainsrv.run(debug=app_debug,
+            host=const.BIND_ADDR, port=const.BIND_PORT, use_reloader = True) #flask run
             # FLASK HOSTING
-            #mainsrv.run( debug = const.EDEBUG, host = const.BIND_ADDR, port = const.BIND_PORT, use_reloader= const.RELOAD, ssl_context=(const.SSL_CERT,const.SSL_SKEY))
+            #mainsrv.run( debug = const.EDEBUG,
+            host = const.BIND_ADDR,
+            port = const.BIND_PORT,
+            use_reloader= const.RELOAD, ssl_context=(const.SSL_CERT,const.SSL_SKEY))
+            '''
 
             # FLASK_SOCKETIO HOSTING
-            mainsrv_sock.run(mainsrv,debug= const.EDEBUG,host=const.BIND_ADDR, port=const.BIND_PORT, use_reloader = const.RELOAD, \
+            mainsrv_sock.run(mainsrv,\
+                    debug= const.EDEBUG,\
+                    host=const.BIND_ADDR,\
+                    port=const.BIND_PORT,\
+                    use_reloader = const.RELOAD, \
                     certfile = const.SSL_CERT, keyfile = const.SSL_SKEY, ca_certs = const.SSL_CA)
             # TODO: SSL version / cert require ? Check these 2 settings out
         else:
             srvlog["sys"].info("Starting server over HTTP")
-            mainsrv_sock.run(mainsrv,debug= const.EDEBUG,host=const.BIND_ADDR, port=const.BIND_PORT, use_reloader = const.RELOAD)
+            mainsrv_sock.run(mainsrv,\
+                    debug= const.EDEBUG,\
+                    host=const.BIND_ADDR,\
+                    port=const.BIND_PORT,\
+                    use_reloader = const.RELOAD)
     ##################################################################
 
     ##################################################################

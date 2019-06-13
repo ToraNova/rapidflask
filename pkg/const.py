@@ -41,7 +41,7 @@ CFG_FILEDIR = 'configs'
 # How long is the sleep time for killed threads
 THREAD_DORMANT_WTIME = 10
 
-ADMIN_PLAINT_APIKEY = "abc123" #TODO: api keys
+#ADMIN_PLAINT_APIKEY = "abc123" #TODO: api keys
 
 # Config file value obtainer
 # Read the config file and store their values here

@@ -41,12 +41,15 @@ class System_User(Base, UserMixin):#This class is permanent in almost all pyFlas
     passhash = Column(String(lim.MAX_PASSWORD_SIZE),unique=False,nullable=False)
     usertype = Column(Integer(),unique=False,nullable=False) #refers to a userType
     creadate = Column(DateTime()) #date of user account creation
+    emailadr = Column(String(lim.MAX_EMAIL_SIZE),unique=True,nullable=False)
 
-    def __init__(self,a_username = None,a_password = None,a_usertype = 10): #by default it is a guess account
+    #by default it is a guess account
+    def __init__(self,a_username = None,a_password = None,a_usertype = 10, a_email = None): 
         self.username = a_username
         self.set_password(a_password)
         self.usertype = a_usertype
         self.creadate = datetime.datetime.now()
+        self.emailadr =  a_email
 
     def set_password(self,password):
         self.passhash = generate_password_hash(password, method=c.HASH_ALGORITHM_0)
