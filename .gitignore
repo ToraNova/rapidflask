@@ -19,3 +19,7 @@
 
 # except all .gitkeep
 !*.gitkeep
+
+# Ignore virtualenv stuff
+/bin/*
+/lib/*

@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# setups the virtual env environment
+# ENSURE THIS IS CALLED IN THE PROJECT DIRECTORY
+# for Archlinux
+# pa -S python-virtualenv
+# pa -S python-pip
+
+echo "Setting up virtualenv"
+virtualenv .
+
+. bin/activate
+pip3 install flask flask-admin flask-login flask-wtf flask-mail flask-socketio
+pip3 install paho-mqtt sqlalchemy gevent
+
+yes | ./reset.sh
+
+deactivate
+# deprecated packages
+# flask_bootstrap, socketio
