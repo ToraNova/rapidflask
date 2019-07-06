@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!bin/python3
 
 #--------------------------------------------------
 # server.py
@@ -19,8 +19,6 @@ import ssl
 import logging
 import pkg.const as const
 
-
-                
 if __name__ == '__main__':
 
     ##################################################################
@@ -94,7 +92,7 @@ if __name__ == '__main__':
                     # connect to external broker (or specified broker based on config)
                     global_rqttclient.load_config( const.LOCAL_RQTT_USERNAME,\
                             const.LOCAL_RQTT_PASSWORD, const.LOCAL_RQTT_ADDR,\
-                            const.LOCAL_RQTT_PORT ) 
+                            const.LOCAL_RQTT_PORT )
                 elif( const.BROKER_ENABLE ):
                     # local broker enabled, connect to it instead
                     from pkg.msgapi.mqtt.models import MQTT_Broker_Configuration

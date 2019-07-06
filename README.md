@@ -4,7 +4,18 @@ logging and some access control mechanism that are pretty much required in many 
 a both front/back end system that allows quick API deployment either with HTTP REST APIs or MQTT protocols. The project uses **Python3.5x**
 and supports **SQLITE3** for it's database.
 
-## Requirements (Installable with pip3)
+## Requirements (currently on virtualenv)
+
+ArchLinux
+
+	sudo pacman -S python-virtualenv mosquitto
+
+Ubuntu (Please install mosquitto from source or other means gpgkey etc..)
+
+	sudo apt-get install python3-virtualenv
+
+
+## Used Modules (Installable with pip3)
 
 	pip3 install flask
 	pip3 install flask_wtf
@@ -17,10 +28,16 @@ and supports **SQLITE3** for it's database.
 	pip3 install paho-mqtt
 	pip3 install gevent
 
-## No longer required (required by past deployments)
+## Running (virtualenv)
 
-	flask_io
+setup
 
+	virtualenv .
+
+launch
+
+	. bin/activate
+	./server.py
 
 ### Please read the [changelogs](changelogs.txt)
 

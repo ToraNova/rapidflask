@@ -1,5 +1,5 @@
 #--------------------------------------------------
-# rapidclient.py 
+# rapidclient.py
 # the thread that runs the local client to listen in
 # on mqtt messages based on the subscription database
 # uses the default user 'localuser'
@@ -62,7 +62,7 @@ class RapidClientThread( threading.Thread ):
             if(res[0] == 0):
                 srvlog["oper"].info("LOCAL:RapidClient subscribed to topic:"+s.topic)
                 sockemit("/mqttctl","mqttqstat_cast",\
-                        {'statstring':"LOCAL:RapidClient subscribed to topic:"+s.topic}, 
+                        {'statstring':"LOCAL:RapidClient subscribed to topic:"+s.topic},
                         eroom='mqttctl')
                 client.sublist.append( s.topic )
             else:
@@ -142,7 +142,7 @@ class RapidClientThread( threading.Thread ):
                     while not self.client.connflag:
                         time.sleep(3)
                         sockemit("/mqttctl","mqttqstat_cast",\
-                                {'statstring':"LOCAL:RapidClient connection failed. retrying"}, 
+                                {'statstring':"LOCAL:RapidClient connection failed. retrying"},
                                 eroom='mqttctl')
             for ind,s in enumerate(self.client.sublist):
                 self.client.unsubscribe(s)
@@ -152,7 +152,7 @@ class RapidClientThread( threading.Thread ):
             self.client.connrc = "NA"
             self.client.connflag = False
             sockemit("/mqttctl","mqttqstat_cast",\
-                    {'statstring':"LOCAL:RapidClient stopped"}, 
+                    {'statstring':"LOCAL:RapidClient stopped"},
                     eroom='mqttctl')
             while not self.runflag:
                 # wait until run again
@@ -202,7 +202,7 @@ def on_message(client, userdata, msg):
 def on_connect(client, userdata, flags, rc):
     srvlog["oper"].info("LOCAL:RapidClient connected with rc:"+str(rc))
     sockemit("/mqttctl","mqttqstat_cast",\
-            {'statstring':"LOCAL:RapidClient connected with rc:"+str(rc)}, 
+            {'statstring':"LOCAL:RapidClient connected with rc:"+str(rc)},
             eroom='mqttctl')
     if(rc == 0):
         client.connflag = True
@@ -223,5 +223,5 @@ def on_disconnect(client, userdata, rc):
     client.connrc = str(rc)
     srvlog["oper"].info("LOCAL:RapidClient disconnected rc:"+str(rc))
     sockemit("/mqttctl","mqttqstat_cast",\
-            {'statstring':"LOCAL:RapidClient disconnected rc:"+str(c)}, 
+            {'statstring':"LOCAL:RapidClient disconnected rc:"+str(c)},
             eroom='mqttctl')
