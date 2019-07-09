@@ -17,13 +17,14 @@ rgen_typebool = "rgenbool_" #used to forced parsing as a boolean
 rlin_nullk = "-1"
 
 del_only = "DELONLY" #keyword for delete only objects (not modifiable but could be deleted)
+all_only = "ALLONLY" #keyword for objects that cannot be queried (list all upon a rlist)
 ##########################################################
 
 from collections import namedtuple
 
 # rsBlocks are resource standards. This is exported to def files (sdef, ddef and adef)
 # the def files define which models and how are they used by the r module
-rsBlock = namedtuple("rsBlock",["model","addform","editform"])
+rsBlock = namedtuple("rsBlock",["model","addform","lsform","editform"])
 
 
 

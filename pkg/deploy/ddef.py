@@ -24,7 +24,7 @@ from pkg.deploy.generic import standard_log, standard_file
 from pkg.deploy.network import ipcam_model, ipcam, netnode
 from pkg.deploy.dcanvas import canvas_circle, canvas_line
 
-from pkg.resrc.rstruct import rsBlock, del_only
+from pkg.resrc.rstruct import rsBlock, del_only, all_only
 ##########################################################
 # PLEASE EDIT THE FOLLOWING FOR EACH DEPLOYMENT!
 # The following dictionary will be exported to r.py
@@ -34,18 +34,22 @@ r_defines = {
         "Param3s": rsBlock(
             param3model.Param3,
             param3model.AddForm,
+            all_only,
             param3model.AddForm),
         "IPCamera_Models": rsBlock(
             ipcam_model.IPCameraModel,
             ipcam_model.AddForm,
+            all_only,
             ipcam_model.EditForm),
         "Standard_Logs": rsBlock(
             standard_log.StandardLog,
             None,
+            standard_log.LsForm,
             del_only),
         "Standard_Files": rsBlock(
             standard_file.StandardFile,
             standard_file.AddForm,
+            all_only,
             del_only)
         }
 

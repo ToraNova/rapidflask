@@ -22,7 +22,6 @@ def exec(topic, msg):
         s = StandardLog({"param0":"ping","ref0":0})
         dbms.deploy.session.add(s)
         rc = global_rqttclient.pubmsg('echolog/server',msg)
-        print("RC VALUE:",rc)
         dbms.deploy.session.commit()
     except Exception as e:
         print("[ER]",__name__," Exception has occurred:",str(e))

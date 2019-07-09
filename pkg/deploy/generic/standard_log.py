@@ -73,3 +73,33 @@ class StandardLog(r.Base):
     ######################################################################################################
 
 # STANDARD LOG MODEL NOT MEANT TO BE ADDED MANUALLY BY HAND
+
+# u81 -- LS forms (list forms)
+
+class LsForm(r.FlaskForm):
+    # Forms to allow filtering
+    tv0_start = r.LenientDateTimeField(\
+            'TimeV0 From', widget=r.DatePickerWidget())
+    tv0_end = r.LenientDateTimeField(\
+            'TimeV0 To', widget=r.DatePickerWidget())
+    query_limit = r.IntegerField('Query Limit',validators=[r.InputRequired(),
+        r.NumberRange(min=0)],default=0)
+
+    def getrawlist(self):
+        print(self.tv0_start.data, self.tv0_end.data, self.query_limit.data)
+        if(self.query_limit.data < 1):
+            rawlist = StandardLog.query\
+                    .filter(StandardLog.timev0 >= self.tv0_start.data)\
+                    .filter(StandardLog.timev0 <= self.tv0_end.data).all()
+        else:
+            rawlist = StandardLog.query\
+                    .filter(StandardLog.timev0 >= self.tv0_start.data)\
+                    .filter(StandardLog.timev0 <= self.tv0_end.data)\
+                    .limit(self.query_limit.data).all()
+        print(rawlist)
+        return rawlist
+
+
+
+
+

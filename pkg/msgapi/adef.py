@@ -27,7 +27,7 @@ from pkg.msgapi.models import apiuser
 #from pkg.msgapi.mqtt.models import MQTT_Broker_Configuration
 #from pkg.msgapi.mqtt.models import MQTT_Broker_User
 
-from pkg.resrc.rstruct import rsBlock, del_only
+from pkg.resrc.rstruct import rsBlock, del_only, all_only
 ##########################################################
 # PLEASE EDIT THE FOLLOWING FOR EACH DEPLOYMENT!
 # The following dictionary will be exported to r.py
@@ -37,18 +37,22 @@ r_defines = {
         "MQTT_Broker_Configs": rsBlock(
             mqbrk.MQTT_Broker_Configuration,
             mqbrk.AddForm,
+            all_only,
             mqbrk.AddForm),
         "Msgapi_Users": rsBlock(
             apiuser.Msgapi_User,
             apiuser.AddForm,
+            all_only,
             apiuser.AddForm),
         "MQTT_Subs": rsBlock(
             mqsub.MQTT_Sub,
             mqsub.AddForm,
+            all_only,
             mqsub.AddForm),
         "MQTT_Msgs": rsBlock(
             mqmsg.MQTT_Msg,
             None,
+            all_only,
             del_only)
         }
 

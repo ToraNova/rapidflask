@@ -125,16 +125,41 @@ def rlist(dbtype,tablename):
         error_title="Lookup Failure",
         error_message="Unknown Database")
 
-    # Get all matches
-    mobj = getMatch(lkup,tablename)
-    columnHead = mobj[0]
-    match = mobj[1]
-    prikey_match = mobj[2]
     display_tablename = lkup[tablename].model.rlist_dis
-    return render_template('res/datalist0.html', dbtype = dbtype,
-        colNum=len(columnHead),matches=match,columnHead=columnHead, tablename=tablename,
-        prikeyMatch=prikey_match,
-        data_table_name=display_tablename)
+    if(lkup[tablename].lsform == rstruct.all_only):
+        # Get all matches
+        mobj = getMatch(lkup,tablename)
+        columnHead = mobj[0]
+        match = mobj[1]
+        prikey_match = mobj[2]
+        return render_template('res/datalist0.html', dbtype = dbtype,\
+            colNum=len(columnHead),matches=match,\
+            columnHead=columnHead, tablename=tablename,\
+            prikeyMatch=prikey_match,\
+            data_table_name=display_tablename)
+    else:
+        resls_form = lkup[tablename].lsform() #creates an LS FORM
+        if resls_form.validate_on_submit():
+            rawlist = resls_form.getrawlist()
+            mobj = getMatch(lkup,tablename,rawlist)
+            columnHead = mobj[0]
+            match = mobj[1]
+            prikey_match = mobj[2]
+            print("OK")
+            return render_template('res/datalist1.html', dbtype = dbtype,\
+                colNum=len(columnHead),matches=match,\
+                columnHead=columnHead, tablename=tablename,\
+                prikeyMatch=prikey_match,\
+                data_table_name=display_tablename,
+                form = resls_form)
+        else:
+            # await user query
+            return render_template('res/datalist1.html', dbtype = dbtype,
+                colNum=0,matches=[],columnHead=[], tablename=tablename,
+                prikeyMatch=[],
+                data_table_name=display_tablename,
+                form = resls_form)
+
 
 @bp.route('/rmod/<dbtype>/<tablename>/<primaryKey>',methods=['GET','POST'])
 @a.admin_required
@@ -220,12 +245,13 @@ def rmod(dbtype,tablename,primaryKey):
 ##############################################################################################
 # Auxiliary methods, these methods aid the generelization of resource models/forms
 ##############################################################################################
-def getMatch(rstype,tablename):
+def getMatch(rstype,tablename,rawlist=None):
     '''obtains matching columns and data of a specific table
     updated on u3 compared to r9. now supports a cleaner model side requirement'''
     entityClass = rstype[tablename].model
     reslist = entityClass.rlist # the rlist element
-    rawlist = entityClass.query.all() # all the records
+    if(rawlist==None):
+        rawlist = entityClass.query.all() # all the records
     columnHead = []
     match = []
     pkey = []

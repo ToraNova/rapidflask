@@ -22,7 +22,7 @@ from pkg.system.user.models import System_UserType
 from pkg.system.user.models import System_Configuration
 
 def default_add():
-    '''default adds are now defined in sdef. this function is called when 
+    '''default adds are now defined in sdef. this function is called when
     the database systems re-creates the metadata (schema) for the database
     models'''
 
