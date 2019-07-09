@@ -29,6 +29,7 @@ class MQTT_Msg(Base):
     timev0 = r.Column(r.DateTime, nullable=False) #insertion time
     timed0 = r.Column(r.DateTime, nullable=True) #deletion time (msg to be kept until)
     pflag0 = r.Column(r.Boolean, nullable=False)  #flag to check if the msg has been processed
+    pflag1 = r.Column(r.Boolean, nullable=False)  #flag to check if the msg has been processed successfully
     delonproc = r.Column(r.Boolean, nullable=False) #flag to check if this message should be delete on process
 
     # TODO: DEFINE THE RLIST
@@ -37,11 +38,12 @@ class MQTT_Msg(Base):
     # the values in the rlist must be the same as the column var name
     rlist = r.OrderedDict([
     ("Topic","topic"),
-    ("Linked (description)","__link__/tlink/MQTT_Sub/id:description"),
+    ("Linked (description)","__link__/tlink/MQTT_Subs/id:description"),
     ("Content","msg"),
     ("Received","__time__/%b-%d-%Y %H:%M:%S/timev0"),
     ("Delete on","__time__/%b-%d-%Y %H:%M:%S/timed0"),
-    ("Processed?","pflag0")
+    ("Processed?","pflag0"),
+    ("Process OK?","pflag1")
     ]) #header,row data
 
     # RLINKING _ HOW TO USE :
@@ -62,6 +64,13 @@ class MQTT_Msg(Base):
     rlist_priKey = "id"
     rlist_dis = "MQTT Message Stack" #display for r routes
 
+    def get_onrecv(self):
+        # get the name of the process used on this msg
+        from pkg.msgapi.mqtt.models import MQTT_Sub
+        t = MQTT_Sub.query.filter( MQTT_Sub.id == self.tlink ).first()
+        if( t is not None ):
+            return t.onrecv
+
     # TODO: CONSTRUCTOR DEFINES, PLEASE ADD IN ACCORDING TO COLUMNS
     # the key in the insert_list must be the same as the column var name
     def __init__(self,insert_list):
@@ -78,7 +87,8 @@ class MQTT_Msg(Base):
         self.topic = insert_list["topic"]
         self.msg = insert_list["msg"]
         self.timev0 = datetime.datetime.now()
-        self.pflag0 = False
+        self.pflag0 = insert_list["pflag0"]
+        self.pflag1 = insert_list["pflag1"]
         submaster = MQTT_Sub.query.filter( MQTT_Sub.id == self.tlink ).first()
         if(submaster is not None):
             if( submaster.stordur is None):

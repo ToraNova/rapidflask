@@ -11,7 +11,7 @@ virtualenv .
 
 . bin/activate
 pip3 install flask flask-admin flask-login flask-wtf flask-mail flask-socketio
-pip3 install paho-mqtt sqlalchemy gevent
+pip3 install paho-mqtt sqlalchemy gevent eventlet
 
 yes | ./reset.sh
 

@@ -18,10 +18,11 @@
 # the update_sys call from the chosen dbms
 # module (as of u8, sqlite3)
 #--------------------------------------------------
-# Generic 
-from pkg.deploy.generic import param3model, ipcam_model
-from pkg.deploy.generic import canvas_circle, canvas_line
+# Generic
+from pkg.deploy.generic import param3model
 from pkg.deploy.generic import standard_log, standard_file
+from pkg.deploy.network import ipcam_model, ipcam, netnode
+from pkg.deploy.dcanvas import canvas_circle, canvas_line
 
 from pkg.resrc.rstruct import rsBlock, del_only
 ##########################################################
@@ -30,26 +31,26 @@ from pkg.resrc.rstruct import rsBlock, del_only
 # This is only for deployment dependent resources.
 ##########################################################
 r_defines = {
-        "param3": rsBlock( 
+        "Param3s": rsBlock(
             param3model.Param3,
             param3model.AddForm,
             param3model.AddForm),
-        "ipcamera_models": rsBlock( 
+        "IPCamera_Models": rsBlock(
             ipcam_model.IPCameraModel,
             ipcam_model.AddForm,
             ipcam_model.EditForm),
-        "standard_logs": rsBlock( 
+        "Standard_Logs": rsBlock(
             standard_log.StandardLog,
             None,
             del_only),
-        "standard_files": rsBlock( 
+        "Standard_Files": rsBlock(
             standard_file.StandardFile,
             standard_file.AddForm,
             del_only)
         }
 
 def default_add():
-    '''this is the function to add the object onto the system by 
+    '''this is the function to add the object onto the system by
     default (every re-initialization)'''
     from pkg.system.database import dbms #it is important to import this ONLY in the function
 

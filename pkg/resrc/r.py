@@ -1,5 +1,5 @@
 #--------------------------------------------------
-# r.py 
+# r.py
 # r is a power tool that allows creation of database
 # objects. r allows is the framework for object routes
 # so users will only need to worry about model definitions
@@ -95,7 +95,7 @@ def radd(dbtype,tablename):
                 try:
                     target_add.default_add_action()
                 except Exception as e:
-                    rollback_alldb() 
+                    rollback_alldb()
                     # rethrow the exception
                     raise ValueError(tablename,"default_add_action",str(e))
 
@@ -158,7 +158,7 @@ def rmod(dbtype,tablename,primaryKey):
         pass
     else:
         #generates the edit form
-        rmod_form = lkup[tablename].editform() 
+        rmod_form = lkup[tablename].editform()
 
     if(request.method=="POST"):
         res_model = lkup[tablename].model
@@ -326,7 +326,9 @@ def getFormAttrList(form_obj):
         elif a.startswith(rstruct.rgen_selkey):
             out[a[len(rstruct.rgen_selkey):]]=form_obj.__getattribute__(a).data
         elif a.startswith(rstruct.rgen_timkey):
-            out[a[len(rstruct.rgen_selkey):]]=form_obj.__getattribute__(a).data
+            out[a[len(rstruct.rgen_timkey):]]=form_obj.__getattribute__(a).data
+        elif a.startswith(rstruct.rgen_typebool):
+            out[a[len(rstruct.rgen_typebool):]]=True if form_obj.__getattribute__(a).data == '1' else False
         elif a.startswith(rstruct.rgen_actkey):
             form_action = form_obj.__getattribute__(a[len(rstruct.rgen_actkey):])
             if callable( form_action ):

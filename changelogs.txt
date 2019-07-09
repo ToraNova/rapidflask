@@ -98,3 +98,9 @@ update8  31/05/19---05:26pm
 [+ apikey tied to msgapi users
 [+ added mailing system (WIP)
 [$ Generalized mail server (perhaps a SMTP ?)
+
+update81 09/07/19---06:21pm
+[+ added MQTT msgstack processing mechanism
+[+ added generic image display
+[+ fixed some old bug on model (standard_log)
+[$ Generalized triggering model

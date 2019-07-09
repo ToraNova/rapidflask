@@ -25,6 +25,9 @@ from pkg.iface import sockemit
 from pkg.msgapi.mqtt.models import MQTT_Sub, MQTT_Msg,\
                             MQTT_Broker_Configuration
 
+# process table
+from pkg.msgapi.proc import proctab
+
 class RapidClientThread( threading.Thread ):
     '''runs a local client and subscribe to the msgsub
     databases's directive. uses the localuser account'''
@@ -32,6 +35,7 @@ class RapidClientThread( threading.Thread ):
     def __init__(self):
         threading.Thread.__init__(self)
         self.pub_ready = threading.Event()
+        self.pub_done = threading.Event()
         self.reset_client()
 
     def reset_client(self):
@@ -49,7 +53,7 @@ class RapidClientThread( threading.Thread ):
         self.addr = addr
         self.portn = portn
         self.pub_ready.clear()
-        self.pub_ready.clear()
+        self.pub_done.clear()
         self.runflag = False
 
     def refresh_subs(self):
@@ -60,13 +64,17 @@ class RapidClientThread( threading.Thread ):
         for s in sublist:
             res = client.subscribe( s.topic )
             if(res[0] == 0):
-                srvlog["oper"].info("LOCAL:RapidClient subscribed to topic:"+s.topic)
+                srvlog["oper"].info(\
+                        "LOCAL:RapidClient subscribed to topic:"+s.topic)
                 sockemit("/mqttctl","mqttqstat_cast",\
-                        {'statstring':"LOCAL:RapidClient subscribed to topic:"+s.topic},
-                        eroom='mqttctl')
+                        {'statstring':\
+                        "LOCAL:RapidClient subscribed to topic:"+s.topic
+                        },
+                    eroom='mqttctl')
                 client.sublist.append( s.topic )
             else:
-                srvlog["oper"].warning("LOCAL:RapidClient subscription failed:"+str(res))
+                srvlog["oper"].warning(\
+                        "LOCAL:RapidClient subscription failed:"+str(res))
 
 
     def status(self):
@@ -77,9 +85,15 @@ class RapidClientThread( threading.Thread ):
         #    "sublist:": self.
 
     def pubmsg(self, topic, msg):
+        #TODO: returns -1 when self.pub_done.wait(3) enabled
+        self.pub_rc = -1 #-1 indicate havent launch yet
+        self.pub_done.clear()
         self.pub_topic = topic
         self.pub_msg = msg
         self.pub_ready.set()
+        #TODO: why including this slows down the reply process ?
+        #self.pub_done.wait(3)
+        return 0
 
     def terminate(self):
         self.pub_topic = None
@@ -98,7 +112,8 @@ class RapidClientThread( threading.Thread ):
         if( not const.LOCAL_RQTT_EXTBROKE ):
             if(  ssl_en.config_value in ['True','true',1,'1'] ):
                 # TODO fix ssl error here
-                self.client.tls_set( ca_certs = const.SSL_CA, cert_reqs = ssl.CERT_REQUIRED,\
+                self.client.tls_set(\
+                        ca_certs = const.SSL_CA, cert_reqs = ssl.CERT_REQUIRED,\
                         tls_version=ssl.PROTOCOL_TLS)
         self.client.on_connect = on_connect
         self.client.on_disconnect = on_disconnect
@@ -106,7 +121,8 @@ class RapidClientThread( threading.Thread ):
         while True:
             # Inception-like self contained mega loopz
             self.client.connflag = False
-            self.client.username_pw_set(username=self.uname, password=self.passwd) #set auth
+            self.client.username_pw_set(\
+                    username=self.uname, password=self.passwd) #set auth
             while self.runflag: #try until stop running
                 try:
                     time.sleep(3)
@@ -114,9 +130,12 @@ class RapidClientThread( threading.Thread ):
                     break
                 except Exception as e:
                     print("[EX]",__name__," : ",\
-                        "Exception occurred while trying to connect to broker",str(e))
+                            "Exception occurred while trying "+\
+                            ":to connect to broker",\
+                        str(e))
                     srvlog["oper"].error(\
-                        "Exception occurred while trying to connect to broker on {}:{}."\
+                        "Exception occurred while trying to "+\
+                        "connect to broker on {}:{}."\
                         .format(self.addr,self.portn)+str(e))
                     time.sleep(3)
             sockemit("/mqttctl","mqttqstat_cast",\
@@ -133,17 +152,26 @@ class RapidClientThread( threading.Thread ):
 
             while self.runflag:
                 self.pub_ready.wait() #block and wait for msg
-                if(self.pub_topic is None and self.pub_msg is None):
-                    break
-                else:
-                    self.client.publish( self.pub_topic, self.pub_msg )
-                self.pub_topic.clear()
                 if( not self.client.connflag ):
                     while not self.client.connflag:
                         time.sleep(3)
                         sockemit("/mqttctl","mqttqstat_cast",\
-                                {'statstring':"LOCAL:RapidClient connection failed. retrying"},
+                                {'statstring':\
+                                "LOCAL:RapidClient connection failed. "+\
+                                " retrying"},
                                 eroom='mqttctl')
+                elif(self.pub_topic is None and self.pub_msg is None):
+                    break
+                else:
+                    #obtain the RC only,
+                    #ignores message id (return, message_id)
+                    self.pub_rc = self.client.publish(\
+                            self.pub_topic, self.pub_msg )[0]
+                    #sets the flag to indicate pub is complete
+                    self.pub_done.set()
+                #clears pub_ready flag to enable block again
+                self.pub_ready.clear()
+
             for ind,s in enumerate(self.client.sublist):
                 self.client.unsubscribe(s)
                 del self.client.sublist[ind]
@@ -170,19 +198,29 @@ def on_message(client, userdata, msg):
         srvlog["oper"].error(msg.topic+" is not registered but message received.")
         insert = {
                 "topic":msg.topic,
-                "msg":strpayload
+                "msg":strpayload,
+                "pflag0":False,
+                "pflag1":False
                 }
         utopm = MQTT_Msg( insert )
     else:
-        # Topic found. add and link
-        srvlog["oper"].info(msg.topic+":"+strpayload+" pushed to mqtt msgstack")
-        insert = {
-                "tlink":mtopic.id,
-                "topic":msg.topic,
-                "msg":strpayload
-                }
         try:
+            # doing this to make processing as instant as possible
+            insert = {}
+            if(mtopic.instantp and mtopic.onrecv is not None):
+                #instantly process
+                insert["pflag1"] = proctab[ mtopic.onrecv ](\
+                        mtopic.topic, strpayload )
+                insert["pflag0"] = True
+            else:
+                insert["pflag0"] = False
+                insert["pflag1"] = False
+            insert["tlink"] = mtopic.id
+            insert["topic"] = msg.topic
+            insert["msg"] = strpayload
             utopm = MQTT_Msg( insert )
+            # Topic found. add and link
+            srvlog["oper"].info(msg.topic+":"+strpayload+" pushed to mqtt msgstack")
         except Exception as e:
             print(str(e),traceback.format_exc())
     try:

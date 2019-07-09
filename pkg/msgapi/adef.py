@@ -34,19 +34,19 @@ from pkg.resrc.rstruct import rsBlock, del_only
 # This is only for msg/api dependent resources.
 ##########################################################
 r_defines = {
-        "mqttbroker_configs": rsBlock(
+        "MQTT_Broker_Configs": rsBlock(
             mqbrk.MQTT_Broker_Configuration,
             mqbrk.AddForm,
             mqbrk.AddForm),
-        "msgapi_users": rsBlock(
+        "Msgapi_Users": rsBlock(
             apiuser.Msgapi_User,
             apiuser.AddForm,
             apiuser.AddForm),
-        "mqttclient_subs": rsBlock(
+        "MQTT_Subs": rsBlock(
             mqsub.MQTT_Sub,
             mqsub.AddForm,
             mqsub.AddForm),
-        "mqttclient_msgs": rsBlock(
+        "MQTT_Msgs": rsBlock(
             mqmsg.MQTT_Msg,
             None,
             del_only)
@@ -56,7 +56,7 @@ def default_add():
 
     from pkg.system.database import dbms #it is important to import this ONLY in the function
     sub0 = mqsub.MQTT_Sub(\
-            {'topic':'ping/server','description':'For Ping purposes on the server MQTT client','stordur':60,'delonproc':True,'deloncas':True})
+            {'topic':'ping/server','description':'For Ping purposes on the server MQTT client','stordur':60,'delonproc':True,'deloncas':True,'instantp':True})
     dbms.msgapi.session.add(sub0)
 
     default_broker_config_list = [

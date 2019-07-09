@@ -1,8 +1,9 @@
 #--------------------------------------------------
-# process.py 
+# process.py
 # process the msgstack, a routine thread
 # initial use case is to delete messages
 # introduced 31/05/2019 (u8)
+# Currently not used atm
 #--------------------------------------------------
 
 # Standard import

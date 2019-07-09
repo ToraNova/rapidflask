@@ -13,6 +13,7 @@ rgen_keyword = "rgen_" #used to seek out form attributes
 rgen_selkey = "rgensel_" #used to seek out SelectField form attr
 rgen_timkey = "rgentim_"
 rgen_actkey = "rgenact_"
+rgen_typebool = "rgenbool_" #used to forced parsing as a boolean
 rlin_nullk = "-1"
 
 del_only = "DELONLY" #keyword for delete only objects (not modifiable but could be deleted)

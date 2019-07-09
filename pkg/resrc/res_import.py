@@ -36,6 +36,8 @@ from wtforms.validators import InputRequired, Email, Length, NumberRange
 
 from pkg.resrc.rstruct import rlin_nullk
 
+from pkg.msgapi.proc import proctab_sel
+
 #useful function for checking on null selections
 def checkNull(list,colName):
     if(list.get(colName) == rlin_nullk):
@@ -50,3 +52,6 @@ class NonValidatingSelectField(SelectField):
     """
     def pre_validate(self, form): #Override the validation
         pass
+
+boolchoice = [('1','True'),('0','False')]
+

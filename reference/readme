@@ -1,9 +1,0 @@
-The files in the reference directory are references from the past pyflask projects
-these files are from the original petabus/zfence projects and are removed from the
-server directory to allow for improvement. We do not want to continue building on
-failure.
-
-The methods here are highly deprecated and must not be repeated. They are only stored
-here for backward references and should not be copied !
-
-ToraNova 2019

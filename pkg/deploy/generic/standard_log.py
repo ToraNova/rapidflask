@@ -67,9 +67,9 @@ class StandardLog(r.Base):
         self.param1 = r.checkNull(insert_list,"param1")
         self.param2 = r.checkNull(insert_list,"param2")
 
-        self.param0 = insert_list["ref0"]
-        self.param1 = r.checkNull(insert_list,"ref1")
-        self.param2 = r.checkNull(insert_list,"ref2")
+        self.ref0 = insert_list["ref0"]
+        self.ref1 = r.checkNull(insert_list,"ref1")
+        self.ref2 = r.checkNull(insert_list,"ref2")
     ######################################################################################################
 
 # STANDARD LOG MODEL NOT MEANT TO BE ADDED MANUALLY BY HAND

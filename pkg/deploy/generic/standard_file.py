@@ -21,6 +21,12 @@ def retrieve_uploads(urlparam):
 	targetfile = StandardFile.query.filter( StandardFile.filename == urlparam ).first()
 	return send_file(os.path.join(r.const.STD_FILEDIR,targetfile.filename),mimetype=targetfile.mimetype)
 
+
+@bp.route('/screenshots/retrieve/<urlparam>')
+@login_required
+def retrieve_screenshots(urlparam):
+	return send_file(os.path.join(r.const.USS_FILEDIR,urlparam),mimetype="image/jpeg")
+
 class StandardFile(r.Base):
     # PERMA : DO NOT CHANGE ANYTHING HERE UNLESS NECESSARY
     id = r.Column(r.Integer, primary_key=True)

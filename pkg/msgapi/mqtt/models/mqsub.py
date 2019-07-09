@@ -22,11 +22,13 @@ class MQTT_Sub(Base):
     ######################################################################################################
     # TODO: DEFINE LIST OF COLUMNS
     # the string topic of the topic to subscribe to
-    topic = r.Column(r.String(r.lim.MAX_MQTT_TOPIC_SIZE), nullable=False, unique=True) 
+    topic = r.Column(r.String(r.lim.MAX_MQTT_TOPIC_SIZE), nullable=False, unique=True)
     description = r.Column(r.String(r.lim.MAX_DESCRIPTION_SIZE), nullable=True, unique=False)
     stordur = r.Column(r.Integer, nullable=True) #how long to store messages
     delonproc = r.Column(r.Boolean, nullable=False) #delete the messages after processing?
     deloncas = r.Column(r.Boolean, nullable=False) #delete all msg if the topics get deleted
+    instantp = r.Column(r.Boolean, nullable=False) #delete all msg if the topics get deleted
+    onrecv = r.Column(r.String, nullable=True) #instantly process message upon receive
 
     # TODO: DEFINE THE RLIST
     # CHANGED ON U6 : RLISTING NOW MERGED WITH RLINKING : see 'RLINKING _ HOW TO USE:'
@@ -38,7 +40,9 @@ class MQTT_Sub(Base):
     ("Description","description"),
     ("Store N seconds (None/Null = Forever)","stordur"),
     ("Delete on processed?","delonproc"),
-    ("Delete on cascade?","deloncas")
+    ("Delete on cascade?","deloncas"),
+    ("Instantly Process?","instantp"),
+    ("OnReceive Action","onrecv")
     ]) #header,row data
 
     # RLINKING _ HOW TO USE :
@@ -65,10 +69,12 @@ class MQTT_Sub(Base):
         self.topic = insert_list["topic"]
         self.delonproc = bool(insert_list["delonproc"])
         self.deloncas = bool(insert_list["deloncas"])
+        self.instantp = bool(insert_list["instantp"])
 
         #FOR nullable=True, use a the checkNull method
         self.description = r.checkNull(insert_list,"description")
         self.stordur = r.checkNull(insert_list,"stordur")
+        self.onrecv = r.checkNull(insert_list,"onrecv")
 
     def default_add_action(self):
         # This will be run when the table is added via r-add
@@ -103,8 +109,10 @@ class AddForm(r.FlaskForm):
     rgen_topic = r.StringField('MQTT Topic',validators=[ r.Length(max=r.lim.MAX_MQTT_TOPIC_SIZE) ] )
     rgen_description = r.TextAreaField('Description',validators=[r.Length(max=r.lim.MAX_DESCRIPTION_SIZE)])
     rgen_stordur = r.IntegerField('Store at most N seconds (leave empty to store forever)')
-    rgen_delonproc = r.SelectField('Delete messages after process?',choices=[('1','True'),('0','False')])
-    rgen_deloncas = r.SelectField('Delete messages on cascade?',choices=[('1','True'),('0','False')])
+    rgenbool_delonproc = r.SelectField('Delete messages after process?',choices=r.boolchoice)
+    rgenbool_deloncas = r.SelectField('Delete messages on cascade?',choices=r.boolchoice)
+    rgenbool_instantp = r.SelectField('Instantly process message?',choices=r.boolchoice)
+    rgen_onrecv = r.SelectField('OnReceive action',choices=r.proctab_sel)
 
 
 

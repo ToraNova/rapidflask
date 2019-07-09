@@ -36,6 +36,7 @@ TOKN_SYS = 'sysuser'
 # File upload directories
 STD_FILEDIR = 'uploads'
 CFG_FILEDIR = 'configs'
+USS_FILEDIR = 'screenshots' #screenshots
 
 # THREAD params
 # How long is the sleep time for killed threads
@@ -46,7 +47,7 @@ THREAD_DORMANT_WTIME = 10
 # Config file value obtainer
 # Read the config file and store their values here
 rcf = configparser.RawConfigParser()
-conf_file =os.path.join( CFG_FILEDIR,"rapid.conf" ) 
+conf_file =os.path.join( CFG_FILEDIR,"rapid.conf" )
 rcf.read( conf_file )
 BIND_ADDR = rcf.get('conn','hostaddr')
 try:
