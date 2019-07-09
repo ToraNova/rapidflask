@@ -47,7 +47,7 @@ stopping
 ### Please read the [changelogs](changelogs.txt)
 
 1. Incremental updates are by updates written like uxx where xx is the update number.
-2. Currently the project is on __u8__
+2. Currently the project is on __u81__
 3. Please replace the certificates in the certs/ directory upon deployment !
 
 ### [License](LICENSE)
