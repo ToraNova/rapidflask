@@ -103,4 +103,5 @@ update81 09/07/19---06:21pm
 [+ added MQTT msgstack processing mechanism
 [+ added generic image display
 [+ fixed some old bug on model (standard_log)
+[+ ls forms now available (allowing controlled querying)
 [$ Generalized triggering model

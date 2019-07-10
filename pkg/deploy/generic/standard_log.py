@@ -78,25 +78,39 @@ class StandardLog(r.Base):
 
 class LsForm(r.FlaskForm):
     # Forms to allow filtering
-    tv0_start = r.LenientDateTimeField(\
-            'TimeV0 From', widget=r.DatePickerWidget())
-    tv0_end = r.LenientDateTimeField(\
-            'TimeV0 To', widget=r.DatePickerWidget())
-    query_limit = r.IntegerField('Query Limit',validators=[r.InputRequired(),
-        r.NumberRange(min=0)],default=0)
+    #tv0_start = r.LenientDateTimeField(\
+    #        label='TimeV0 From', widget=r.DateTimePickerWidget(),\
+    #        default=datetime.date.today())
+    #tv0_end = r.LenientDateTimeField(\
+    #        label='TimeV0 To', widget=r.DateTimePickerWidget(),\
+    #        default=(datetime.date.today()+\
+    #        datetime.timedelta(hours = 23,minutes=59,seconds=59)))
+    tv0_start = r.DateField(\
+            'TimeV0 From  :', widget=r.DatePickerWidget(),\
+            format='%m/%d/%Y',\
+            default=datetime.date.today())
+    tv0_end = r.DateField(\
+            'TimeV0 Until :', widget=r.DatePickerWidget(),\
+            format='%m/%d/%Y',\
+            default=datetime.date.today()+\
+            datetime.timedelta(hours=23,minutes=59,seconds=59))
+    query_limit = r.IntegerField('Query Limit :',validators=\
+            [r.InputRequired(),r.NumberRange(min=0)],default=0)
+
+
 
     def getrawlist(self):
         print(self.tv0_start.data, self.tv0_end.data, self.query_limit.data)
         if(self.query_limit.data < 1):
             rawlist = StandardLog.query\
                     .filter(StandardLog.timev0 >= self.tv0_start.data)\
-                    .filter(StandardLog.timev0 <= self.tv0_end.data).all()
+                    .filter(StandardLog.timev0 <= (self.tv0_end.data\
+                    + datetime.timedelta(days = 1)) ).all()
         else:
             rawlist = StandardLog.query\
                     .filter(StandardLog.timev0 >= self.tv0_start.data)\
                     .filter(StandardLog.timev0 <= self.tv0_end.data)\
                     .limit(self.query_limit.data).all()
-        print(rawlist)
         return rawlist
 
 

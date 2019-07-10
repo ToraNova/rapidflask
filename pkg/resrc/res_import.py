@@ -23,7 +23,8 @@ from pkg import const
 from collections import OrderedDict
 import datetime
 #-----------------and the forms--this as well!--------------------------------
-from flask_admin.form.widgets import DatePickerWidget
+#from flask_admin.form.widgets import DateTimePickerWidget, DatePickerWidget # SEE BELOW
+from wtforms import widgets
 from flask_wtf import FlaskForm
 from flask_wtf import Form
 from flask_wtf.file import FileField
@@ -33,7 +34,7 @@ from wtforms import StringField, PasswordField, BooleanField
 from wtforms import SelectField, IntegerField, RadioField
 from wtforms import SubmitField, SelectMultipleField
 from wtforms import TextAreaField
-from wtforms.fields.html5 import DateField
+from wtforms.fields.html5 import DateField, DateTimeField
 from wtforms.validators import InputRequired, Email, Length, NumberRange
 ###############################################################################
 
@@ -97,3 +98,27 @@ class LenientDateTimeField(Field):
                 raise ValueError(self.gettext(message))
 
 
+class DatePickerWidget(widgets.TextInput):
+    """
+        Date picker widget.
+        You must include
+        bootstrap-datepicker.js and form-x.x.x.js for styling to work.
+    """
+    def __call__(self, field, **kwargs):
+        kwargs.setdefault('data-role', u'datepicker')
+        kwargs.setdefault('data-date-format', u'YYYY-MM-DD')
+
+        self.date_format = kwargs['data-date-format']
+        return super(DatePickerWidget, self).__call__(field, **kwargs)
+
+
+class DateTimePickerWidget(widgets.TextInput):
+    """
+        Datetime picker widget.
+        You must include
+        bootstrap-datepicker.js and form-x.x.x.js for styling to work.
+    """
+    def __call__(self, field, **kwargs):
+        kwargs.setdefault('data-role', u'datetimepicker')
+        kwargs.setdefault('data-date-format', u'YYYY-MM-DD HH:mm:ss')
+        return super(DateTimePickerWidget, self).__call__(field, **kwargs)

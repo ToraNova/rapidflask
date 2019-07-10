@@ -145,7 +145,6 @@ def rlist(dbtype,tablename):
             columnHead = mobj[0]
             match = mobj[1]
             prikey_match = mobj[2]
-            print("OK")
             return render_template('res/datalist1.html', dbtype = dbtype,\
                 colNum=len(columnHead),matches=match,\
                 columnHead=columnHead, tablename=tablename,\
