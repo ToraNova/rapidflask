@@ -24,9 +24,6 @@ out = Flask(__name__, instance_relative_config=True)
 out.config.from_mapping(
         SECRET_KEY = 'torabuilds',
         DATABASE = const.DB01_NAME,
-        SESSION_TYPE = "filesystem",
-        SESSION_FILE_DIR = "cache",
-        SESSION_FILE_THRESHOLD = 100,
         UPLOAD_FOLDER = 'uploads',
         MAIL_SERVER = 'smtp.gmail.com',
         MAIL_PORT = 587,
@@ -100,11 +97,6 @@ out_nonsock = out
 from flask_mail import Mail
 smail = Mail()
 smail.init_app( out_nonsock )
-#######################################
-# Sessions
-#from flask_session import Session
-#sess = Session()
-#sess.init_app( out_nonsock )
 #######################################
 # Socket io
 from flask_socketio import SocketIO

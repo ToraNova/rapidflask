@@ -105,7 +105,7 @@ class LsForm(r.FlaskForm):
             rawquery = rawquery.filter( StandardLog.timev0 >=\
                     self.tv0_start.data )
             rawquery = rawquery.filter( StandardLog.timev0 <=\
-                    self.tv0_start.data + datetime.timedelta(days=1))
+                    self.tv0_end.data + datetime.timedelta(days=1))
 
         if(self.query_limit.data > 0 ):
             rawquery = rawquery.limit(self.query_limit.data)

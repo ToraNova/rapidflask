@@ -16,6 +16,7 @@ from flask import Blueprint
 from werkzeug.security import generate_password_hash
 from flask_login import current_user,login_required
 from sqlalchemy import text
+from sqlalchemy.dialects import sqlite
 
 import pkg.const as const
 from pkg.system.database import dbms
@@ -35,6 +36,7 @@ from pkg.msgapi.adef import r_defines as a_defines
 # additional overheads
 import os
 import datetime
+import json
 
 # primary blueprint
 bp = Blueprint('resrc', __name__, url_prefix='/resrc')
@@ -59,6 +61,15 @@ def rollback_alldb():
     '''rollback all database (for default add/mod/del usecases)'''
     dbms.msgapi.session.rollback()
     dbms.deploy.session.rollback()
+
+def obtain_meta( dbtype ):
+    '''allows obtaining of base metadata'''
+    if(dbtype=='deploy'):
+        return dbms.deploy.metadata
+    elif(dbtype=='msgapi'):
+        return dbms.msgapi.metadata
+    else:
+        return None
 
 @bp.route('/radd/<dbtype>/<tablename>', methods=['GET','POST'])
 @a.admin_required
@@ -144,25 +155,36 @@ def rlist(dbtype,tablename):
         if resls_form.validate_on_submit():
             q = resls_form.getrawquery()
 
-        elif (session.get('query') is not None):
+        elif (session.get('query') is not None and session.get('param') is not None):
             # previous query is inplace
             q = session['query']
-            # TODO WARNING
+            qp = json.loads(session['param'])
             # THIS IS VERY DANGEROUS ! VULNERABLE TO SQLI -- ToraNova
             # But I have no choice to use this for the sake of convenience
             # Please look into
             # https://stackoverflow.com/questions/14845196/dynamically-constructing-filters-in-sqlalchemy
-            q = dbsess.query(lkup[tablename].model).from_statement( text(q) )
+            q = dbsess.query( lkup[tablename].model ).from_statement( text(q) ).params( qp )
 
         else:
             # await user query
+            crawq = "No Queries. Hit 'Query' to start"
             return render_template('res/datalist1.html', dbtype = dbtype,
                 colNum=0,matches=[],columnHead=[], tablename=tablename,
                 prikeyMatch=[],
                 data_table_name=display_tablename,
-                form = resls_form)
+                form = resls_form, dqstr = crawq)
 
-        session['query'] = str(q.with_labels().statement)
+        #session['query'] = str(q.with_labels().statement)
+        # SPECIAL THANKS TO
+        # https://stackoverflow.com/questions/4617291/how-do-i-get-a-raw-compiled-sql-query-from-a-sqlalchemy-expression
+        # crawq = str(q.statement.compile(compile_kwargs={"literal_binds": True}))
+        crawq = q.statement.compile(dialect=sqlite.dialect(paramstyle="named"))
+        crawq_str = str(crawq)
+        # Thanks again to
+        # https://stackoverflow.com/questions/11875770/how-to-overcome-datetime-datetime-not-json-serializable
+        crawq_params = json.dumps(crawq.params,cls=ExtendedEncoder)
+        session['query'] = crawq_str
+        session['param'] = crawq_params
         # FOR LS FORM SESSION/QUERY READY
         rawlist = q.all()
         mobj = getMatch(lkup,tablename,rawlist)
@@ -174,7 +196,7 @@ def rlist(dbtype,tablename):
             columnHead=columnHead, tablename=tablename,\
             prikeyMatch=prikey_match,\
             data_table_name=display_tablename,
-            form = resls_form)
+            form = resls_form, dqstr = crawq)
 
 
 @bp.route('/rmod/<dbtype>/<tablename>/<primaryKey>',methods=['GET','POST'])
@@ -411,3 +433,12 @@ def dynamicSelectorHandler(sqlresult,ref_elem):
         outList.append((str(elements.__getattribute__(elements.rlist_priKey)),elements.__getattribute__(ref_elem)))
 
     return outList
+
+class ExtendedEncoder(json.JSONEncoder):
+    "Allows for datetime json encoding u82"
+    def default(self, o):
+        if isinstance(o, datetime.datetime):
+            return o.isoformat()
+        if isinstance(o, datetime.date):
+            return o.isoformat()
+        return super().default(o)

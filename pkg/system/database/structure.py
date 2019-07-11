@@ -10,7 +10,7 @@ import pkg.const as const
 import os
 from pkg.system.servlog import srvlog
 # Use to define individual database
-DBstruct = namedtuple("DBstruct", ["engine","base","session","dbfile"])
+DBstruct = namedtuple("DBstruct", ["engine","metadata","session","base","dbfile"])
 
 # use to deifne a collective of databases
 DBMS = namedtuple("DBMS",["system","deploy","msgapi"])

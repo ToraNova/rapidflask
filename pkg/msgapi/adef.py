@@ -60,7 +60,7 @@ def default_add():
 
     from pkg.system.database import dbms #it is important to import this ONLY in the function
     sub0 = mqsub.MQTT_Sub(\
-            {'topic':'ping/server','description':'For Ping purposes on the server MQTT client','stordur':60,'delonproc':True,'deloncas':True,'instantp':True})
+            {'topic':'ping/server','description':'For Ping purposes on the server MQTT client','stordur':60,'delonproc':True,'deloncas':True,'instantp':True,"onrecv":"echolog"})
     dbms.msgapi.session.add(sub0)
 
     default_broker_config_list = [

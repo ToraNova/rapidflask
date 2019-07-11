@@ -105,3 +105,8 @@ update81 09/07/19---06:21pm
 [+ fixed some old bug on model (standard_log)
 [+ ls forms now available (allowing controlled querying)
 [$ Generalized triggering model
+
+update82 11/07/19---04:43pm
+[+ improved lsform mechanism (now queries are remembered)
+[+ datetime json serializable for queries
+[+ lsform now can use rgensel mechanism (example in standard_log.py)

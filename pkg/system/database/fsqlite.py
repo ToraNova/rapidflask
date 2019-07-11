@@ -5,7 +5,7 @@
 # introduced 8/12/2018
 #--------------------------------------------------
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 import pkg.const as const
@@ -21,13 +21,14 @@ from pkg.system.database.structure import DBstruct, DBMS, create_db, remove_db
 # Please implement this for all db systems
 def constrEngine(dbfile):
     engine = create_engine('sqlite:///'+dbfile,convert_unicode=True)
+    metadata = MetaData(bind=engine)
     session = scoped_session(sessionmaker(autocommit=False,autoflush=False,bind=engine))
     base = declarative_base()
     base.query = session.query_property()
-    return DBstruct(engine, base, session, dbfile )
+    return DBstruct(engine, metadata, session, base, dbfile )
 
 # the dbms object is the most important element, please declare and fill it correctly
-dbms = DBMS( 
+dbms = DBMS(
         constrEngine( const.DB00_NAME ),
         constrEngine( const.DB01_NAME ),
         constrEngine( const.DB02_NAME )
