@@ -6,15 +6,18 @@
 # pa -S python-virtualenv
 # pa -S python-pip
 
-echo "Setting up virtualenv"
-virtualenv .
+skip=0
+virtualenv . || (echo "Please install Python VirtualEnv with your package manager first."; skip=1)
 
-. bin/activate
-pip3 install flask flask-admin flask-login flask-wtf flask-mail flask-socketio
-pip3 install paho-mqtt sqlalchemy gevent eventlet
+echo $skip
+if [ ${skip} == 0 ];then
+	echo "Setting up virtualenv"
+	. bin/activate
+	pip3 install flask flask-admin flask-login flask-wtf flask-mail flask-socketio
+	pip3 install paho-mqtt sqlalchemy gevent
+	yes | ./reset.sh
+	deactivate
+fi
 
-yes | ./reset.sh
-
-deactivate
 # deprecated packages
-# flask_bootstrap, socketio
+# flask_bootstrap, socketio, eventlet, flask_session

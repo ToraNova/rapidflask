@@ -26,7 +26,6 @@ Ubuntu (Please install mosquitto from source or other means gpgkey etc..)
 	pip3 install sqlalchemy
 	pip3 install paho-mqtt
 	pip3 install gevent
-	pip3 install eventlet
 
 ## Running (virtualenv)
 
