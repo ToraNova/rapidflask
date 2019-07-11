@@ -23,7 +23,6 @@ Ubuntu (Please install mosquitto from source or other means gpgkey etc..)
 	pip3 install flask_admin
 	pip3 install flask_mail
 	pip3 install flask_socketio
-	pip3 install flask_session
 	pip3 install sqlalchemy
 	pip3 install paho-mqtt
 	pip3 install gevent

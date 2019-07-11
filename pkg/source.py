@@ -102,8 +102,8 @@ smail = Mail()
 smail.init_app( out_nonsock )
 #######################################
 # Sessions
-from flask_session import Session
-sess = Session()
+#from flask_session import Session
+#sess = Session()
 #sess.init_app( out_nonsock )
 #######################################
 # Socket io
