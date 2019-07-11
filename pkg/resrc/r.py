@@ -9,12 +9,13 @@
 
 #flask routing imports
 from flask import render_template, redirect, url_for
-from flask import request, abort
+from flask import request, abort, session
 from flask import Blueprint
 
 #flask security import
 from werkzeug.security import generate_password_hash
 from flask_login import current_user,login_required
+from sqlalchemy import text
 
 import pkg.const as const
 from pkg.system.database import dbms
@@ -139,18 +140,20 @@ def rlist(dbtype,tablename):
             data_table_name=display_tablename)
     else:
         resls_form = lkup[tablename].lsform() #creates an LS FORM
+
         if resls_form.validate_on_submit():
-            rawlist = resls_form.getrawlist()
-            mobj = getMatch(lkup,tablename,rawlist)
-            columnHead = mobj[0]
-            match = mobj[1]
-            prikey_match = mobj[2]
-            return render_template('res/datalist1.html', dbtype = dbtype,\
-                colNum=len(columnHead),matches=match,\
-                columnHead=columnHead, tablename=tablename,\
-                prikeyMatch=prikey_match,\
-                data_table_name=display_tablename,
-                form = resls_form)
+            q = resls_form.getrawquery()
+
+        elif (session.get('query') is not None):
+            # previous query is inplace
+            q = session['query']
+            # TODO WARNING
+            # THIS IS VERY DANGEROUS ! VULNERABLE TO SQLI -- ToraNova
+            # But I have no choice to use this for the sake of convenience
+            # Please look into
+            # https://stackoverflow.com/questions/14845196/dynamically-constructing-filters-in-sqlalchemy
+            q = dbsess.query(lkup[tablename].model).from_statement( text(q) )
+
         else:
             # await user query
             return render_template('res/datalist1.html', dbtype = dbtype,
@@ -158,6 +161,20 @@ def rlist(dbtype,tablename):
                 prikeyMatch=[],
                 data_table_name=display_tablename,
                 form = resls_form)
+
+        session['query'] = str(q.with_labels().statement)
+        # FOR LS FORM SESSION/QUERY READY
+        rawlist = q.all()
+        mobj = getMatch(lkup,tablename,rawlist)
+        columnHead = mobj[0]
+        match = mobj[1]
+        prikey_match = mobj[2]
+        return render_template('res/datalist1.html', dbtype = dbtype,\
+            colNum=len(columnHead),matches=match,\
+            columnHead=columnHead, tablename=tablename,\
+            prikeyMatch=prikey_match,\
+            data_table_name=display_tablename,
+            form = resls_form)
 
 
 @bp.route('/rmod/<dbtype>/<tablename>/<primaryKey>',methods=['GET','POST'])
@@ -269,7 +286,8 @@ def getMatch(rstype,tablename,rawlist=None):
                     refFKey = refFKey[:refFKey.find(':')]
                     refLook = reslist[key].split(':')[1]
                     refEntClass = rstype[refTable].model
-                    if(entry.__getattribute__(rkey) != None):
+                    if(entry.__getattribute__(rkey) is not None or\
+                            entry.__getattribute__(rkey) != rstruct.rlin_nullk):
                         coltmp["data"] = refEntClass.query.filter(
                             getattr(refEntClass,refFKey) ==
                             entry.__getattribute__(rkey)
@@ -292,8 +310,14 @@ def getMatch(rstype,tablename,rawlist=None):
                 try:
                     tformat = reslist[key].split('/')[1]
                     timedat = reslist[key].split('/')[2]
-                    if( entry.__getattribute__(timedat) != None ):
-                        coltmp["data"] = entry.__getattribute__(timedat).strftime(tformat)
+                    tval = entry.__getattribute__(timedat)
+                    if( tval is not None ):
+                        if( isinstance(tval, str) ):
+                            #REFORMAT TIME
+                            coltmp["data"] = datetime.datetime.strptime(tval,"%Y-%m-%d %H:%M:%S.%f")\
+                                            .strftime(tformat)
+                        elif( isinstance(tval, datetime.datetime) ):
+                            coltmp["data"] = tval.strftime(tformat)
                     else:
                         coltmp["data"] = "Null (No data)"
                 except Exception as e:
@@ -382,8 +406,8 @@ def dynamicSelectorHandler(sqlresult,ref_elem):
     the last two into a string and spits a list of 2-tuples used together with
     getattr(form,sfield).choices = dynamicSelectorHandler(query_all result,which element)'''
     outList = []
+    outList.append((rstruct.rlin_nullk,'No Link'))
     for elements in sqlresult:
         outList.append((str(elements.__getattribute__(elements.rlist_priKey)),elements.__getattribute__(ref_elem)))
 
-    outList.append((rstruct.rlin_nullk,'No Link'))
     return outList

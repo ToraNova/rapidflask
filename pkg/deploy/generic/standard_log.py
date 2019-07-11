@@ -46,8 +46,8 @@ class StandardLog(r.Base):
     ("Ref1","ref1"),
     ("Ref2","ref2"),
     ("Time v0","__time__/%b-%d-%Y %H:%M:%S/timev0"),
-    ("Time v1","timev1"),
-    ("Time v2","timev2")
+    ("Time v1","__time__/%b-%d-%Y/timev1"),
+    ("Time v2","__time__/%H:%M:%S/timev2")
     ]) #header,row data
 
     # TODO: DEFINE THE priKey and display text
@@ -85,6 +85,7 @@ class LsForm(r.FlaskForm):
     #        label='TimeV0 To', widget=r.DateTimePickerWidget(),\
     #        default=(datetime.date.today()+\
     #        datetime.timedelta(hours = 23,minutes=59,seconds=59)))
+    tv0_ignore = r.SelectField("TimeV0 Ignore?",choices=[("1","Yes"),("0","No")])
     tv0_start = r.DateField(\
             'TimeV0 From  :', widget=r.DatePickerWidget(),\
             format='%m/%d/%Y',\
@@ -97,23 +98,49 @@ class LsForm(r.FlaskForm):
     query_limit = r.IntegerField('Query Limit :',validators=\
             [r.InputRequired(),r.NumberRange(min=0)],default=0)
 
+    def getrawquery(self):
+        rawquery = StandardLog.query
+
+        if(self.tv0_ignore.data == "0"):
+            rawquery = rawquery.filter( StandardLog.timev0 >=\
+                    self.tv0_start.data )
+            rawquery = rawquery.filter( StandardLog.timev0 <=\
+                    self.tv0_start.data + datetime.timedelta(days=1))
+
+        if(self.query_limit.data > 0 ):
+            rawquery = rawquery.limit(self.query_limit.data)
+
+        return rawquery
 
 
-    def getrawlist(self):
-        print(self.tv0_start.data, self.tv0_end.data, self.query_limit.data)
-        if(self.query_limit.data < 1):
-            rawlist = StandardLog.query\
-                    .filter(StandardLog.timev0 >= self.tv0_start.data)\
-                    .filter(StandardLog.timev0 <= (self.tv0_end.data\
-                    + datetime.timedelta(days = 1)) ).all()
-        else:
-            rawlist = StandardLog.query\
-                    .filter(StandardLog.timev0 >= self.tv0_start.data)\
-                    .filter(StandardLog.timev0 <= self.tv0_end.data)\
-                    .limit(self.query_limit.data).all()
-        return rawlist
-
-
-
-
+# LS FORMS MAY ALSO ALLOW rgensel!
+#import pkg.resrc.rstruct as rstruct
+#class LsForm(r.FlaskForm):
+#
+#
+#    branch = r.NonValidatingSelectField("Branch",choices=[(0,"All Branches"),\
+#        (1,"Branch 1 (G-SENSOR)"),(2,"Branch 2 (G-SENSOR)"),\
+#        (3,"Branch 3 (P-RADAR)"),(4,"Branch 4 (P-RADAR)")])
+#    rgensel_rpi_id = r.NonValidatingSelectField("Box Name",choices=['0','NA'])
+#    query_limit = r.IntegerField('Query Limit :',validators=\
+#            [r.InputRequired(),r.NumberRange(min=0)],default=0)
+#
+#    fKeylist = {"rpi_id":("Segment_Hosts","sn_name")}
+#
+#    def getrawlist(self):
+#
+#        rawlist = GFElement.query
+#
+#        if( int(self.branch.data) > 0):
+#            rawlist = rawlist.filter( GFElement.branch_n == self.branch.data )
+#
+#        if( self.rgensel_rpi_id.data != rstruct.rlin_nullk ):
+#            rawlist = rawlist.filter( GFElement.rpi_id == self.rgensel_rpi_id.data )
+#
+#        if(self.query_limit.data > 0):
+#            rawlist = rawlist.limit( self.query_limit.data)
+#
+#        rawlist = rawlist.all()
+#
+#        return rawlist
 

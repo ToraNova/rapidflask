@@ -16,6 +16,7 @@
 /tokens/*
 /tokens/sysuser/*
 /pkg/uploads/*
+/cache/*
 
 # except all .gitkeep
 !*.gitkeep
