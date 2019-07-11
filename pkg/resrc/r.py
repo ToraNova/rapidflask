@@ -151,6 +151,7 @@ def rlist(dbtype,tablename):
             data_table_name=display_tablename)
     else:
         resls_form = lkup[tablename].lsform() #creates an LS FORM
+        resls_form = regenerateForm(lkup,resls_form,None)
 
         if resls_form.validate_on_submit():
             q = resls_form.getrawquery()
@@ -308,8 +309,8 @@ def getMatch(rstype,tablename,rawlist=None):
                     refFKey = refFKey[:refFKey.find(':')]
                     refLook = reslist[key].split(':')[1]
                     refEntClass = rstype[refTable].model
-                    if(entry.__getattribute__(rkey) is not None or\
-                            entry.__getattribute__(rkey) != rstruct.rlin_nullk):
+                    if(entry.__getattribute__(rkey) is not None and\
+                            str(entry.__getattribute__(rkey)) != rstruct.rlin_nullk):
                         coltmp["data"] = refEntClass.query.filter(
                             getattr(refEntClass,refFKey) ==
                             entry.__getattribute__(rkey)
