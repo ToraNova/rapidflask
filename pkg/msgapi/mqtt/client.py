@@ -224,11 +224,18 @@ def on_message(client, userdata, msg):
         except Exception as e:
             print(str(e),traceback.format_exc())
     try:
-        # add and commit
-        dbms.msgapi.session.add( utopm )
-        dbms.msgapi.session.commit()
-        print("[MQ]",__name__," : ","Pushed [{}]{} onto MQTT msgstack".format(\
-                msg.topic,strpayload))
+        if utopm.pflag0 and mtopic.delonproc:
+            # skip insertion as it is already processed
+            # TODO: thinking if we insert it still if process has failed
+            pass
+            print("[MQ]",__name__," : ","Processed [{}]{}. MSG not pushed (delonproc)".format(\
+                    msg.topic,strpayload))
+        else:
+            # add and commit
+            dbms.msgapi.session.add( utopm )
+            dbms.msgapi.session.commit()
+            print("[MQ]",__name__," : ","Pushed [{}]{} onto MQTT msgstack".format(\
+                    msg.topic,strpayload))
     except Exception as e:
         # ROllback any changes
         print("[EX]",__name__," : ","Exception has occurred while pushing to mqtt msgstack",\
