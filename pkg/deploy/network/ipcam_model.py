@@ -24,6 +24,7 @@ class IPCameraModel(r.Base):
     model_name = r.Column(r.String(r.lim.MAX_USERNAME_SIZE), nullable=False, unique=True)
     ffmpeg_url = r.Column(r.String(r.lim.MAX_DESCRIPTION_SIZE), nullable=False, unique=False)
     jpgcap_url = r.Column(r.String(r.lim.MAX_DESCRIPTION_SIZE), nullable=False, unique=False)
+    webproto = r.Column(r.String(10),nullable=False,unique=False)
     def_uname = r.Column(r.String(r.lim.MAX_USERNAME_SIZE),nullable=True,unique=False)
     def_upass = r.Column(r.String(r.lim.MAX_PASSWORD_SIZE),nullable=True,unique=False)
     description = r.Column(r.String(r.lim.MAX_DESCRIPTION_SIZE), nullable=True, unique=False)
@@ -38,6 +39,7 @@ class IPCameraModel(r.Base):
     ("FFMPEG","ffmpeg_url"),
     ("JPEG","jpgcap_url"),
     ("Description","description"),# __link__ is a reserved keyword
+    ("Access protocol","webproto"),
     ("Access username (default)","def_uname"),
     ("Access password (default)","def_upass")
     ]) #header,row data
@@ -62,6 +64,7 @@ class IPCameraModel(r.Base):
         self.model_name = insert_list["model_name"]
         self.ffmpeg_url = insert_list["ffmpeg_url"]
         self.jpgcap_url = insert_list["jpgcap_url"]
+        self.webproto = insert_list["webproto"]
 
         self.def_uname = r.checkNull(insert_list,"def_uname")
         self.def_upass = r.checkNull(insert_list,"def_upass")
@@ -85,6 +88,7 @@ class AddForm(r.FlaskForm):
     rgen_jpgcap_url = r.StringField('JPEG CAPTURE URL',
     validators=[r.InputRequired(),r.Length(min=1,max=r.lim.MAX_DESCRIPTION_SIZE)])
 
+    rgen_webproto = r.StringField('Camera Access Protocol',validators=[r.InputRequired(),r.Length(min=1,max=10)],default="http")
     rgen_def_uname = r.StringField('Camera Access Username',
     validators=[r.Length(min=4,max=r.lim.MAX_USERNAME_SIZE)])
     rgen_def_upass = r.StringField('Camera Access Password',
@@ -103,6 +107,7 @@ class EditForm(r.FlaskForm):
     rgen_jpgcap_url = r.StringField('JPEG CAPTURE URL',
     validators=[r.InputRequired(),r.Length(min=1,max=r.lim.MAX_DESCRIPTION_SIZE)])
 
+    rgen_webproto = r.StringField('Camera Access Protocol',validators=[r.InputRequired(),r.Length(min=1,max=10)])
     rgen_def_uname = r.StringField('Camera Access Username',
     validators=[r.Length(min=4,max=r.lim.MAX_USERNAME_SIZE)])
     rgen_def_upass = r.StringField('Camera Access Password',
