@@ -57,6 +57,7 @@ class TODO_SAMPLE(r.Base):
     #this primary key is used for rlisting/adding and mod.
     rlist_priKey = "id"
     rlist_dis = "Geopoints" #display for r routes
+    rmod_nodel = False # Set to true to disable R from deleting it
 
     # TODO: CONSTRUCTOR DEFINES, PLEASE ADD IN ACCORDING TO COLUMNS
     # the key in the insert_list must be the same as the column var name

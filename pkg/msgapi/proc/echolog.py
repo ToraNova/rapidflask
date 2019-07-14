@@ -12,6 +12,7 @@
 #--------------------------------------------------
 
 from pkg.system.database import dbms
+from pkg.system.servlog import srvlog
 
 def exec(topic, msg):
     from __main__ import global_rqttclient

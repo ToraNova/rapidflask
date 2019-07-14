@@ -18,6 +18,7 @@ rlin_nullk = "-1"
 
 del_only = "DELONLY" #keyword for delete only objects (not modifiable but could be deleted)
 all_only = "ALLONLY" #keyword for objects that cannot be queried (list all upon a rlist)
+nodel_at = "rmod_nodel" #keyword used as object attribute to indicate R may not delete it
 ##########################################################
 
 from collections import namedtuple

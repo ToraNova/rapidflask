@@ -232,15 +232,21 @@ def rmod(dbtype,tablename,primaryKey):
                     == primaryKey ).first()
             if callable( getattr(target_del, "default_del_action", None) ):
                 try:
-                    target_del.default_del_action()
+                    dda = target_del.default_del_action()
                 except Exception as e:
                     rollback_alldb()
                     # rethrow exception
                     raise ValueError(tablename,"default_del_action",primaryKey,str(e))
 
-            dbsess.delete(target_del)
-            dbsess.commit()
-            return redirect(url_for('resrc.rlist',dbtype=dbtype,tablename=tablename))
+            if getattr( target_del, rstruct.nodel_at, False):
+                # NO DELETION
+                return render_template("errors/error.html",
+                    error_title="Delete Failure",
+                    error_message="This resource cannot be deleted!")
+            else:
+                dbsess.delete(target_del)
+                dbsess.commit()
+                return redirect(url_for('resrc.rlist',dbtype=dbtype,tablename=tablename))
 
         elif(request.form["button"]=="Modify"):
             #MODIFY PROCEDURE
@@ -310,7 +316,7 @@ def getMatch(rstype,tablename,rawlist=None):
                     refLook = reslist[key].split(':')[1]
                     refEntClass = rstype[refTable].model
                     if(entry.__getattribute__(rkey) is not None and\
-                            str(entry.__getattribute__(rkey)) != rstruct.rlin_nullk):
+                        str(entry.__getattribute__(rkey)) != rstruct.rlin_nullk):
                         coltmp["data"] = refEntClass.query.filter(
                             getattr(refEntClass,refFKey) ==
                             entry.__getattribute__(rkey)
