@@ -161,12 +161,20 @@
 			$("#localrqtt_sidepanel")
 			.append("<div class='col-md-10 col-sm-10 col-xs-10'"+
 			"style='background-color:#11bb11;color:#000000;padding:5px'>"+
-			"Client Status : Connected with RC "+msg.client_rc+"</div>");
+			"Client Status : Connected with RC "+msg.client_rc+
+			" SSL("+msg.client_ssl+")</div>"+
+			"<div class='col-md-10 col-sm-10 col-xs-10'"+
+			"style='background-color:#11bb11;color:#000000;padding:5px'>"+
+			"Client Login : "+msg.client_login+"</div>");
 			}else{
 			$("#localrqtt_sidepanel")
 			.append("<div class='col-md-10 col-sm-10 col-xs-10'"+
 			"style='background-color:#bb1111;color:#000000;padding:5px'>"+
-			"Client Status : Not Connected with RC "+msg.client_rc+"</div>");
+			"Client Status : Not Connected with RC "+msg.client_rc+
+			" SSL("+msg.client_ssl+")</div>"+
+			"<div class='col-md-10 col-sm-10 col-xs-10'"+
+			"style='background-color:#11bb11;color:#000000;padding:5px'>"+
+			"Client Login : "+msg.client_login+"</div>");
 			}
 
 			$("#localrqtt_sidepanel")

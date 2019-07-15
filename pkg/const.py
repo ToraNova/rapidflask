@@ -75,6 +75,7 @@ try:
 except Exception as e:
     print("[ER]",__name__," : ","Exception occured while parsing port number.",str(e))
     LOCAL_RQTT_PORT = 1883 # fallback default port
+LOCAL_RQTT_ANON = rcf.get('local_rqtt','local_rqtt_anon') == '1'
 LOCAL_RQTT_USERNAME = rcf.get('local_rqtt','local_rqtt_username')
 LOCAL_RQTT_PASSWORD = rcf.get('local_rqtt','local_rqtt_password')
 LOCAL_RQTT_EXTBROKE = rcf.get('local_rqtt','local_rqtt_extbroker') == '1'

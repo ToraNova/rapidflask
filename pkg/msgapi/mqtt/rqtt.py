@@ -1,7 +1,7 @@
 #--------------------------------------------------
 # rqtt.py
 # this file allows generic mqtt calls to the system
-# rqtt is to prevent name collisions 
+# rqtt is to prevent name collisions
 # RapidFlasks's mqtt system - rqtt
 # introduced 19/05/2019 (u8)
 #--------------------------------------------------
@@ -48,7 +48,7 @@ def servicectl():
             socket_io_proto = const.SOCKET_IO_PROTO)
 
 class MQTTCTLNamespace(Namespace):
-    '''This class is currently used to display broker logs 
+    '''This class is currently used to display broker logs
     as like a pseudo terminal on the web application
     MQTTCTL - mqtt broker control namespace'''
 
@@ -76,6 +76,8 @@ class MQTTCTLNamespace(Namespace):
             repstatpack["client_up"] = global_rqttclient.runflag
             repstatpack["client_cn"] = global_rqttclient.client.connflag
             repstatpack["client_rc"] = global_rqttclient.client.connrc
+            repstatpack["client_login"] = global_rqttclient.lgn_idn
+            repstatpack["client_ssl"] = global_rqttclient.ssl_en
             repstatpack["lastmsg"] = global_rqttclient.client.lastmsg
             repstatpack["topics"] = global_rqttclient.client.sublist
             repstatpack["metacomment"] = "Local RQTT Enabled"
@@ -113,8 +115,12 @@ class MQTTCTLNamespace(Namespace):
                     password = const.LOCAL_RQTT_PASSWORD
 
                 if(const.BROKER_ENABLE and not const.LOCAL_RQTT_EXTBROKE):
-                    portn = MQTT_Broker_Configuration.query.filter(
+                    portn = MQTT_Broker_Configuration.query.filter(\
                             MQTT_Broker_Configuration.config_name == "port").one()
+                    ssl_en = MQTT_Broker_Configuration.query.filter(\
+                            MQTT_Broker_Configuration.config_name == "use_ssl").one()
+                    ano_en = MQTT_Broker_Configuration.query.filter(\
+                            MQTT_Broker_Configuration.config_name == "allow_anonymous").one()
                     try:
                         iportn = int(portn.config_value)
                         portn = iportn
@@ -125,13 +131,13 @@ class MQTTCTLNamespace(Namespace):
                                 portn.config_name, portn.config_value))
                         portn = const.LOCAL_RQTT_PORT #fallback
                     addrn = "127.0.0.1" #localhost loopback
-
                 else:
                     portn = const.LOCAL_RQTT_PORT
                     addrn = const.LOCAL_RQTT_ADDR
                 # reload config
                 global_rqttclient.load_config( lu.username, lu.access_key,\
                         addrn, portn)
+                global_rqttclient.broker_set_config( ssl_en.config_value, ano_en.config_value )
                 # start the rqtt client
                 global_rqttclient.rerun()
             else:
@@ -152,6 +158,7 @@ class MQTTCTLNamespace(Namespace):
                 from __main__ import global_rqttclient
                 if( not global_rqttclient.runflag ):
                     emit('mqttqstat_cast',{'statstring':'local rqtt already not running.'})
+                    # TODO proceed to terminate as well ?
                     return
                 global_rqttclient.terminate()
             else:

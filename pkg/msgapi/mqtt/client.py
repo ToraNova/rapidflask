@@ -37,12 +37,17 @@ class RapidClientThread( threading.Thread ):
         self.pub_ready = threading.Event()
         self.pub_done = threading.Event()
         self.reset_client()
+        self.lgn_idn="Anonymous"
 
     def reset_client(self):
         self.client = mqtt.Client() #client creation
         self.client.sublist = []
         self.client.lastmsg = "No last message yet"
         self.client.connrc = 'NA'
+        self.client.on_connect = on_connect
+        self.client.on_disconnect = on_disconnect
+        self.client.on_message = on_message
+        self.client.connflag = False
 
     def load_config(self, uname, passwd, addr, portn ):
         '''allows uname, passwd and portn to be loaded and
@@ -55,6 +60,20 @@ class RapidClientThread( threading.Thread ):
         self.pub_ready.clear()
         self.pub_done.clear()
         self.runflag = False
+
+    def __sload_config(self):
+        '''self loading on new configuration values. this
+        function should only be called by the thread obj
+        not sure if this is useful for now ?'''
+        self.load_config( const.LOCAL_RQTT_USERNAME,\
+                const.LOCAL_RQTT_PASSWORD, const.LOCAL_RQTT_ADDR,\
+                const.LOCAL_RQTT_PORT )
+
+    def broker_set_config(self, co_ssl_en, co_ano_en):
+        '''used externally to set the ssl_en and ano_en
+        variables'''
+        self.ssl_en = co_ssl_en
+        self.ano_en = co_ano_en
 
     def refresh_subs(self):
         for s in self.client.sublist:
@@ -75,7 +94,6 @@ class RapidClientThread( threading.Thread ):
             else:
                 srvlog["oper"].warning(\
                         "LOCAL:RapidClient subscription failed:"+str(res))
-
 
     def status(self):
         pass
@@ -106,23 +124,35 @@ class RapidClientThread( threading.Thread ):
 
     def run(self):
         self.runflag = True
-
-        ssl_en = MQTT_Broker_Configuration.query.filter(\
-                MQTT_Broker_Configuration.config_name == "use_ssl").one()
-        if( not const.LOCAL_RQTT_EXTBROKE ):
-            if(  ssl_en.config_value in ['True','true',1,'1'] ):
-                # TODO fix ssl error here
-                self.client.tls_set(\
-                        ca_certs = const.SSL_CA, cert_reqs = ssl.CERT_REQUIRED,\
-                        tls_version=ssl.PROTOCOL_TLS)
-        self.client.on_connect = on_connect
-        self.client.on_disconnect = on_disconnect
-        self.client.on_message = on_message
         while True:
             # Inception-like self contained mega loopz
-            self.client.connflag = False
-            self.client.username_pw_set(\
-                    username=self.uname, password=self.passwd) #set auth
+            # reimport for refreshed config
+            self.lgn_idn="Anonymous"
+            self.reset_client()
+            if( not const.LOCAL_RQTT_EXTBROKE ):
+                # Connect to local mosquitto
+                if(self.ssl_en in ['True','true',1,'1']):
+                    self.client.tls_set(\
+                            ca_certs = const.SSL_CA, cert_reqs = ssl.CERT_REQUIRED,\
+                            tls_version=ssl.PROTOCOL_TLS)
+
+                if(self.ano_en in ['False','false',0,'0']):
+                    self.client.username_pw_set(\
+                            username=self.uname, password=self.passwd) #set auth
+                    self.lgn_idn=self.uname
+
+            else:
+                # External brokers
+                if( not const.LOCAL_RQTT_ANON ):
+                    self.client.username_pw_set(\
+                            username=self.uname, password=self.passwd) #set auth
+                    self.lgn_idn=self.uname
+
+            sockemit("/mqttctl","mqttqstat_cast",\
+                    {'statstring':"LOCAL:RapidClient starting (ssl:%s, login:%s)" %\
+                    (self.ssl_en, self.lgn_idn)},\
+                    eroom='mqttctl')
+
             while self.runflag: #try until stop running
                 try:
                     time.sleep(3)
@@ -138,22 +168,16 @@ class RapidClientThread( threading.Thread ):
                         "connect to broker on {}:{}."\
                         .format(self.addr,self.portn)+str(e))
                     time.sleep(3)
-            sockemit("/mqttctl","mqttqstat_cast",\
-                    {'statstring':"LOCAL:RapidClient starting"}, \
-                    eroom='mqttctl')
 
             self.client.loop_start()
-            while not self.client.connflag:
+            while not self.client.connflag and self.runflag:
                 #wait until client is connected
                 time.sleep(3)
-                if( not self.runflag ):
-                    #exit immediately
-                    return
 
             while self.runflag:
                 self.pub_ready.wait() #block and wait for msg
                 if( not self.client.connflag ):
-                    while not self.client.connflag:
+                    while not self.client.connflag and self.runflag:
                         time.sleep(3)
                         sockemit("/mqttctl","mqttqstat_cast",\
                                 {'statstring':\
@@ -172,13 +196,9 @@ class RapidClientThread( threading.Thread ):
                 #clears pub_ready flag to enable block again
                 self.pub_ready.clear()
 
-            for ind,s in enumerate(self.client.sublist):
-                self.client.unsubscribe(s)
-                del self.client.sublist[ind]
+            self.client.sublist = []
             self.client.loop_stop()
             self.client.disconnect()
-            self.client.connrc = "NA"
-            self.client.connflag = False
             sockemit("/mqttctl","mqttqstat_cast",\
                     {'statstring':"LOCAL:RapidClient stopped"},
                     eroom='mqttctl')
@@ -262,10 +282,10 @@ def on_connect(client, userdata, flags, rc):
     elif(rc == 5):
         srvlog["oper"].warning("LOCAL:RapidClient unauthorized connection to broker")
 
-
 def on_disconnect(client, userdata, rc):
     client.connflag = False
     client.connrc = str(rc)
+    client.sublist = [] #remove all subs
     srvlog["oper"].info("LOCAL:RapidClient disconnected rc:"+str(rc))
     sockemit("/mqttctl","mqttqstat_cast",\
             {'statstring':"LOCAL:RapidClient disconnected rc:"+str(c)},

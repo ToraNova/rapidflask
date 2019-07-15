@@ -96,8 +96,12 @@ if __name__ == '__main__':
                 elif( const.BROKER_ENABLE ):
                     # local broker enabled, connect to it instead
                     from pkg.msgapi.mqtt.models import MQTT_Broker_Configuration
-                    portn = MQTT_Broker_Configuration.query.filter(
+                    portn = MQTT_Broker_Configuration.query.filter(\
                             MQTT_Broker_Configuration.config_name == "port").one()
+                    ssl_en = MQTT_Broker_Configuration.query.filter(\
+                            MQTT_Broker_Configuration.config_name == "use_ssl").one()
+                    ano_en = MQTT_Broker_Configuration.query.filter(\
+                            MQTT_Broker_Configuration.config_name == "allow_anonymous").one()
                     try:
                         iportn = int(portn.config_value)
                     except Exception as e:
@@ -107,6 +111,7 @@ if __name__ == '__main__':
                     global_rqttclient.load_config( const.LOCAL_RQTT_USERNAME,\
                             const.LOCAL_RQTT_PASSWORD, '127.0.0.1',\
                             iportn)
+                    global_rqttclient.broker_set_config( ssl_en.config_value, ano_en.config_value)
                 # start the broker
                 global_rqttclient.start()
         else:
