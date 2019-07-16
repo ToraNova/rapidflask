@@ -188,10 +188,16 @@ def rlist(dbtype,tablename):
         session['param'] = crawq_params
         # FOR LS FORM SESSION/QUERY READY
         rawlist = q.all()
-        mobj = getMatch(lkup,tablename,rawlist)
-        columnHead = mobj[0]
-        match = mobj[1]
-        prikey_match = mobj[2]
+        try:
+            mobj = getMatch(lkup,tablename,rawlist)
+            columnHead = mobj[0]
+            match = mobj[1]
+            prikey_match = mobj[2]
+        except Exception as e:
+            crawq = "Expired Query. Hit Query to start again"
+            columnHead = []
+            match = []
+            prikey_match = []
         return render_template('res/datalist1.html', dbtype = dbtype,\
             colNum=len(columnHead),matches=match,\
             columnHead=columnHead, tablename=tablename,\
