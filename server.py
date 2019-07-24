@@ -6,10 +6,6 @@
 # created 8/12/2018
 #--------------------------------------------------
 
-# perform monkey patching
-from gevent import monkey
-monkey.patch_all()
-
 from pkg.system.servlog import srvlog
 
 from pkg.system.database import dbcon
