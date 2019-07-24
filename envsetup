@@ -7,10 +7,11 @@
 # pa -S python-pip
 
 skip=0
-virtualenv . || (echo "Please install Python VirtualEnv with your package manager first."; skip=1)
+command virtualenv . 2>/dev/null ||\
+	{ echo "Please install Python Virtualenv with your package manager first.";skip=1; }
 
 echo $skip
-if [ ${skip} == 0 ];then
+if [ ${skip} = 0 ];then
 	echo "Setting up virtualenv"
 	. bin/activate
 	pip3 install flask flask-admin flask-login flask-wtf flask-mail flask-socketio
@@ -18,6 +19,3 @@ if [ ${skip} == 0 ];then
 	yes | ./reset.sh
 	deactivate
 fi
-
-# deprecated packages
-# flask_bootstrap, socketio, eventlet, flask_session
