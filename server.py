@@ -25,7 +25,8 @@ if __name__ == '__main__':
     # print and log out configuration details
     ##################################################################
     print("[IF]",__name__," : ",\
-            "Hosting {} on".format(const.SERVER_NAME),const.BIND_ADDR,str(const.BIND_PORT))
+            "Hosting {} on".format(const.SERVER_NAME)\
+            ,const.BIND_ADDR,str(const.BIND_PORT))
     if(const.SSL_ENABLE):
         print("[IF]",__name__," : ","Hosting over TLS, HTTPS")
     else:
@@ -49,9 +50,11 @@ if __name__ == '__main__':
             print("[IF]",__name__," : ","Database already initialized...skipping")
             pass
     except  Exception as e:
-        print("[ER]",__name__," : ","Exception occured while trying to create database:",str(e))
+        print("[ER]",__name__," : ",\
+                "Exception occured while trying to create database:",str(e))
         traceback.print_exc()
-        dbcon.delete_db(system=True,deploy=True,msgapi=True) # deletes the db (and the init token)
+        # deletes the db (and the init token)
+        dbcon.delete_db(system=True,deploy=True,msgapi=True)
         srvlog['sys'].error("Database creation exception :"+str(e))
     ##################################################################
 
@@ -68,9 +71,11 @@ if __name__ == '__main__':
             from pkg.msgapi.mqtt import BrokerThread
             BrokerThread.begin()
         else:
-            print("[IF]",__name__," : ","Skipping MQTT broker service on autostart")
+            print("[IF]",__name__," : "\
+                    ,"Skipping MQTT broker service on autostart")
     else:
-        print("[ER]",__name__," : ","MQTT broker service disabled as platform is not linux")
+        print("[ER]",__name__," : "\
+                ,"MQTT broker service disabled as platform is not linux")
 
     if(not const.EDEBUG):
         # Restrict werkzeug logs to only errors
@@ -89,7 +94,8 @@ if __name__ == '__main__':
             if( const.LOCAL_RQTT_AUTOSTART ):
                 # autostart it
                 if( const.LOCAL_RQTT_EXTBROKE ):
-                    # connect to external broker (or specified broker based on config)
+                    # connect to external broker
+                    # (or specified broker based on config)
                     global_rqttclient.load_config( const.LOCAL_RQTT_USERNAME,\
                             const.LOCAL_RQTT_PASSWORD, const.LOCAL_RQTT_ADDR,\
                             const.LOCAL_RQTT_PORT )
@@ -101,17 +107,20 @@ if __name__ == '__main__':
                     ssl_en = MQTT_Broker_Configuration.query.filter(\
                             MQTT_Broker_Configuration.config_name == "use_ssl").one()
                     ano_en = MQTT_Broker_Configuration.query.filter(\
-                            MQTT_Broker_Configuration.config_name == "allow_anonymous").one()
+                            MQTT_Broker_Configuration.config_name ==\
+                            "allow_anonymous").one()
                     try:
                         iportn = int(portn.config_value)
                     except Exception as e:
                         iportn = 1883
                         print("[EX]",__name__," : ",\
-                                "Exception has occured while parsing port",str(e),portn.config_value)
+                                "Exception has occured while parsing port",\
+                                str(e),portn.config_value)
                     global_rqttclient.load_config( const.LOCAL_RQTT_USERNAME,\
                             const.LOCAL_RQTT_PASSWORD, '127.0.0.1',\
                             iportn)
-                    global_rqttclient.broker_set_config( ssl_en.config_value, ano_en.config_value)
+                    global_rqttclient.broker_set_config( ssl_en.config_value,\
+                            ano_en.config_value)
                 # start the broker
                 global_rqttclient.start()
         else:
@@ -125,12 +134,14 @@ if __name__ == '__main__':
             srvlog["sys"].info("Starting server over SSL/TLS HTTPS")
             '''
             #mainsrv.run(debug=app_debug,
-            host=const.BIND_ADDR, port=const.BIND_PORT, use_reloader = True) #flask run
+            # host=const.BIND_ADDR, port=const.BIND_PORT,\
+            # use_reloader = True) #flask run
             # FLASK HOSTING
             #mainsrv.run( debug = const.EDEBUG,
-            host = const.BIND_ADDR,
-            port = const.BIND_PORT,
-            use_reloader= const.RELOAD, ssl_context=(const.SSL_CERT,const.SSL_SKEY))
+            # host = const.BIND_ADDR,
+            # port = const.BIND_PORT,
+            # use_reloader= const.RELOAD,\
+            # ssl_context=(const.SSL_CERT,const.SSL_SKEY))
             '''
 
             # FLASK_SOCKETIO HOSTING
@@ -139,7 +150,8 @@ if __name__ == '__main__':
                     host=const.BIND_ADDR,\
                     port=const.BIND_PORT,\
                     use_reloader = const.RELOAD, \
-                    certfile = const.SSL_CERT, keyfile = const.SSL_SKEY, ca_certs = const.SSL_CA)
+                    certfile = const.SSL_CERT, keyfile = const.SSL_SKEY,\
+                    ca_certs = const.SSL_CA)
             # TODO: SSL version / cert require ? Check these 2 settings out
         else:
             srvlog["sys"].info("Starting server over HTTP")
