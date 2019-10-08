@@ -37,6 +37,8 @@ class RapidClientThread( threading.Thread ):
         self.pub_ready = threading.Event()
         self.pub_done = threading.Event()
         self.reset_client()
+        self.ssl_en = False
+        self.ano_en = True
         self.lgn_idn="Anonymous"
 
     def reset_client(self):
@@ -129,7 +131,7 @@ class RapidClientThread( threading.Thread ):
             # reimport for refreshed config
             self.lgn_idn="Anonymous"
             self.reset_client()
-            if( not const.LOCAL_RQTT_EXTBROKE ):
+            if( not const.LOCAL_RQTT_EXTBROKE and const.BROKER_ENABLE ):
                 # Connect to local mosquitto
                 if(self.ssl_en in ['True','true',1,'1']):
                     self.client.tls_set(\
@@ -145,8 +147,11 @@ class RapidClientThread( threading.Thread ):
                 # External brokers
                 if( not const.LOCAL_RQTT_ANON ):
                     self.client.username_pw_set(\
-                            username=self.uname, password=self.passwd) #set auth
-                    self.lgn_idn=self.uname
+                            username=const.LOCAL_RQTT_USERNAME, password=const.LOCAL_RQTT_PASSWORD) #set auth
+                    self.lgn_idn=const.LOCAL_RQTT_USERNAME
+                self.addr = const.LOCAL_RQTT_ADDR
+                self.portn = const.LOCAL_RQTT_PORT
+                print("[IF]",__name__," : ","Connecting to external broker on",self.addr,self.portn)
 
             sockemit("/mqttctl","mqttqstat_cast",\
                     {'statstring':"LOCAL:RapidClient starting (ssl:%s, login:%s)" %\
